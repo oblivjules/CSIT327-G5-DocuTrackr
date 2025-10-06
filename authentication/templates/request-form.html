@@ -1,0 +1,119 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DocuTrackr - Request Document</title>
+  <!-- Link to external CSS -->
+  <link rel="stylesheet" href="{% static 'css/style-request_form.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Header -->
+  <header class="navbar">
+    <div class="navbar-left">
+      <img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" />
+      <nav>
+        <ul>
+          <li><a href="#">Home</a></li>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Create Request</a></li>
+          <li><a href="#">Track Documents</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="navbar-right">
+      <span class="user-name">Jukary Phamad</span>
+      <div class="notification-icon">
+        <img src="{% static 'images/bell.png' %}" alt="Notification Bell" class="bell-img" />
+      </div>
+     <div class="profile-icon">
+        <img src="{% static 'images/profile.png' %}" alt="User Profile" class="profile-img" />
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Request Form -->
+    <div class="request-form">
+      <h2>Request a New Document</h2>
+      <p>Please fill out the form to request a document from the Registrar's Office.</p>
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="studentId">Student ID *</label>
+            <input type="text" id="studentId" name="student_id" required>
+          </div>
+
+          <div class="form-group">
+            <label for="studentName">Student Name *</label>
+            <input type="text" id="studentName" name="student_name" required>
+          </div>
+
+          <div class="form-group">
+            <label for="docType">Select Document Type *</label>
+            <select id="docType" name="document_type" required>
+              <option value="">-- Select --</option>
+              <option value="form137">Form 137</option>
+              <option value="coe">COE</option>
+              <option value="tor">Transcript of Records</option>
+              <option value="cgmc">CGMC</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="dateNeeded">Date Needed By *</label>
+            <input type="date" id="dateNeeded" name="date_needed" required>
+          </div>
+
+          <div class="file-upload">
+            <p><strong>Proof of Payment Upload</strong></p>
+            <p>Upload your file here</p>
+            <input type="file" name="proof_of_payment" accept=".png,.svg,.webp" required>
+            <p style="font-size: 12px;">Files supported: PNG, SVG, WEBP only</p>
+          </div>
+
+          <div class="form-group">
+            <label for="copies">Number of Copies *</label>
+            <input type="number" id="copies" name="copies" min="1" required>
+          </div>
+
+          <div class="submit-btn">
+            <button type="submit">Submit Request ➤</button>
+          </div>
+        </div>
+      </form>
+
+      {% if error %}
+        <p style="color:red; text-align: center; margin-top: 15px;">{{ error }}</p>
+      {% endif %}
+      {% if success %}
+        <p style="color:green; text-align: center; margin-top: 15px;">{{ success }}</p>
+      {% endif %}
+    </div>
+
+    <!-- History Request -->
+    <div class="history">
+      <h3>History Request</h3>
+      <table>
+        <tr>
+          <th>Request ID</th>
+          <th>Document</th>
+        </tr>
+        <tr><td>#001</td><td>Form 137</td></tr>
+        <tr><td>#002</td><td>COE</td></tr>
+        <tr><td>#003</td><td>Transcript of Records</td></tr>
+        <tr><td>#004</td><td>CGMC</td></tr>
+        <tr><td>#005</td><td>CGMC</td></tr>
+      </table>
+    </div>
+  </div>
+
+ <!-- <script src="{% static 'js/request-form.js' %}"></script> -->
+</body>
+</html>
