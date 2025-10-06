@@ -1,0 +1,109 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DocuTrackr - Admin Registration</title>
+  <link rel="stylesheet" href="{% static 'css/style-admin_registration.css' %}" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="Registration-student">
+    <img class="background" src="{% static 'images/background.jpg' %}" />
+
+    <div class="rectangle"></div>
+
+    <div class="Registration-card">
+      <div class="card-bg"></div>
+      <div class="rectangle-2"></div>
+
+      <div class="left-panel">
+        <h2 class="text-wrapper-2">Create Your Account</h2>
+        <p class="text-wrapper-9">
+          Sign in to help students navigate their requests and stay informed every 
+          step of the way.
+        </p>
+      </div>
+
+      <div class="right-panel">
+        <div class="header-row">
+          <h2 class="text-wrapper">Register Now</h2>
+          <a href="{% url 'studentregister' %}" class="admin-btn">
+            <img class="swap" src="{% static 'images/swap.png' %}" alt="swap icon" />
+            Student
+          </a>
+        </div>
+
+        <form method="post" class="pure-form" id="adminForm">
+          {% csrf_token %}
+          
+          <div class="input-group">
+            <label class="input-label">Full Name</label>
+            <div class="input-wrapper" style="display:flex; gap: 20px; align-items: center;">
+              <img class="icon" src="{% static 'images/profile.png' %}" alt="profile icon" />
+              <input type="text" name="first_name" class="input-field" placeholder="First Name" id="firstname" required />
+              <input type="text" name="last_name" class="input-field" placeholder="Last Name" id="lastname" required />
+            </div>
+          </div>
+
+          <div class="input-group">
+          <label class="input-label">Admin ID</label>
+          <div class="input-wrapper">
+            <img class="icon" src="{% static 'images/id.png' %}" alt="admin id" />
+            <input type="text" name="admin_id" class="input-field" placeholder="Enter Admin ID" id="adminId" required />
+          </div>
+        </div>
+  
+          <div class="input-group">
+            <label class="input-label">Email</label>
+            <div class="input-wrapper">
+              <img class="icon" src="{% static 'images/email.png' %}" alt="email" />
+              <input type="email" name="email" class="input-field" placeholder="Enter your institutional email address" id="email" required />
+            </div>
+          </div>
+
+          <div class="input-group password-group">
+            <label class="input-label">Password</label>
+            <div class="input-wrapper">
+              <img class="icon" src="{% static 'images/password.png' %}" alt="password" />
+              <input type="password" name="password" id="password" class="input-field" placeholder="Enter your password" required />
+              <img class="hide icon" src="{% static 'images/hide.png' %}" alt="toggle" />
+            </div>
+          </div>
+
+          <div class="input-group password-group">
+            <label class="input-label">Confirm Password</label>
+            <div class="input-wrapper">
+              <img class="icon" src="{% static 'images/password.png' %}" alt="password" />
+              <input type="password" name="confirm_password" id="confirm_password" class="input-field" placeholder="Confirm Password" required />
+              <img class="hide icon" src="{% static 'images/hide.png' %}" alt="toggle" />
+            </div>
+          </div>
+
+          <button type="submit" class="Sign-up-btn">Sign up</button>
+        </form>
+
+        {% if error %}
+          <p style="color:rgb(255, 255, 255);">{{ error }}</p>
+        {% endif %}
+
+          <p class="Already-have-an-account">
+          <span class="span">Already have an account? </span>
+          <a href="{% url 'adminlogin' %}" class="text-wrapper-8">Sign in</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.STATIC_IMAGES = {
+      mark: '{% static "images/mark.png" %}',
+      show: '{% static "images/show.png" %}',
+      hide: '{% static "images/hide.png" %}'
+    };
+  </script>
+  <script src="{% static 'js/admin-registration.js' %}"></script>
+</body>
+</html>

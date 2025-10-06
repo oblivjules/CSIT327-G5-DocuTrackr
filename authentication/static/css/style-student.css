@@ -1,0 +1,267 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Roboto', Helvetica, Arial, sans-serif;
+}
+
+.login-student {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-student .background {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.login-student .rectangle {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.05);
+  backdrop-filter: blur(5px) brightness(80%);
+  -webkit-backdrop-filter: blur(5px) brightness(80%);
+}
+
+.login-student .login-card {
+  position: relative;
+  width: 1077px;
+  height: 551px;
+}
+
+.login-student .card-bg {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 10px;
+}
+
+.login-student .rectangle-2 {
+  position: absolute;
+  top: 0;
+  left: 540px;
+  width: 537px;
+  height: 551px;
+  background-color: rgba(137, 52, 59, 0.75);
+  border-radius: 0px 10px 10px 0px;
+}
+
+.login-student .left-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 540px;
+  height: 537px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 50px;
+  box-sizing: border-box;
+}
+
+.login-student .left-panel .text-wrapper-2 {
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 40px;
+  margin-bottom: 0px;
+  max-width: 465px;
+}
+
+.login-student .left-panel .text-wrapper-9 {
+  font-weight: 400;
+  color: #ffffff;
+  font-size: 15px;
+  line-height: 1.4;
+  max-width: 441px;
+}
+
+.login-student .right-panel {
+  position: absolute;
+  top: 0;
+  left: 540px;
+  width: 537px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 50px;
+  box-sizing: border-box;
+}
+
+.login-student .header-row {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+  
+.login-student .text-wrapper {
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 28px;
+  margin: 0;
+}
+
+.email-group .error-container {
+  margin-top: 7px;
+}
+
+
+.login-student .admin-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 20px;
+  background-color: #f8c400;
+  border-radius: 5px;
+  border: none;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  color: #000;            
+  text-decoration: none;
+  transition: 0.2s ease-in-out;   
+}
+
+.admin-btn:hover {
+  background: #e0b200;
+}
+
+.login-student .admin-btn .swap {
+  width: 18px;
+  height: 18px;
+}
+
+.login-student .input-group {
+  width: 100%;
+  margin-bottom: 25px;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-student .input-label {
+  font-size: 20px;
+  color: #ffffff;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.login-student .input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.login-student .input-field {
+  width: 85%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #fff;
+  padding: 10px 35px;
+  font-size: 16px;
+  color: #fff;
+  outline: none;
+  font-weight: 400;
+}
+
+.login-student .input-field::placeholder {
+  color: #ffffffb2;
+}
+
+.login-student .input-wrapper .icon {
+  position: absolute;
+  top: 50%;
+  left: 5px;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  filter: brightness(0) invert(1);
+}
+
+.login-student .input-wrapper .hide {
+  right: 5px;
+  left: auto;
+}
+
+.password-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 25px; 
+}
+
+.text-wrapper-7 {
+  font-size: 14px;
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 400;
+  margin: 0;
+}
+
+.password-bottom-row {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;            
+  margin-top: 10px;                
+}
+
+.login-student .login-btn {
+  width: 100%;
+  padding: 12px 0; 
+  background-color: #f8c400;
+  border-radius: 5px;
+  border: none;
+  font-size: 20px;
+  font-weight: 700;
+  color: #000;
+  cursor: pointer;
+  margin-top: auto;
+  margin-bottom: 20px;
+  display: block;
+  transition: 0.2s ease-in-out;
+}
+
+.login-btn:hover {
+  background: #e0b200;
+}
+
+.login-student .dont-have-an-account {
+  font-weight: 400;
+  color: #ffffff;
+  font-size: 14px;
+  text-align: center;
+}
+
+.login-student .text-wrapper-8 {
+  text-decoration: underline;
+  color: #ffffff;
+}
+
+.error-container {
+  display: flex;
+  align-items: center;
+  gap: 5px;              
+  color: #ffffff;       
+  font-size: 0.85rem;
+  min-height: 1.2em;  
+  margin: 0;             
+}
+
+.error-container img {
+  width: 16px;
+  height: 16px;
+  filter: brightness(0) invert(1); 
+}
+
+.input-field:focus {
+  border-bottom: 1.5px solid #f8c400;
+  outline: none;                     
+  transition: border 0.2s ease;      
+  background-color: rgba(255, 255, 255, 0.05); 
+}
