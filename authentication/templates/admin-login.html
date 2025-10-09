@@ -11,7 +11,8 @@
 </head>
 <body>
   <div class="login-admin">
-  <img class="background" src="{% static 'images/background.jpg' %}" />
+    <img class="background" src="{% static 'images/background.jpg' %}" alt="background" />
+
 
     <!-- Dark overlay -->
     <div class="rectangle"></div>
@@ -40,40 +41,56 @@
           </a>
         </div>
 
-        <!-- Email -->
-        <form method="post">
+        <!-- Login form -->
+        <form method="post" id="admin-login-form">
           {% csrf_token %}
-        <div class="input-group email-group">
-          <label class="input-label">Email Address</label>
-          <div class="input-wrapper">
-            <img class="icon" src="{% static 'images/email.png' %}" alt="email" />
-            <input type="email" name="email" class="input-field" placeholder="Enter your institutional email address" required/>
+          <div class="input-group email-group">
+            <label class="input-label">Email Address</label>
+            <div class="input-wrapper">
+              <img class="icon" src="{% static 'images/email.png' %}" alt="email" />
+              <input type="email" name="email" class="input-field" placeholder="Enter your institutional email address">
+            </div>
+            <div class="error-container" id="email-error"></div>
           </div>
-          <div class="error-container"></div>
-        </div>
 
-        <div class="input-group password-group">
-        <label class="input-label">Password</label>
-        <div class="input-wrapper">
-          <img class="icon" src="{% static 'images/password.png' %}" alt="password" />
-          <input type="password" name="password" class="input-field" placeholder="Enter your password" required/>
-          <img class="hide icon" src="{% static 'images/hide.png' %}" alt="toggle" />
-        </div>
+          <div class="input-group password-group">
+            <label class="input-label">Password</label>
+            <div class="input-wrapper">
+              <img class="icon" src="{% static 'images/password.png' %}" alt="password" />
+              <input type="password" name="password" class="input-field" placeholder="Enter your password">
+              <img class="hide icon" src="{% static 'images/hide.png' %}" alt="toggle" />
+            </div>
 
-        <div class="password-bottom-row">
-          <div class="error-container"></div>
-          <a href="{% url 'forgotpassword' %}" class="text-wrapper-7">Forgot password</a>
-        </div>
-      </div>
+            <div class="password-bottom-row">
+              <div class="error-container" id="password-error"></div>
+              <a href="{% url 'forgotpassword' %}" class="text-wrapper-7">Forgot password</a>
+            </div>
+          </div>
 
-        <!-- Login button -->
-        <button type="submit" class="login-btn">Login</button>
-      </form>
+          <!-- Login button -->
+          <button type="submit" class="login-btn">Login</button>
+        </form>
 
-      {% if error %}
-        <p style="color:rgb(255, 255, 255);">{{ error }}</p>
-    {% endif %}
-    
+        {% if success %}
+          <script>
+            window.addEventListener("load", () => {
+              setTimeout(() => {
+                alert("{{ success|escapejs }}");
+              }, 100); // delay ensures background loads
+            });
+          </script>
+          {% endif %}
+
+        {% if error %}
+          <script>
+            window.addEventListener("load", () => {
+              setTimeout(() => {
+                alert("{{ error|escapejs }}");
+              }, 100);
+            });
+          </script>
+        {% endif %}
+
         <!-- Sign up -->
         <p class="dont-have-an-account">
           <span class="span">Don’t have an account? </span>
@@ -82,6 +99,7 @@
       </div>
     </div>
   </div>
+
   <script>
     window.STATIC_IMAGES = {
       mark: '{% static "images/mark.png" %}',

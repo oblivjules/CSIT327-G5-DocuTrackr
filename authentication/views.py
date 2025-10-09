@@ -5,137 +5,186 @@ from django.utils.crypto import get_random_string
 from authentication.models import User
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.hashers import make_password
-
+from django.shortcuts import render, redirect
+from .models import User
 
 # Student Login
 def index(request):
-    error = None
+    # Pop messages from session (so they only show once)
+    error = request.session.pop('error', None)
+    success = request.session.pop('success', None)
+
     if request.method == 'POST':
         email = request.POST.get('email')
         password = request.POST.get('password')
 
         try:
-            user = User.objects.get(email=email, role="student")
-            # ✅ use check_password instead of direct ==
+            user = User.objects.get(email=email, role='student')
             if check_password(password, user.password_hash):
                 request.session['user_id'] = user.id
                 request.session['role'] = user.role
-                return redirect('dashboard')  # Redirect to student dashboard
+                return redirect('dashboard')  # Adjust if you have a specific student dashboard
             else:
-                error = "Invalid password."
+                request.session['error'] = "Invalid login credentials. Please try again."
+                return redirect('index')
         except User.DoesNotExist:
-            error = "No student found with that email"
-    return render(request, 'index.html', {'error': error})
+            request.session['error'] = "Invalid login credentials. Please try again."
+            return redirect('index')
 
+    # GET request
+    return render(request, 'index.html', {
+        'error': error,
+        'success': success
+    })
 
-# Registrar Login
+# Admin Login
 def adminLogin(request):
-    error = None
+    # Pop messages from session (so they only show once)
+    error = request.session.pop('error', None)
+    success = request.session.pop('success', None)
+
     if request.method == 'POST':
         email = request.POST.get('email')
         password = request.POST.get('password')
 
         try:
-            user = User.objects.get(email=email, role="registrar")
-            if check_password(password, user.password_hash):  # ✅ secure check
+            user = User.objects.get(email=email, role='registrar')
+            if check_password(password, user.password_hash):
                 request.session['user_id'] = user.id
                 request.session['role'] = user.role
-                return redirect('dashboard')  # Redirect to registrar dashboard
+                return redirect('dashboard')
             else:
-                error = "Invalid password."
+                request.session['error'] = "Invalid login credentials. Please try again."
+                return redirect('adminlogin')
         except User.DoesNotExist:
-            error = "No admin found with that email"
-    return render(request, 'admin-login.html', {'error': error})
+            request.session['error'] = "Invalid login credentials. Please try again."
+            return redirect('adminlogin')
+
+    # GET request
+    return render(request, 'admin-login.html', {
+        'error': error,
+        'success': success
+    })
 
 # Student Registration
 def studentRegister(request):
-    error = None
-
     if request.method == 'POST':
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
-        student_id = request.POST.get('student_id')  # This won't be saved yet
+        student_id = request.POST.get('student_id')
         email = request.POST.get('email')
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
 
-        if password != confirm_password:
-            error = "Passwords do not match."
-        elif User.objects.filter(email=email).exists():
-            error = "Email is already registered."
-        else:
-            # Combine first + last into single 'name' field
-            full_name = f"{first_name.strip()} {last_name.strip()}"
-            User.objects.create(
-                name=full_name,
-                email=email,
-                role='student',
-                student_id=student_id,  
-                password_hash=make_password(password),
-            )
-            return redirect('index')  # Student login
+        errors = []
 
+        # Check passwords match
+        if password != confirm_password:
+            errors.append("Passwords do not match.")
+
+        # Check email uniqueness
+        if User.objects.filter(email=email).exists():
+            errors.append(f"Email '{email}' is already registered.")
+
+        # Check student ID uniqueness
+        if User.objects.filter(student_id=student_id).exists():
+            errors.append(f"Student ID '{student_id}' is already in use.")
+
+        # If there are any errors, redirect with alert
+        if errors:
+            request.session['error'] = "\n".join(errors)
+            return redirect('studentregister')
+
+        # Create the user
+        full_name = f"{first_name.strip()} {last_name.strip()}"
+        User.objects.create(
+            name=full_name,
+            email=email,
+            role='student',
+            student_id=student_id,
+            password_hash=make_password(password),
+        )
+
+        # ✅ Store success message in session so alert shows on login page
+        request.session['success'] = "Registration Successful!"
+        return redirect('index')  # Student login page
+
+    # GET request
+    error = request.session.pop('error', None)
     return render(request, 'student-registration.html', {'error': error})
+
 
 # Registrar Registration
 def adminRegister(request):
-    error = None
-
     if request.method == 'POST':
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
-        admin_id = request.POST.get('admin_id')  # Not stored yet
+        admin_id = request.POST.get('admin_id')
         email = request.POST.get('email')
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
 
-        if password != confirm_password:
-            error = "Passwords do not match."
-        elif User.objects.filter(email=email).exists():
-            error = "Email is already registered."
-        else:
-            full_name = f"{first_name.strip()} {last_name.strip()}"
-            User.objects.create(
-                name=full_name,
-                email=email,
-                role='registrar',
-                admin_id=admin_id,
-                password_hash=make_password(password),
-            )
-            return redirect('adminlogin')
+        errors = []
 
+        # Check passwords match
+        if password != confirm_password:
+            errors.append("Passwords do not match.")
+
+        # Check email uniqueness
+        if User.objects.filter(email=email).exists():
+            errors.append(f"Email '{email}' is already registered.")
+
+        # Check admin ID uniqueness
+        if User.objects.filter(admin_id=admin_id).exists():
+            errors.append(f"Admin ID '{admin_id}' is already in use.")
+
+        # If there are any errors, redirect with alert
+        if errors:
+            request.session['error'] = "\n".join(errors)
+            return redirect('adminregister')
+
+        # Create the user
+        full_name = f"{first_name.strip()} {last_name.strip()}"
+        User.objects.create(
+            name=full_name,
+            email=email,
+            role='registrar',
+            admin_id=admin_id,
+            password_hash=make_password(password),
+        )
+        
+        # Store success message in session
+        request.session['success'] = "Registration Successful!"
+        return redirect('adminlogin')
+
+    # GET request
+    error = request.session.pop('error', None)
     return render(request, 'admin-registration.html', {'error': error})
 
 reset_tokens = {}
 
 def forgotPassword(request):
-    message = None
-
     if request.method == 'POST':
         email = request.POST.get('email')
-
         try:
             user = User.objects.get(email=email)
-            
-            # Generate a simple random token (could use Django's signing or its PasswordResetTokenGenerator)
             token = get_random_string(32)
-            reset_tokens[email] = token  # store temporarily (for demonstration)
-            
-            # Construct a reset URL (adjust domain/path based on your setup)
-            reset_link = request.build_absolute_uri(f"/reset-password/{token}/")
-            
-            # Send email (requires EMAIL settings configured in settings.py)
-            send_mail(
-                subject="Password Reset - DocuTrackr",
-                message=f"Hello {user.name},\n\nClick the link below to reset your password:\n{reset_link}\n\nIf you didn't request this, please ignore this email.",
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[email],
-                fail_silently=True,  # prevents crash if email not configured
-            )
+            reset_tokens[email] = token
 
-            message = "A password reset link has been sent to your email."
-
+            # Store success message in session for one-time display
+            request.session['message'] = f"A password reset link would be sent to {email}."
+            request.session['message_type'] = 'success'
         except User.DoesNotExist:
-            message = "No account found with that email address."
+            request.session['message'] = "No account found with that email address."
+            request.session['message_type'] = 'error'
 
-    return render(request, 'forgot-password.html', {'message': message})
+        return redirect('forgotpassword')  # redirect so message shows once
+
+    # GET request — pop message from session
+    message = request.session.pop('message', None)
+    message_type = request.session.pop('message_type', None)
+
+    return render(request, 'forgot-password.html', {
+        'message': message,
+        'message_type': message_type
+    })

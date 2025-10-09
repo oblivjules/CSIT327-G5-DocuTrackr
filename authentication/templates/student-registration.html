@@ -85,7 +85,13 @@
         </form>
 
         {% if error %}
-          <p style="color:rgb(255, 255, 255);">{{ error }}</p>
+        <script>
+          window.addEventListener("load", () => {
+            setTimeout(() => {
+              alert("{{ error|escapejs }}");
+            }, 500); // small delay so page renders first
+          });
+        </script>
         {% endif %}
 
         <p class="Already-have-an-account">

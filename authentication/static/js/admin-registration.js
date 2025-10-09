@@ -1,9 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("adminForm");
 
-  const validateEmail = (email) => email.endsWith("@cit.edu");
-  const validateAdminId = (id) => /^\d{1,4}$/.test(id);
-
   const fields = {
     firstname: document.getElementById("firstname"),
     lastname: document.getElementById("lastname"),
@@ -13,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
     confirmPassword: document.getElementById("confirm_password")
   };
 
-  // Initialize toggle icons with static paths
   const toggleIcons = document.querySelectorAll(".password-group .hide");
   toggleIcons.forEach(icon => {
     icon.addEventListener("click", () => {
@@ -28,102 +24,92 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  fields.firstname.addEventListener("input", () => {
-    fields.firstname.setCustomValidity(
-      fields.firstname.value.trim() ? "" : "First name is required"
-    );
-  });
-
-  fields.lastname.addEventListener("input", () => {
-    fields.lastname.setCustomValidity(
-      fields.lastname.value.trim() ? "" : "Last name is required"
-    );
-  });
-
-  fields.adminId.addEventListener("input", () => {
-    const value = fields.adminId.value.trim();
-    fields.adminId.setCustomValidity(
-      validateAdminId(value) ? "" : "Invalid ID format (must be 1 to 4 digits)"
-    );
-  });
-
-  fields.email.addEventListener("input", () => {
-    const value = fields.email.value.trim();
-    fields.email.setCustomValidity(
-      validateEmail(value) ? "" : "Email must end with @cit.edu"
-    );
-  });
-
-  fields.password.addEventListener("input", () => {
-    fields.password.setCustomValidity(
-      fields.password.value.trim() ? "" : "Password is required"
-    );
-  });
-
-  fields.confirmPassword.addEventListener("input", () => {
-    if (!fields.confirmPassword.value.trim()) {
-      fields.confirmPassword.setCustomValidity("Confirm your password");
-    } else if (fields.password.value !== fields.confirmPassword.value) {
-      fields.confirmPassword.setCustomValidity("Passwords do not match");
+  // Validation functions
+  function validateNames() {
+    if (fields.firstname.value.trim() === "") {
+      fields.firstname.setCustomValidity("First name is required");
     } else {
-      fields.confirmPassword.setCustomValidity("");
-    }
-  });
-
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    let isValid = true;
-
-    // Reset custom validity
-    Object.values(fields).forEach(field => field.setCustomValidity(""));
-
-    // Validate all fields
-    if (!fields.firstname.value.trim()) { 
-      fields.firstname.setCustomValidity("First name is required"); 
-      isValid = false; 
-    }
-    if (!fields.lastname.value.trim()) { 
-      fields.lastname.setCustomValidity("Last name is required"); 
-      isValid = false; 
-    }
-    if (!fields.adminId.value.trim() || !validateAdminId(fields.adminId.value.trim())) {
-      fields.adminId.setCustomValidity("Invalid ID format (must be 1 to 4 digits)");
-      isValid = false;
-    }
-    if (!fields.email.value.trim() || !validateEmail(fields.email.value.trim())) {
-      fields.email.setCustomValidity("Email must end with @cit.edu");
-      isValid = false;
-    }
-    if (!fields.password.value.trim()) { 
-      fields.password.setCustomValidity("Password is required"); 
-      isValid = false; 
-    }
-    if (!fields.confirmPassword.value.trim() || fields.password.value !== fields.confirmPassword.value) {
-      fields.confirmPassword.setCustomValidity("Passwords do not match");
-      isValid = false;
+      fields.firstname.setCustomValidity("");
     }
 
-    // If not valid, show first error
-    if (!isValid) {
-      const firstInvalid = Object.values(fields).find(field => !field.checkValidity());
-      if (firstInvalid) {
-        firstInvalid.focus();
-        firstInvalid.reportValidity();
-      }
+    if (fields.lastname.value.trim() === "") {
+      fields.lastname.setCustomValidity("Last name is required");
+    } else {
+      fields.lastname.setCustomValidity("");
+    }
+  }
+
+  function validateAdminId() {
+    const value = fields.adminId.value.trim();
+    if (value === "") {
+      fields.adminId.setCustomValidity("Admin ID is required");
+    } else if (!/^\d{4}$/.test(value)) { // exactly 4 digits
+      fields.adminId.setCustomValidity("Admin ID must be exactly 4 digits");
+    } else {
+      fields.adminId.setCustomValidity("");
+    }
+  }
+
+  function validateEmail() {
+    const value = fields.email.value.trim();
+    if (value === "") {
+      fields.email.setCustomValidity("Email is required");
+    } else if (!value.endsWith("@cit.edu")) {
+      fields.email.setCustomValidity("Please enter a valid institutional email address (e.g., name@cit.edu)");
+    } else {
+      fields.email.setCustomValidity("");
+    }
+  }
+
+  function validatePassword() {
+    const value = fields.password.value.trim();
+    fields.password.setCustomValidity("");
+
+    if (value === "") {
+      fields.password.setCustomValidity("Password is required");
       return;
     }
 
-    // If all valid, submit the form normally (Django will handle it)
-    console.log("Form is valid, submitting to Django...");
-    form.submit();
+    // Common password rules
+    const rules = [
+      { regex: /.{8,}/, message: "at least 8 characters" },
+      { regex: /[A-Z]/, message: "at least one uppercase letter" },
+      { regex: /[a-z]/, message: "at least one lowercase letter" },
+      { regex: /\d/, message: "at least one number" },
+      { regex: /[!@#$%^&*(),.?":{}|<>]/, message: "at least one special character" }
+    ];
+
+    const failed = rules.filter(r => !r.regex.test(value)).map(r => r.message);
+    if (failed.length > 0) {
+      fields.password.setCustomValidity("Password must contain: " + failed.join(", "));
+    }
+  }
+
+  function validateConfirmPassword() {
+    fields.confirmPassword.setCustomValidity("");
+    if (fields.confirmPassword.value.trim() === "") {
+      fields.confirmPassword.setCustomValidity("Please confirm your password");
+    } else if (fields.confirmPassword.value !== fields.password.value) {
+      fields.confirmPassword.setCustomValidity("Passwords do not match");
+    }
+  }
+
+  // Submit
+  form.addEventListener("submit", (e) => {
+    validateNames();
+    validateAdminId();
+    validateEmail();
+    validatePassword();
+    validateConfirmPassword();
+
+    if (!form.checkValidity()) {
+      e.preventDefault();
+      form.reportValidity(); // show tooltip on first invalid field
+    }
   });
 
-  // Add real-time validation feedback
+  // Clear tooltip on input
   Object.values(fields).forEach(field => {
-    field.addEventListener("blur", () => {
-      if (!field.checkValidity()) {
-        field.reportValidity();
-      }
-    });
+    field.addEventListener("input", () => field.setCustomValidity(""));
   });
 });

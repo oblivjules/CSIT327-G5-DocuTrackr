@@ -7,18 +7,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DocuTrackr - Student Login</title>
   <link rel="stylesheet" href="{% static 'css/style-student.css' %}" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
   <div class="login-student">
-  <img class="background" src="{% static 'images/background.jpg' %}" />
+    <img class="background" alt = "bg" src="{% static 'images/background.jpg' %}" />
 
     <!-- Dark overlay -->
     <div class="rectangle"></div>
 
     <div class="login-card">
-      <div class="card-bg"></div> <!-- dark color background of the login form -->
+      <div class="card-bg"></div>
       <div class="rectangle-2"></div>
 
       <!-- Left panel -->
@@ -41,39 +41,61 @@
           </a>
         </div>
 
-        <!-- Email -->
-         <form method="post">
+        <!-- Login Form -->
+        <form method="post" id="student-login-form">
           {% csrf_token %}
-        <div class="input-group email-group">
-        <label class="input-label">Email Address</label>
-        <div class="input-wrapper">
-          <img class="icon" src="{% static 'images/email.png' %}" alt="email" />
-          <input type="email" name="email" class="input-field" placeholder="Enter your institutional email address" required/>
-        </div>
-        <div class="error-container"></div>
-      </div>
 
-       <div class="input-group password-group">
-        <label class="input-label">Password</label>
-        <div class="input-wrapper">
-          <img class="icon" src="{% static 'images/password.png' %}" alt="password" />
-          <input type="password" name="password" class="input-field" placeholder="Enter your password" required/>
-          <img class="hide icon" src="{% static 'images/hide.png' %}" alt="toggle" />
-        </div>
+          <!-- Email -->
+          <div class="input-group email-group">
+            <label class="input-label">Email Address</label>
+            <div class="input-wrapper">
+              <img class="icon" src="{% static 'images/email.png' %}" alt="email" />
+              <input type="email" id="email" name="email" class="input-field" placeholder="Enter your institutional email address" />
+            </div>
+            <div class="error-container" id="email-error"></div>
+          </div>
 
-        <div class="password-bottom-row">
-          <div class="error-container"></div>
-          <a href="{% url 'forgotpassword' %}" class="text-wrapper-7">Forgot password</a>
-        </div>
-      </div>
+          <!-- Password -->
+          <div class="input-group password-group">
+            <label class="input-label">Password</label>
+            <div class="input-wrapper">
+              <img class="icon" src="{% static 'images/password.png' %}" alt="password" />
+              <input type="password" id="password" name="password" class="input-field" placeholder="Enter your password" />
+              <img class="hide icon" src="{% static 'images/hide.png' %}" alt="toggle" />
+            </div>
 
-        <!-- Login button -->
-        <button type="submit" class="login-btn">Login</button>
-</form>
-  {% if error %}
-        <p style="color:rgb(255, 255, 255);">{{ error }}</p>
-    {% endif %}
-  
+            <div class="password-bottom-row">
+              <div class="error-container" id="password-error"></div>
+              <a href="{% url 'forgotpassword' %}" class="text-wrapper-7">Forgot password</a>
+            </div>
+          </div>
+
+          <!-- Login button -->
+          <button type="submit" class="login-btn">Login</button>
+        </form>
+
+        <!-- Success message -->
+          {% if success %}
+          <script>
+            window.addEventListener("load", () => {
+              setTimeout(() => {
+                alert("{{ success|escapejs }}");
+              }, 100); // delay ensures background loads
+            });
+          </script>
+          {% endif %}
+
+          <!-- Error message -->
+          {% if error %}
+          <script>
+            window.addEventListener("load", () => {
+              setTimeout(() => {
+                alert("{{ error|escapejs }}");
+              }, 100);
+            });
+          </script>
+          {% endif %}
+
         <!-- Sign up -->
         <p class="dont-have-an-account">
           <span class="span">Don’t have an account? </span>
@@ -82,14 +104,16 @@
       </div>
     </div>
   </div>
+
   <script>
     window.STATIC_IMAGES = {
       mark: '{% static "images/mark.png" %}',
       show: '{% static "images/show.png" %}',
-      hide: '{% static "images/hide.png" %}'
+      hide: '{% static "images/hide.png" %}',
+      error: '{% static "images/error-icon.png" %}'
     };
   </script>
-  <script src="{% static 'js/login-student.js' %}">
-  </script>
+
+  <script src="{% static 'js/login-student.js' %}"></script>
 </body>
 </html>

@@ -48,6 +48,16 @@
             </div>
           </div>
 
+          {% if error %}
+          <script>
+            window.addEventListener("load", () => {
+              setTimeout(() => {
+                alert("{{ error|escapejs }}");
+              }, 100); // small delay so page renders first
+            });
+          </script>
+          {% endif %}
+
           <div class="input-group">
           <label class="input-label">Admin ID</label>
           <div class="input-wrapper">
@@ -84,11 +94,6 @@
 
           <button type="submit" class="Sign-up-btn">Sign up</button>
         </form>
-
-        {% if error %}
-          <p style="color:rgb(255, 255, 255);">{{ error }}</p>
-        {% endif %}
-
           <p class="Already-have-an-account">
           <span class="span">Already have an account? </span>
           <a href="{% url 'adminlogin' %}" class="text-wrapper-8">Sign in</a>

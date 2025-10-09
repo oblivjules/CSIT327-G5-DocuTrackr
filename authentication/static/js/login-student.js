@@ -1,49 +1,53 @@
-const loginBtn = document.querySelector(".login-btn");
+const form = document.querySelector("form");
 const emailInput = document.querySelector("input[type='email']");
 const passwordInput = document.querySelector("input[type='password']");
+const togglePasswordIcon = document.querySelector(".password-group .hide");
 
-const form = document.querySelector("form");
+// Validate email
+function validateEmail() {
+  const value = emailInput.value.trim();
 
-form.addEventListener("submit", function(e) {
-  clearErrors();
-
-  let hasError = false;
-  const emailValue = emailInput.value.trim();
-  const passwordValue = passwordInput.value.trim();
-
-  if (emailValue === "") {
-    showError(emailInput, "Email is required");
-    hasError = true;
-  } else if (!/^[a-zA-Z0-9._%+-]+@cit\.edu$/i.test(emailValue)) {
-    showError(emailInput, "Please enter a valid institutional email address (e.g., name@cit.edu)");
-    hasError = true;
+  if (value === "") {
+    emailInput.setCustomValidity("Email is required");
+  } else if (!/^[a-zA-Z0-9._%+-]+@cit\.edu$/i.test(value)) {
+    emailInput.setCustomValidity("Please enter a valid institutional email address (e.g., name@cit.edu)");
+  } else {
+    emailInput.setCustomValidity("");
   }
+}
 
-  if (passwordValue === "") {
-    showError(passwordInput, "Password is required");
-    hasError = true;
+// Validate password
+function validatePassword() {
+  const value = passwordInput.value.trim();
+
+  if (value === "") {
+    passwordInput.setCustomValidity("Password is required");
+  } else {
+    passwordInput.setCustomValidity("");
   }
+}
 
-  if (hasError) {
-    e.preventDefault(); // ❌ stop form only if there are errors
+// Validate only on submit click
+form.addEventListener("submit", (e) => {
+  validateEmail();
+  validatePassword();
+
+  if (!form.checkValidity()) {
+    e.preventDefault();
+    form.reportValidity(); // show tooltip
   }
 });
 
-function showError(input, message) {
-  const errorContainer = input.parentElement.parentElement.querySelector(".error-container");
-  if (errorContainer) {
-    errorContainer.innerHTML = `<img src="${window.STATIC_IMAGES.mark}" class="icon" alt="error" />${message}`;
-  }
-}
+// Clear tooltip after correction
+emailInput.addEventListener("input", () => {
+  emailInput.setCustomValidity("");
+});
 
+passwordInput.addEventListener("input", () => {
+  passwordInput.setCustomValidity("");
+});
 
-function clearErrors() {
-  document.querySelectorAll(".error-container").forEach(container => {
-    container.innerText = "";
-  });
-}
-
-const togglePasswordIcon = document.querySelector(".password-group .hide");
+// Toggle password visibility
 togglePasswordIcon.addEventListener("click", () => {
   if (passwordInput.type === "password") {
     passwordInput.type = "text";
@@ -53,5 +57,3 @@ togglePasswordIcon.addEventListener("click", () => {
     togglePasswordIcon.src = window.STATIC_IMAGES.hide;
   }
 });
-
-
