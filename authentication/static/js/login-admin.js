@@ -1,53 +1,60 @@
-const loginBtn = document.querySelector(".login-btn");
-const emailInput = document.querySelector("input[type='email']");
-const passwordInput = document.querySelector("input[type='password']");
+const form = document.querySelector("#admin-login-form");
+const emailInput = form.querySelector("input[name='email']");
+const passwordInput = form.querySelector("input[name='password']");
+const togglePasswordIcon = form.querySelector(".password-group .hide");
 
-const form = document.querySelector("form");
+// Validate email
+function validateEmail() {
+  const value = emailInput.value.trim();
+  if (value === "") {
+    emailInput.setCustomValidity("Email is required");
+  } else if (!/^[a-zA-Z0-9._%+-]+@cit\.edu$/i.test(value)) {
+    emailInput.setCustomValidity("Please enter a valid institutional email address (e.g., name@cit.edu)");
+  } else {
+    emailInput.setCustomValidity("");
+  }
+}
 
-form.addEventListener("submit", function(e) {
-  clearErrors();
+// Validate password
+function validatePassword() {
+  const value = passwordInput.value.trim();
+  if (value === "") {
+    passwordInput.setCustomValidity("Password is required");
+  } else {
+    passwordInput.setCustomValidity("");
+  }
+}
 
-  let hasError = false;
-  const emailValue = emailInput.value.trim();
-  const passwordValue = passwordInput.value.trim();
-
-  if (emailValue === "") {
-    showError(emailInput, "Email is required");
-    hasError = true;
-  } else if (!/^[a-zA-Z0-9._%+-]+@cit\.edu$/i.test(emailValue)) {
-    showError(emailInput, "Please enter a valid institutional email address (e.g., name@cit.edu)");
-    hasError = true;
+// Submit handler
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  validateEmail();
+  if (!emailInput.checkValidity()) {
+    emailInput.reportValidity();
+    return;
   }
 
-  if (passwordValue === "") {
-    showError(passwordInput, "Password is required");
-    hasError = true;
+  validatePassword();
+  if (!passwordInput.checkValidity()) {
+    passwordInput.reportValidity();
+    return;
   }
 
-  if (hasError) {
-    e.preventDefault(); // ❌ stop form only if there are errors
-  }
+  form.submit();
 });
 
-// Show error
+// Clear tooltip after input
+emailInput.addEventListener("input", () => {
+  validateEmail();
+  emailInput.setCustomValidity("");
+});
 
-function showError(input, message) {
-  const errorContainer = input.parentElement.parentElement.querySelector(".error-container");
-  if (errorContainer) {
-    errorContainer.innerHTML = `<img src="${window.STATIC_IMAGES.mark}" class="icon" alt="error" />${message}`;
-  }
-}
-
-// Clear errors
-function clearErrors() {
-  document.querySelectorAll(".error-container").forEach(container => {
-    container.innerText = "";
-  });
-}
+passwordInput.addEventListener("input", () => {
+  validatePassword();
+  passwordInput.setCustomValidity("");
+});
 
 // Toggle password visibility
-
-const togglePasswordIcon = document.querySelector(".password-group .hide");
 togglePasswordIcon.addEventListener("click", () => {
   if (passwordInput.type === "password") {
     passwordInput.type = "text";
