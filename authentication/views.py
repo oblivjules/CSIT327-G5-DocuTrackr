@@ -23,7 +23,7 @@ def index(request):
             if check_password(password, user.password_hash):
                 request.session['user_id'] = user.id
                 request.session['role'] = user.role
-                return redirect('dashboard')  # Adjust if you have a specific student dashboard
+                return redirect('student-dashboard')  # Adjust if you have a specific student dashboard
             else:
                 request.session['error'] = "Invalid login credentials. Please try again."
                 return redirect('index')
@@ -188,3 +188,8 @@ def forgotPassword(request):
         'message': message,
         'message_type': message_type
     })
+def create_request(request):
+    return render(request, 'request-form.html')
+
+def student_dashboard(request):
+    return render(request, 'student-dashboard.html')

@@ -14,14 +14,12 @@
   <div class="login-student">
     <img class="background" alt = "bg" src="{% static 'images/background.jpg' %}" />
 
-    <!-- Dark overlay -->
     <div class="rectangle"></div>
 
     <div class="login-card">
       <div class="card-bg"></div>
       <div class="rectangle-2"></div>
 
-      <!-- Left panel -->
       <div class="left-panel">
         <h2 class="text-wrapper-2">Welcome Back to DocuTrackr</h2>
         <p class="text-wrapper-9">
@@ -30,9 +28,8 @@
         </p>
       </div>
 
-      <!-- Right panel -->
       <div class="right-panel">
-        <!-- Header -->
+
         <div class="header-row">
           <h2 class="text-wrapper">Log In as Student</h2>
           <a href="{% url 'adminlogin' %}" class="admin-btn">
@@ -41,11 +38,9 @@
           </a>
         </div>
 
-        <!-- Login Form -->
         <form method="post" id="student-login-form">
           {% csrf_token %}
 
-          <!-- Email -->
           <div class="input-group email-group">
             <label class="input-label">Email Address</label>
             <div class="input-wrapper">
@@ -55,7 +50,6 @@
             <div class="error-container" id="email-error"></div>
           </div>
 
-          <!-- Password -->
           <div class="input-group password-group">
             <label class="input-label">Password</label>
             <div class="input-wrapper">
@@ -70,22 +64,19 @@
             </div>
           </div>
 
-          <!-- Login button -->
           <button type="submit" class="login-btn">Login</button>
         </form>
 
-        <!-- Success message -->
           {% if success %}
           <script>
             window.addEventListener("load", () => {
               setTimeout(() => {
                 alert("{{ success|escapejs }}");
-              }, 100); // delay ensures background loads
+              }, 100);
             });
           </script>
           {% endif %}
 
-          <!-- Error message -->
           {% if error %}
           <script>
             window.addEventListener("load", () => {
@@ -96,7 +87,6 @@
           </script>
           {% endif %}
 
-        <!-- Sign up -->
         <p class="dont-have-an-account">
           <span class="span">Don’t have an account? </span>
           <a href="{% url 'studentregister' %}" class="text-wrapper-8">Sign up</a>
