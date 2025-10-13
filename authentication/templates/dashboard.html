@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DocuTrackr Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="navbar">
+    <div class="navbar-left">
+      <img src="images/logo.png" alt="DocuTrackr Logo" class="logo" />
+      <nav>
+        <ul>
+          <li><a href="#">Home</a></li>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Create Request</a></li>
+          <li><a href="#">Track Documents</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="navbar-right">
+      <span class="user-name">Jukary Phamad</span>
+      <div class="notification-icon">
+        <img src="images/bell.png" alt="Notification Bell" class="bell-img" />
+      </div>
+      <div class="profile-icon">
+        <img src="images/profile.png" alt="User Profile" class="profile-img" />
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="dashboard">
+    <!-- Welcome Section -->
+    <section class="welcome-section">
+      <div>
+        <h1>Welcome, Students</h1>
+        <p>
+          Use the navigation above to create requests, track your document status,
+          or view help information.
+        </p>
+      </div>
+      <button class="request-btn">Request document</button>
+    </section>
+
+    <!-- Documents Requested -->
+    <section class="documents-section">
+      <h3>Documents requested</h3>
+      <div class="documents-list">
+        <div class="doc-row"><span>#001</span> <span>Form 137</span></div>
+        <div class="doc-row"><span>#002</span> <span>COE</span></div>
+        <div class="doc-row"><span>#003</span> <span>Transcript of Records</span></div>
+        <div class="doc-row"><span>#004</span> <span>CGMC</span></div>
+        <div class="doc-row"><span>#005</span> <span>CGMC</span></div>
+      </div>
+    </section>
+
+    <!-- Pickup Status -->
+    <aside class="status-section">
+      <h3>Pickup status</h3>
+      <div class="status-header">
+        <span>Status</span>
+        <span>Request ID</span>
+        <span>Document</span>
+      </div>
+      <div class="status-row">
+        <span class="status not-ready-text">Not Ready</span>
+        <span>#001</span>
+        <span>Form 137</span>
+      </div>
+      <div class="status-row">
+        <span class="status ready-text">Ready Up</span>
+        <span>#002</span>
+        <span>COE</span>
+      </div>
+    </aside>
+  </main>
+</body>
+</html>
