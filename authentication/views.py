@@ -188,8 +188,8 @@ def forgotPassword(request):
         'message': message,
         'message_type': message_type
     })
-def create_request(request):
-    return render(request, 'request-form.html')
 
-def student_dashboard(request):
-    return render(request, 'student-dashboard.html')
+# Logout
+def student_logout(request):
+    request.session.flush()
+    return redirect('index')

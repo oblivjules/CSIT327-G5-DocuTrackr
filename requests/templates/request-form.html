@@ -14,16 +14,17 @@
     <img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" />
     <nav>
       <ul>
-        <li><a href="#">Home</a></li>
+        <li><a href="{% url 'student-dashboard' %}">Home</a></li>
         <li><a href="#">About</a></li>
-        <li><a href="#">Create Request</a></li>
+        <li><a href="{% url 'create_request' %}">Create Request</a></li>
         <li><a href="#">Track Documents</a></li>
       </ul>
     </nav>
   </div>
 
   <div class="navbar-right">
-    <span class="user-name">Jukary Phamad</span>
+    <a href="{% url 'student_logout' %}">Logout</a>
+    <span class="user-name">{{ full_name }}</span>
     <div class="notification-icon">
       <img src="{% static 'images/bell.png' %}" alt="Notification Bell" class="bell-img" />
     </div>
