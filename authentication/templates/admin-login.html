@@ -13,15 +13,12 @@
   <div class="login-admin">
     <img class="background" src="{% static 'images/background.jpg' %}" alt="background" />
 
-
-    <!-- Dark overlay -->
     <div class="rectangle"></div>
 
     <div class="login-card">
       <div class="card-bg"></div>
       <div class="rectangle-2"></div>
 
-      <!-- Left panel -->
       <div class="left-panel">
         <h2 class="text-wrapper-2">Welcome Back to DocuTrackr</h2>
         <p class="text-wrapper-9">
@@ -30,9 +27,7 @@
         </p>
       </div>
 
-      <!-- Right panel -->
       <div class="right-panel">
-        <!-- Header -->
         <div class="header-row">
           <h2 class="text-wrapper">Log In as Admin</h2>
           <a href="{% url 'index' %}" class="admin-btn">
@@ -41,7 +36,6 @@
           </a>
         </div>
 
-        <!-- Login form -->
         <form method="post" id="admin-login-form">
           {% csrf_token %}
           <div class="input-group email-group">
@@ -67,7 +61,6 @@
             </div>
           </div>
 
-          <!-- Login button -->
           <button type="submit" class="login-btn">Login</button>
         </form>
 
@@ -76,7 +69,7 @@
             window.addEventListener("load", () => {
               setTimeout(() => {
                 alert("{{ success|escapejs }}");
-              }, 100); // delay ensures background loads
+              }, 100);
             });
           </script>
           {% endif %}
@@ -91,7 +84,6 @@
           </script>
         {% endif %}
 
-        <!-- Sign up -->
         <p class="dont-have-an-account">
           <span class="span">Don’t have an account? </span>
           <a href="{% url 'adminregister' %}" class="text-wrapper-8">Sign up</a>

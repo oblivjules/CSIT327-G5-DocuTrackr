@@ -1,4 +1,3 @@
-/* Base */
 html, body {
   margin: 0;
   padding: 0;
@@ -6,7 +5,6 @@ html, body {
   font-family: 'Roboto', Helvetica, Arial, sans-serif;
 }
 
-/* Login container */
 .login-admin {
   width: 100%;
   height: 100vh;
@@ -32,7 +30,6 @@ html, body {
   -webkit-backdrop-filter: blur(5px) brightness(80%);
 }
 
-/* Card */
 .login-admin .login-card {
   position: relative;
   width: 1077px;
@@ -56,14 +53,13 @@ html, body {
   border-radius: 0px 10px 10px 0px;
 }
 
-/* Left panel */
 .login-admin .left-panel {
   position: absolute;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* vertical centering */
-  align-items: flex-start; /* keep text left-aligned */
-  padding: 0 50px;         /* top/bottom padding removed for cleaner vertical centering */
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0 50px;
   height: 100%; 
   box-sizing: border-box;
 }
@@ -84,7 +80,6 @@ html, body {
   max-width: 441px;
 }
 
-/* Right panel */
 .login-admin .right-panel {
   position: absolute;
   top: 0;
@@ -97,7 +92,6 @@ html, body {
   box-sizing: border-box;
 }
 
-/* Header row */
 .login-admin .header-row {
   width: 100%;
   display: flex;
@@ -113,7 +107,6 @@ html, body {
   margin: 0;
 }
 
-/* Admin button */
 .login-admin .admin-btn {
   display: flex;
   align-items: center;
@@ -139,7 +132,6 @@ html, body {
   height: 18px;
 }
 
-/* Input groups */
 .login-admin .input-group {
   width: 100%;
   margin-bottom: 25px;
@@ -190,7 +182,6 @@ html, body {
   left: auto;
 }
 
-/* Password group */
 .password-group {
   display: flex;
   flex-direction: column;
@@ -206,16 +197,14 @@ html, body {
   line-height: 1.4;
 }
 
-/* Bottom row for forgot password */
 .password-bottom-row {
   display: flex;
   justify-content: space-between; 
   align-items: center;            
   margin-top: 10px;               
-  min-height: 24px; /* ensures consistent spacing */
+  min-height: 24px;
 }
 
-/* Login button */
 .login-admin .login-btn {
   width: 100%;
   padding: 12px 0; 
@@ -236,7 +225,6 @@ html, body {
   background: #e0b200;
 }
 
-/* Sign up / already have an account */
 .login-admin .dont-have-an-account {
   font-weight: 400;
   color: #ffffff;
@@ -250,7 +238,6 @@ html, body {
   color: #ffffff;
 }
 
-/* Focus style for inputs */
 .input-field:focus {
   border-bottom: 1.5px solid #f8c400;
   outline: none;                    

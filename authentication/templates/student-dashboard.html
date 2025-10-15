@@ -1,0 +1,171 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard - DocuTrackr</title>
+  <link rel="stylesheet" href="{% static 'css/student-dashboard.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="navbar">
+  <div class="navbar-left">
+    <img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" />
+    <nav>
+      <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Create Request</a></li>
+        <li><a href="#">Track Documents</a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <div class="navbar-right">
+    <span class="user-name">Jukary Phamad</span>
+    <div class="notification-icon">
+      <img src="{% static 'images/bell.png' %}" alt="Notification Bell" class="bell-img" />
+    </div>
+    <div class="profile-icon">
+      <img src="{% static 'images/profile.png' %}" alt="User Profile" class="profile-img" />
+    </div>
+  </div>
+</header>
+
+  <main class="dashboard-container">
+
+    <section class="stats-grid">
+      <div class="stat-card stat-card-primary">
+        <div class="stat-icon">
+          <img src="{% static 'images/document.png' %}" alt="Request Document">
+        </div>
+        <div class="stat-content">
+          <h3>Request Document</h3>
+          <p>Submit a new document request</p>
+        </div>
+      </div>
+
+      <div class="stat-card stat-card-yellow">
+        <div class="stat-icon">
+          <img src="{% static 'images/documents-requested.png' %}" alt="Documents Requested">
+        </div>
+        <div class="stat-content">
+          <h3>12</h3>
+          <p>Documents Requested</p>
+        </div>
+      </div>
+
+      <div class="stat-card stat-card-white">
+        <div class="stat-icon">
+          <img src="{% static 'images/pickup.png' %}" alt="Ready for Pickup">
+        </div>
+        <div class="stat-content">
+          <h3>3</h3>
+          <p>Ready for Pickup</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="table-section">
+      <div class="section-header">
+        <h2>Recent Document Requests</h2>
+        <button class="view-all-btn">View All</button>
+      </div>
+      
+      <div class="table-container">
+        <table class="requests-table">
+          <thead>
+            <tr>
+              <th>Request ID</th>
+              <th>Document Type</th>
+              <th>Date Requested</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="request-id">REQ-2024-001</td>
+              <td>Transcript of Records</td>
+              <td>Jan 15, 2024</td>
+              <td><span class="status-badge status-ready">Ready for Pickup</span></td>
+              <td><button class="action-btn">View Details</button></td>
+            </tr>
+            <tr>
+              <td class="request-id">REQ-2024-002</td>
+              <td>Certificate of Enrollment</td>
+              <td>Jan 14, 2024</td>
+              <td><span class="status-badge status-processing">Processing</span></td>
+              <td><button class="action-btn">View Details</button></td>
+            </tr>
+            <tr>
+              <td class="request-id">REQ-2024-003</td>
+              <td>Good Moral Certificate</td>
+              <td>Jan 12, 2024</td>
+              <td><span class="status-badge status-ready">Ready for Pickup</span></td>
+              <td><button class="action-btn">View Details</button></td>
+            </tr>
+            <tr>
+              <td class="request-id">REQ-2024-004</td>
+              <td>Diploma Copy</td>
+              <td>Jan 10, 2024</td>
+              <td><span class="status-badge status-pending">Pending</span></td>
+              <td><button class="action-btn">View Details</button></td>
+            </tr>
+            <tr>
+              <td class="request-id">REQ-2024-005</td>
+              <td>Certificate of Grades</td>
+              <td>Jan 8, 2024</td>
+              <td><span class="status-badge status-completed">Completed</span></td>
+              <td><button class="action-btn">View Details</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="activity-section">
+      <h2>Recent Activity</h2>
+      <div class="activity-list">
+        <div class="activity-item">
+          <div class="activity-dot"></div>
+          <div class="activity-content">
+            <p class="activity-title">Document Ready for Pickup</p>
+            <p class="activity-description">Your Transcript of Records (REQ-2024-001) is ready for pickup at the Registrar's Office.</p>
+            <p class="activity-time">2 hours ago</p>
+          </div>
+        </div>
+        
+        <div class="activity-item">
+          <div class="activity-dot"></div>
+          <div class="activity-content">
+            <p class="activity-title">Request Approved</p>
+            <p class="activity-description">Your Certificate of Enrollment request has been approved and is now being processed.</p>
+            <p class="activity-time">1 day ago</p>
+          </div>
+        </div>
+        
+        <div class="activity-item">
+          <div class="activity-dot"></div>
+          <div class="activity-content">
+            <p class="activity-title">New Request Submitted</p>
+            <p class="activity-description">You submitted a request for Good Moral Certificate.</p>
+            <p class="activity-time">3 days ago</p>
+          </div>
+        </div>
+        
+        <div class="activity-item">
+          <div class="activity-dot"></div>
+          <div class="activity-content">
+            <p class="activity-title">Document Picked Up</p>
+            <p class="activity-description">You picked up your Certificate of Grades from the Registrar's Office.</p>
+            <p class="activity-time">5 days ago</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
