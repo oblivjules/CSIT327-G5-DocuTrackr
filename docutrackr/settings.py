@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'authentication',
     'dashboard',
     'requests',
+    'documents',
+    'notifications',
 ]
 
 MIDDLEWARE = [
