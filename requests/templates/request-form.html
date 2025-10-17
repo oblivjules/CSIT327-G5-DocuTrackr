@@ -10,41 +10,40 @@
 </head>
 <body>
   <header class="navbar">
-  <div class="navbar-left">
-    <img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" />
-    <nav>
-      <ul>
-        <li><a href="{% url 'student-dashboard' %}">Home</a></li>
-        <li><a href="#">About</a></li>
-        <li><a href="{% url 'create_request' %}">Create Request</a></li>
-        <li><a href="#">Track Documents</a></li>
-      </ul>
-    </nav>
-  </div>
+    <div class="navbar-left">
+      <img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" />
+      <nav>
+        <ul>
+          <li><a href="{% url 'student-dashboard' %}">Home</a></li>
+          <li><a href="#">About</a></li>
+          <li><a href="{% url 'create_request' %}">Create Request</a></li>
+          <li><a href="#">Track Documents</a></li>
+        </ul>
+      </nav>
+    </div>
 
-  <div class="navbar-right">
-    <a href="{% url 'student_logout' %}">Logout</a>
-    <span class="user-name">{{ full_name }}</span>
-    <div class="notification-icon">
-      <img src="{% static 'images/bell.png' %}" alt="Notification Bell" class="bell-img" />
+    <div class="navbar-right">
+      <span class="user-name">{{ full_name }}</span>
+
+      <div class="notification-icon">
+        <img src="{% static 'images/bell.png' %}" alt="Notification Bell" />
+      </div>
+
+      <div class="profile-icon">
+        <img src="{% static 'images/profile.png' %}" alt="User Profile" />
+      </div>
+
+      <a href="{% url 'student_logout' %}" class="logout-icon">
+        <img src="{% static 'images/logout.png' %}" alt="Logout" />
+      </a>
     </div>
-    <div class="profile-icon">
-      <img src="{% static 'images/profile.png' %}" alt="User Profile" class="profile-img" />
-    </div>
-  </div>
-</header>
+  </header>
 
   <div class="container">
     <div class="request-form">
       <div class="form-header">
         <div class="form-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="16" y1="13" x2="8" y2="13"></line>
-            <line x1="16" y1="17" x2="8" y2="17"></line>
-            <polyline points="10 9 9 9 8 9"></polyline>
-          </svg>
+          <img src="{% static 'images/folder.png' %}" alt="Request Icon" class="header-icon" />
         </div>
         <div>
           <h2>Request a New Document</h2>
@@ -53,94 +52,84 @@
       </div>
 
       <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
         <div class="form-grid">
           <div class="form-group">
-            <label for="studentId">
-              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
+            <label for="studentId" class="required">
+              <img src="{% static 'images/user.png' %}" alt="Student ID Icon" class="input-icon" />
               Student ID
             </label>
-            <input type="text" id="studentId" name="student_id" placeholder="Enter your student ID" required>
+            <input type="text" id="studentId" name="student_id" value="{{ student_id }}" readonly required>
           </div>
 
           <div class="form-group">
-            <label for="studentName">
-              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
+            <label for="studentName" class="required">
+              <img src="{% static 'images/id-card.png' %}" alt="Student Name Icon" class="input-icon" />
               Student Name
             </label>
-            <input type="text" id="studentName" name="student_name" placeholder="Enter your full name" required>
+            <input type="text" id="studentName" name="student_name" value="{{ full_name }}" readonly required>
           </div>
 
           <div class="form-group">
-            <label for="docType">
-              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-              </svg>
+            <label for="docType" class="required">
+              <img src="{% static 'images/doc.png' %}" alt="Document Type Icon" class="input-icon" />
               Select Document Type
             </label>
             <select id="docType" name="document_type" required>
               <option value="">-- Select Document Type --</option>
-              <option value="form137">Form 137</option>
-              <option value="coe">Certificate of Enrollment</option>
-              <option value="tor">Transcript of Records</option>
-              <option value="cgmc">CGMC</option>
+              <option value="report_card" {% if document_type == 'report_card' %}selected{% endif %}>Report Card / Form 138</option>
+              <option value="tor" {% if document_type == 'tor' %}selected{% endif %}>Transcript of Records (TOR)</option>
+              <option value="good_moral" {% if document_type == 'good_moral' %}selected{% endif %}>Certificate of Good Moral Character</option>
+              <option value="coe" {% if document_type == 'coe' %}selected{% endif %}>Certificate of Enrollment (COE)</option>
+              <option value="diploma" {% if document_type == 'diploma' %}selected{% endif %}>Diploma / Graduation Certificate</option>
+              <option value="transfer_credential" {% if document_type == 'transfer_credential' %}selected{% endif %}>Transfer Credential / Honorable Dismissal</option>
+              <option value="birth_certificate" {% if document_type == 'birth_certificate' %}selected{% endif %}>PSA Birth Certificate</option>
+              <option value="student_clearance" {% if document_type == 'student_clearance' %}selected{% endif %}>Student Clearance / Certification</option>
             </select>
           </div>
 
           <div class="form-group">
             <label for="dateNeeded">
-              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
+              <img src="{% static 'images/datepicker.png' %}" alt="Date Picker Icon" class="input-icon" />
               Date Needed By
             </label>
-            <input type="date" id="dateNeeded" name="date_needed" required>
+            <input type="date" id="dateNeeded" name="date_needed" value="{{ date_needed|default:'' }}" required>
           </div>
 
           <div class="form-group">
-            <label for="copies">
-              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </svg>
+            <label for="copies" class="required">
+              <img src="{% static 'images/copy.png' %}" alt="Copies Icon" class="input-icon" />
               Number of Copies
             </label>
-            <input type="number" id="copies" name="copies" min="1" placeholder="1" required>
+            <input type="number" id="copies" name="copies" min="1" value="{{ copies|default:'' }}" placeholder="1" required>
           </div>
 
           <div class="file-upload">
             <div class="upload-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="17 8 12 3 7 8"></polyline>
-                <line x1="12" y1="3" x2="12" y2="15"></line>
-              </svg>
+                <img src="{% static 'images/upload.png' %}" alt="Upload Icon" />
             </div>
             <p class="upload-title">Proof of Payment Upload</p>
             <p class="upload-subtitle">Upload your payment receipt here</p>
-            <input type="file" id="fileInput" name="proof_of_payment" accept=".png,.jpg,.jpeg,.svg,.webp" required>
+            <input type="file" id="fileInput" name="proof_of_payment" accept=".png,.jpg,.jpeg,.svg,.webp">
             <label for="fileInput" class="file-label">Choose File</label>
-            <p class="upload-info">Supported formats: PNG, JPG, SVG, WEBP</p>
-          </div>
+            <p class="upload-info">Supported formats: PNG, JPG, JPEG, SVG, WEBP</p>
+            <p class="form-error" style="color:red; font-weight:bold;"></p>
+        </div>
+
+        {% if success %}
+        <script>
+          window.addEventListener("load", () => {
+            setTimeout(() => {
+              alert("{{ success|escapejs }}");
+            }, 100);
+          });
+        </script>
+        {% endif %}
 
           <div class="submit-btn">
             <button type="submit">
               Submit Request
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
+              <img src="{% static 'images/submit.png' %}" alt="Submit Icon" class="submit-icon" />
             </button>
           </div>
         </div>
@@ -149,10 +138,7 @@
 
     <div class="history">
       <div class="history-header">
-        <svg class="history-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <polyline points="12 6 12 12 16 14"></polyline>
-        </svg>
+        <img src="{% static 'images/history.png' %}" alt="History Icon" class="history-icon" />
         <h3>Request History</h3>
       </div>
       <div class="table-wrapper">
@@ -196,4 +182,5 @@
     </div>
   </div>
 </body>
+<script src="{% static 'js/request-form.js' %}"></script>
 </html>

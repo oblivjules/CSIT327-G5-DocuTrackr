@@ -24,15 +24,20 @@
   </div>
 
   <div class="navbar-right">
-    <a href="{% url 'student_logout' %}">Logout</a>
-    <span class="user-name">{{ full_name }}</span>
-    <div class="notification-icon">
-      <img src="{% static 'images/bell.png' %}" alt="Notification Bell" class="bell-img" />
+      <span class="user-name">{{ full_name }}</span>
+
+      <div class="notification-icon">
+        <img src="{% static 'images/bell.png' %}" alt="Notification Bell" />
+      </div>
+
+      <div class="profile-icon">
+        <img src="{% static 'images/profile.png' %}" alt="User Profile" />
+      </div>
+
+      <a href="{% url 'student_logout' %}" class="logout-icon">
+        <img src="{% static 'images/logout.png' %}" alt="Logout" />
+      </a>
     </div>
-    <div class="profile-icon">
-      <img src="{% static 'images/profile.png' %}" alt="User Profile" class="profile-img" />
-    </div>
-  </div>
 </header>
 
   <main class="dashboard-container">

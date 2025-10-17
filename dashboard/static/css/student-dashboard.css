@@ -6,11 +6,11 @@
 
 body {
   font-family: 'Roboto', Helvetica, Arial, sans-serif;
-  background-color: #f8f9fa;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
   color: #1a1a1a;
   line-height: 1.6;
+  min-height: 100vh;
 }
-
 
 .navbar {
   width: 100%;
@@ -86,32 +86,8 @@ body {
   font-weight: 500;
 }
 
-.notification-icon {
-  background-color: white;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.notification-icon:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.notification-icon .bell-img {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-}
-
+.notification-icon,
 .profile-icon {
-  background-color: #1a1a1a;
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -123,16 +99,68 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.notification-icon {
+  background-color: #fff;
+}
+
+.notification-icon:hover,
 .profile-icon:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.profile-icon .profile-img {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
+.notification-icon img,
+.profile-icon img {
+  width: 24px;
+  height: 24px;
   object-fit: cover;
+  border-radius: 50%;
+}
+
+.profile-icon {
+  background-color: #1a1a1a;
+}
+
+.logout-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ffffff; /* same as profile */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.logout-icon:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.logout-icon form {
+  width: 100%;
+  height: 100%;
+}
+
+.logout-icon button {
+  border: none;
+  background: transparent;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.logout-icon img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain; /* fit nicely without cropping */
+  border-radius: 0; /* keep icon shape intact */
 }
 
 .dashboard-container {

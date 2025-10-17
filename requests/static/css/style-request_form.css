@@ -5,7 +5,6 @@
 }
 
 body {
-  margin: 0;
   font-family: 'Roboto', Helvetica, Arial, sans-serif;
   background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
   color: #1a1a1a;
@@ -87,32 +86,8 @@ body {
   font-weight: 500;
 }
 
-.notification-icon {
-  background-color: white;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.notification-icon:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.notification-icon .bell-img {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-}
-
+.notification-icon,
 .profile-icon {
-  background-color: #1a1a1a;
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -124,16 +99,68 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.notification-icon {
+  background-color: #fff;
+}
+
+.notification-icon:hover,
 .profile-icon:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.profile-icon .profile-img {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
+.notification-icon img,
+.profile-icon img {
+  width: 24px;
+  height: 24px;
   object-fit: cover;
+  border-radius: 50%;
+}
+
+.profile-icon {
+  background-color: #1a1a1a;
+}
+
+.logout-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ffffff; /* same as profile */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.logout-icon:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.logout-icon form {
+  width: 100%;
+  height: 100%;
+}
+
+.logout-icon button {
+  border: none;
+  background: transparent;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.logout-icon img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain; /* fit nicely without cropping */
+  border-radius: 0; /* keep icon shape intact */
 }
 
 .container {
@@ -152,7 +179,6 @@ body {
   min-width: 400px;
   max-width: 1300px;
   background: linear-gradient(135deg, #f8c400 0%, #ffd740 100%);
-  padding: 0;
   border-radius: 20px;
   box-shadow: 0 10px 40px rgba(248, 196, 0, 0.3);
   overflow: hidden;
@@ -189,10 +215,9 @@ body {
   box-shadow: 0 4px 16px rgba(137, 57, 58, 0.3);
 }
 
-.form-icon svg {
+.form-icon img {
   width: 32px;
   height: 32px;
-  color: #f8c400;
 }
 
 .form-header h2 {
@@ -230,14 +255,13 @@ label {
   gap: 8px;
   font-weight: 600;
   margin-bottom: 10px;
-  color: #2d2d2d;
+  color: #444;
   font-size: 14px;
 }
 
-.input-icon {
+label img.input-icon {
   width: 18px;
   height: 18px;
-  color: #89393a;
 }
 
 input,
@@ -265,6 +289,12 @@ input:hover,
 select:hover {
   border-color: #89393a;
   background-color: #fff;
+}
+
+input[readonly] {
+  background-color: #f2f2f2;
+  color: #555;
+  cursor: not-allowed;
 }
 
 .file-upload {
@@ -296,10 +326,10 @@ select:hover {
   justify-content: center;
 }
 
-.upload-icon svg {
+.upload-icon img {
   width: 28px;
   height: 28px;
-  color: #f8c400;
+  filter: brightness(0) invert(1);
 }
 
 .upload-title {
@@ -344,6 +374,12 @@ select:hover {
   margin: 12px 0 0 0;
 }
 
+label.required::after {
+  content: " *";
+  color: red;
+  font-weight: bold;
+}
+
 .submit-btn {
   grid-column: span 2;
   text-align: right;
@@ -356,7 +392,7 @@ select:hover {
   padding: 16px 40px;
   border: none;
   border-radius: 12px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -366,9 +402,10 @@ select:hover {
   gap: 10px;
 }
 
-.submit-btn button svg {
+.submit-btn button img.submit-icon {
   width: 20px;
   height: 20px;
+  filter: brightness(0) invert(1);
   transition: transform 0.3s ease;
 }
 
@@ -377,12 +414,8 @@ select:hover {
   box-shadow: 0 8px 28px rgba(137, 57, 58, 0.4);
 }
 
-.submit-btn button:hover svg {
+.submit-btn button:hover img.submit-icon {
   transform: translateX(4px);
-}
-
-.submit-btn button:active {
-  transform: translateY(0);
 }
 
 .history {
@@ -404,10 +437,9 @@ select:hover {
   background: linear-gradient(135deg, #89393a 0%, #6d2d2e 100%);
 }
 
-.history-icon {
+.history-header img.history-icon {
   width: 28px;
   height: 28px;
-  color: #f8c400;
 }
 
 .history-header h3 {
@@ -443,7 +475,7 @@ select:hover {
 .history td {
   padding: 16px 12px;
   border-bottom: 1px solid #f0f0f0;
-  font-size: 14px;
+  font-size: 13px;
   color: #555;
   transition: all 0.2s ease;
 }
@@ -518,6 +550,12 @@ select:hover {
     gap: 20px;
   }
 
+  .form-error {
+  color: red;
+  font-size: 13px;
+  margin-top: 5px;
+  }
+
   .request-form {
     width: 100%;
   }
@@ -531,7 +569,7 @@ select:hover {
   }
 
   .navbar-left ul {
-    gap: 4px;
+    gap: 10px;
   }
 
   .navbar-left a {
