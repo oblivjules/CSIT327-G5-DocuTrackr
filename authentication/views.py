@@ -52,7 +52,7 @@ def adminLogin(request):
             if check_password(password, user.password_hash):
                 request.session['user_id'] = user.id
                 request.session['role'] = user.role
-                return redirect('dashboard')
+                return redirect('student-dashboard')  # Adjust if you have a specific admin dashboard
             else:
                 request.session['error'] = "Invalid login credentials. Please try again."
                 return redirect('adminlogin')

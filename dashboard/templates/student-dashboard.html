@@ -38,15 +38,18 @@
   <main class="dashboard-container">
 
     <section class="stats-grid">
-      <div class="stat-card stat-card-primary">
-        <div class="stat-icon">
-          <img src="{% static 'images/document.png' %}" alt="Request Document">
+      <a href="{% url 'create_request' %}" style="text-decoration: none; color: inherit;">
+        <div class="stat-card stat-card-primary">
+          <div class="stat-icon">
+            <img src="{% static 'images/document.png' %}" alt="Request Document">
+          </div>
+          <div class="stat-content">
+            <h3>Request Document</h3>
+            <p>Submit a new document request</p>
+          </div>
         </div>
-        <div class="stat-content">
-          <h3>Request Document</h3>
-          <p>Submit a new document request</p>
-        </div>
-      </div>
+      </a>
+
 
       <div class="stat-card stat-card-yellow">
         <div class="stat-icon">

@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
       { regex: /[A-Z]/, message: "at least one uppercase letter" },
       { regex: /[a-z]/, message: "at least one lowercase letter" },
       { regex: /\d/, message: "at least one number" },
-      { regex: /[!@#$%^&*(),.?":{}|<>]/, message: "at least one special character" }
+      { regex: /[!@#$%^&*()_,.?":{}|<>]/, message: "at least one special character" }
     ];
 
     const failed = rules.filter(r => !r.regex.test(value)).map(r => r.message);
