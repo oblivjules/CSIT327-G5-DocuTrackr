@@ -52,7 +52,7 @@ def adminLogin(request):
             if check_password(password, user.password_hash):
                 request.session['user_id'] = user.id
                 request.session['role'] = user.role
-                return redirect('student-dashboard')  # Adjust if you have a specific admin dashboard
+                return redirect('admin-dashboard')  # Adjust if you have a specific admin dashboard
             else:
                 request.session['error'] = "Invalid login credentials. Please try again."
                 return redirect('adminlogin')
@@ -193,3 +193,10 @@ def forgotPassword(request):
 def student_logout(request):
     request.session.flush()
     return redirect('index')
+
+def adminDashboard(request):
+    if request.session.get('role') != 'registrar':
+        return redirect('adminlogin')
+    
+    full_name = User.objects.get(id=request.session['user_id']).name
+    return render(request, 'admin-dashboard.html', {'full_name': full_name})
