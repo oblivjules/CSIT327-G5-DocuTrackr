@@ -76,16 +76,15 @@
               Select Document Type
             </label>
             <select id="docType" name="document_type" required>
-              <option value="">-- Select Document Type --</option>
-              <option value="report_card" {% if document_type == 'report_card' %}selected{% endif %}>Report Card / Form 138</option>
-              <option value="tor" {% if document_type == 'tor' %}selected{% endif %}>Transcript of Records (TOR)</option>
-              <option value="good_moral" {% if document_type == 'good_moral' %}selected{% endif %}>Certificate of Good Moral Character</option>
-              <option value="coe" {% if document_type == 'coe' %}selected{% endif %}>Certificate of Enrollment (COE)</option>
-              <option value="diploma" {% if document_type == 'diploma' %}selected{% endif %}>Diploma / Graduation Certificate</option>
-              <option value="transfer_credential" {% if document_type == 'transfer_credential' %}selected{% endif %}>Transfer Credential / Honorable Dismissal</option>
-              <option value="birth_certificate" {% if document_type == 'birth_certificate' %}selected{% endif %}>PSA Birth Certificate</option>
-              <option value="student_clearance" {% if document_type == 'student_clearance' %}selected{% endif %}>Student Clearance / Certification</option>
-            </select>
+                <option value="">-- Select Document Type --</option>
+                {% for doc in documents %}
+                  <option value="{{ doc.name }}" {% if document_type == doc.name %}selected{% endif %}>
+                    {{ doc.name }}
+                  </option>
+                  {%empty %}
+                  <option disabled>No documents available</option>
+              {% endfor %}
+              </select>
           </div>
 
           <div class="form-group">
@@ -115,6 +114,17 @@
             <p class="upload-info">Supported formats: PNG, JPG, JPEG, SVG, WEBP</p>
             <p class="form-error" style="color:red; font-weight:bold;"></p>
         </div>
+
+        {% if payment %}
+        <div class="existing-proof">
+          {% if payment.proof_of_payment %}
+            <p>Uploaded Proof:</p>
+            <a href="{{ payment.proof_of_payment.url }}" target="_blank">View Proof of Payment</a>
+          {% else %}
+            <p>No proof uploaded yet.</p>
+          {% endif %}
+        </div>
+      {% endif %}
 
         {% if success %}
         <script>

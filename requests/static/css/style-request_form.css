@@ -591,3 +591,34 @@ label.required::after {
     justify-content: center;
   }
 }
+
+.existing-proof {
+  margin-top: 1.5rem;
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.existing-proof .proof-label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.existing-proof .proof-link {
+  display: inline-block;
+  background-color: #2b77e7;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.existing-proof .proof-link:hover {
+  background-color: #1a5fc3;
+}
+

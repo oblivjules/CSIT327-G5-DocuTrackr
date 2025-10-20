@@ -32,8 +32,9 @@ class Payment(models.Model):
 
     payment_id = models.AutoField(primary_key=True)
     request = models.OneToOneField(Request, on_delete=models.CASCADE, related_name='payment')
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    proof_of_payment = models.CharField(max_length=255, blank=True, null=True)
+
+    proof_of_payment = models.FileField(upload_to='payments/', blank=True, null=True)
+    
     verified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='verified_payments')
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
     remarks = models.TextField(blank=True, null=True)
