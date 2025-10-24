@@ -119,7 +119,7 @@ def adminRegister(request):
     if request.method == 'POST':
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
-        admin_id = request.POST.get('admin_id')
+        registrar_id = request.POST.get('registrar_id')
         email = request.POST.get('email')
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
@@ -134,9 +134,9 @@ def adminRegister(request):
         if User.objects.filter(email=email).exists():
             errors.append(f"Email '{email}' is already registered.")
 
-        # Check admin ID uniqueness
-        if User.objects.filter(admin_id=admin_id).exists():
-            errors.append(f"Admin ID '{admin_id}' is already in use.")
+        # Check registrar ID uniqueness
+        if User.objects.filter(registrar_id=registrar_id).exists():
+            errors.append(f"Registrar ID '{registrar_id}' is already in use.")
 
         # If there are any errors, redirect with alert
         if errors:
@@ -149,7 +149,7 @@ def adminRegister(request):
             name=full_name,
             email=email,
             role='registrar',
-            admin_id=admin_id,
+            registrar_id=registrar_id,
             password_hash=make_password(password),
         )
         

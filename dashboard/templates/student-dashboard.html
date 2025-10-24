@@ -1,5 +1,4 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,11 +11,11 @@
 <body>
   <header class="navbar">
   <div class="navbar-left">
-    <img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" />
+    <a href="{{ home_url }}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" /></a>
     <nav>
       <ul>
-        <li><a href="{% url 'student-dashboard' %}">Home</a></li>
-        <li><a href="#">About</a></li>
+        <li><a href="{{ home_url }}">Home</a></li>
+        <li><a href="{% url 'about' %}">About</a></li>
         <li><a href="{% url 'create_request' %}">Create Request</a></li>
         <li><a href="#">Track Documents</a></li>
       </ul>
@@ -24,7 +23,11 @@
   </div>
 
   <div class="navbar-right">
-      <span class="user-name">{{ full_name }}</span>
+      {% if full_name %}
+        <a href="{{ home_url }}" class="user-name">{{ full_name }}</a>
+      {% else %}
+        <span class="user-name"></span>
+      {% endif %}
 
       <div class="notification-icon">
         <img src="{% static 'images/bell.png' %}" alt="Notification Bell" />
@@ -55,26 +58,25 @@
         </div>
       </a>
 
+    <div class="stat-card stat-card-yellow">
+    <div class="stat-icon">
+      <img src="{% static 'images/documents-requested.png' %}" alt="Documents Requested">
+    </div>
+    <div class="stat-content">
+      <h3>{{ total_requested }}</h3>
+      <p>Documents Requested</p>
+    </div>
+  </div>
 
-      <div class="stat-card stat-card-yellow">
-        <div class="stat-icon">
-          <img src="{% static 'images/documents-requested.png' %}" alt="Documents Requested">
-        </div>
-        <div class="stat-content">
-          <h3>12</h3>
-          <p>Documents Requested</p>
-        </div>
-      </div>
-
-      <div class="stat-card stat-card-white">
-        <div class="stat-icon">
-          <img src="{% static 'images/pickup.png' %}" alt="Ready for Pickup">
-        </div>
-        <div class="stat-content">
-          <h3>3</h3>
-          <p>Ready for Pickup</p>
-        </div>
-      </div>
+  <div class="stat-card stat-card-white">
+    <div class="stat-icon">
+      <img src="{% static 'images/pickup.png' %}" alt="Ready for Pickup">
+    </div>
+    <div class="stat-content">
+      <h3>{{ ready_for_pickup }}</h3>
+      <p>Ready for Pickup</p>
+    </div>
+  </div>
     </section>
 
     <section class="table-section">
@@ -95,41 +97,27 @@
             </tr>
           </thead>
           <tbody>
+            {% for req in recent_requests %}
             <tr>
-              <td class="request-id">REQ-2024-001</td>
-              <td>Transcript of Records</td>
-              <td>Jan 15, 2024</td>
-              <td><span class="status-badge status-ready">Ready for Pickup</span></td>
+              <td class="request-id">REQ-{{ req.request_id|stringformat:"05d" }}</td>
+              <td>{{ req.document.name }}</td>
+              <td>{{ req.created_at|date:"M d, Y" }}</td>
+              <td>
+                <span class="status-badge
+                  {% if req.status == 'approved' %}status-ready
+                  {% elif req.status == 'processing' %}status-processing
+                  {% elif req.status == 'pending' %}status-pending
+                  {% elif req.status == 'completed' %}status-completed
+                  {% elif req.status == 'rejected' %}status-rejected
+                  {% endif %}">
+                  {{ req.get_status_display }}
+                </span>
+              </td>
               <td><button class="action-btn">View Details</button></td>
             </tr>
-            <tr>
-              <td class="request-id">REQ-2024-002</td>
-              <td>Certificate of Enrollment</td>
-              <td>Jan 14, 2024</td>
-              <td><span class="status-badge status-processing">Processing</span></td>
-              <td><button class="action-btn">View Details</button></td>
-            </tr>
-            <tr>
-              <td class="request-id">REQ-2024-003</td>
-              <td>Good Moral Certificate</td>
-              <td>Jan 12, 2024</td>
-              <td><span class="status-badge status-ready">Ready for Pickup</span></td>
-              <td><button class="action-btn">View Details</button></td>
-            </tr>
-            <tr>
-              <td class="request-id">REQ-2024-004</td>
-              <td>Diploma Copy</td>
-              <td>Jan 10, 2024</td>
-              <td><span class="status-badge status-pending">Pending</span></td>
-              <td><button class="action-btn">View Details</button></td>
-            </tr>
-            <tr>
-              <td class="request-id">REQ-2024-005</td>
-              <td>Certificate of Grades</td>
-              <td>Jan 8, 2024</td>
-              <td><span class="status-badge status-completed">Completed</span></td>
-              <td><button class="action-btn">View Details</button></td>
-            </tr>
+            {% empty %}
+            <tr><td colspan="5">No requests found.</td></tr>
+            {% endfor %}
           </tbody>
         </table>
       </div>
@@ -137,42 +125,22 @@
 
     <section class="activity-section">
       <h2>Recent Activity</h2>
-      <div class="activity-list">
+        <div class="activity-list">
+        {% for log in recent_activities %}
         <div class="activity-item">
           <div class="activity-dot"></div>
           <div class="activity-content">
-            <p class="activity-title">Document Ready for Pickup</p>
-            <p class="activity-description">Your Transcript of Records (REQ-2024-001) is ready for pickup at the Registrar's Office.</p>
-            <p class="activity-time">2 hours ago</p>
+            <p class="activity-title">Status Updated: {{ log.new_status|capfirst }}</p>
+            <p class="activity-description">
+              Your request for <strong>{{ log.request.document.name }}</strong> changed from 
+              <em>{{ log.old_status }}</em> → <em>{{ log.new_status }}</em>.
+            </p>
+            <p class="activity-time">{{ log.changed_at|timesince }} ago</p>
           </div>
         </div>
-        
-        <div class="activity-item">
-          <div class="activity-dot"></div>
-          <div class="activity-content">
-            <p class="activity-title">Request Approved</p>
-            <p class="activity-description">Your Certificate of Enrollment request has been approved and is now being processed.</p>
-            <p class="activity-time">1 day ago</p>
-          </div>
-        </div>
-        
-        <div class="activity-item">
-          <div class="activity-dot"></div>
-          <div class="activity-content">
-            <p class="activity-title">New Request Submitted</p>
-            <p class="activity-description">You submitted a request for Good Moral Certificate.</p>
-            <p class="activity-time">3 days ago</p>
-          </div>
-        </div>
-        
-        <div class="activity-item">
-          <div class="activity-dot"></div>
-          <div class="activity-content">
-            <p class="activity-title">Document Picked Up</p>
-            <p class="activity-description">You picked up your Certificate of Grades from the Registrar's Office.</p>
-            <p class="activity-time">5 days ago</p>
-          </div>
-        </div>
+        {% empty %}
+        <p>No recent activity.</p>
+        {% endfor %}
       </div>
     </section>
   </main>

@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const fields = {
     firstname: document.getElementById("firstname"),
     lastname: document.getElementById("lastname"),
-    adminId: document.getElementById("adminId"),
+  registrarId: document.getElementById("registrarId"),
     email: document.getElementById("email"),
     password: document.getElementById("password"),
     confirmPassword: document.getElementById("confirm_password")
@@ -39,14 +39,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function validateAdminId() {
-    const value = fields.adminId.value.trim();
+  function validateRegistrarId() {
+    const value = fields.registrarId.value.trim();
     if (value === "") {
-      fields.adminId.setCustomValidity("Admin ID is required");
+      fields.registrarId.setCustomValidity("Registrar ID is required");
     } else if (!/^\d{4}$/.test(value)) { // exactly 4 digits
-      fields.adminId.setCustomValidity("Admin ID must be exactly 4 digits");
+      fields.registrarId.setCustomValidity("Registrar ID must be exactly 4 digits");
     } else {
-      fields.adminId.setCustomValidity("");
+      fields.registrarId.setCustomValidity("");
     }
   }
 
@@ -97,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Submit
   form.addEventListener("submit", (e) => {
     validateNames();
-    validateAdminId();
+  validateRegistrarId();
     validateEmail();
     validatePassword();
     validateConfirmPassword();

@@ -9,21 +9,26 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+  <!-- NAVBAR -->
   <header class="navbar">
     <div class="navbar-left">
-      <img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" />
+      <a href="{{ home_url }}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" /></a>
       <nav>
         <ul>
-          <li><a href="{% url 'student-dashboard' %}">Home</a></li>
-          <li><a href="#">About</a></li>
-          <li><a href="{% url 'create_request' %}">Create Request</a></li>
+          <li><a href="{{ home_url }}">Home</a></li>
+          <li><a href="{% url 'about' %}">About</a></li>
+          <li><a href="{% url 'create_request' %}" class="active">Create Request</a></li>
           <li><a href="#">Track Documents</a></li>
         </ul>
       </nav>
     </div>
 
     <div class="navbar-right">
-      <span class="user-name">{{ full_name }}</span>
+      {% if full_name %}
+        <a href="{{ home_url }}" class="user-name">{{ full_name }}</a>
+      {% else %}
+        <span class="user-name"></span>
+      {% endif %}
 
       <div class="notification-icon">
         <img src="{% static 'images/bell.png' %}" alt="Notification Bell" />
@@ -39,7 +44,9 @@
     </div>
   </header>
 
+  <!-- MAIN CONTAINER -->
   <div class="container">
+    <!-- REQUEST FORM -->
     <div class="request-form">
       <div class="form-header">
         <div class="form-icon">
@@ -54,6 +61,7 @@
       <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="form-grid">
+          <!-- STUDENT ID -->
           <div class="form-group">
             <label for="studentId" class="required">
               <img src="{% static 'images/user.png' %}" alt="Student ID Icon" class="input-icon" />
@@ -62,6 +70,7 @@
             <input type="text" id="studentId" name="student_id" value="{{ student_id }}" readonly required>
           </div>
 
+          <!-- STUDENT NAME -->
           <div class="form-group">
             <label for="studentName" class="required">
               <img src="{% static 'images/id-card.png' %}" alt="Student Name Icon" class="input-icon" />
@@ -70,6 +79,7 @@
             <input type="text" id="studentName" name="student_name" value="{{ full_name }}" readonly required>
           </div>
 
+          <!-- DOCUMENT TYPE -->
           <div class="form-group">
             <label for="docType" class="required">
               <img src="{% static 'images/doc.png' %}" alt="Document Type Icon" class="input-icon" />
@@ -77,17 +87,17 @@
             </label>
             <select id="docType" name="document_type" required>
               <option value="">-- Select Document Type --</option>
-              <option value="report_card" {% if document_type == 'report_card' %}selected{% endif %}>Report Card / Form 138</option>
-              <option value="tor" {% if document_type == 'tor' %}selected{% endif %}>Transcript of Records (TOR)</option>
-              <option value="good_moral" {% if document_type == 'good_moral' %}selected{% endif %}>Certificate of Good Moral Character</option>
-              <option value="coe" {% if document_type == 'coe' %}selected{% endif %}>Certificate of Enrollment (COE)</option>
-              <option value="diploma" {% if document_type == 'diploma' %}selected{% endif %}>Diploma / Graduation Certificate</option>
-              <option value="transfer_credential" {% if document_type == 'transfer_credential' %}selected{% endif %}>Transfer Credential / Honorable Dismissal</option>
-              <option value="birth_certificate" {% if document_type == 'birth_certificate' %}selected{% endif %}>PSA Birth Certificate</option>
-              <option value="student_clearance" {% if document_type == 'student_clearance' %}selected{% endif %}>Student Clearance / Certification</option>
+              {% for doc in documents %}
+                <option value="{{ doc.name }}" {% if document_type == doc.name %}selected{% endif %}>
+                  {{ doc.name }}
+                </option>
+              {% empty %}
+                <option disabled>No documents available</option>
+              {% endfor %}
             </select>
           </div>
 
+          <!-- DATE NEEDED -->
           <div class="form-group">
             <label for="dateNeeded">
               <img src="{% static 'images/datepicker.png' %}" alt="Date Picker Icon" class="input-icon" />
@@ -96,6 +106,7 @@
             <input type="date" id="dateNeeded" name="date_needed" value="{{ date_needed|default:'' }}" required>
           </div>
 
+          <!-- NUMBER OF COPIES -->
           <div class="form-group">
             <label for="copies" class="required">
               <img src="{% static 'images/copy.png' %}" alt="Copies Icon" class="input-icon" />
@@ -104,28 +115,29 @@
             <input type="number" id="copies" name="copies" min="1" value="{{ copies|default:'' }}" placeholder="1" required>
           </div>
 
+          <!-- PROOF UPLOAD -->
           <div class="file-upload">
             <div class="upload-icon">
-                <img src="{% static 'images/upload.png' %}" alt="Upload Icon" />
+              <img src="{% static 'images/upload.png' %}" alt="Upload Icon" />
             </div>
             <p class="upload-title">Proof of Payment Upload</p>
             <p class="upload-subtitle">Upload your payment receipt here</p>
             <input type="file" id="fileInput" name="proof_of_payment" accept=".png,.jpg,.jpeg,.svg,.webp">
             <label for="fileInput" class="file-label">Choose File</label>
             <p class="upload-info">Supported formats: PNG, JPG, JPEG, SVG, WEBP</p>
-            <p class="form-error" style="color:red; font-weight:bold;"></p>
-        </div>
+          </div>
 
-        {% if success %}
-        <script>
-          window.addEventListener("load", () => {
-            setTimeout(() => {
-              alert("{{ success|escapejs }}");
-            }, 100);
-          });
-        </script>
-        {% endif %}
+          {% if success %}
+            <script>
+              window.addEventListener("load", () => {
+                setTimeout(() => {
+                  alert("{{ success|escapejs }}");
+                }, 100);
+              });
+            </script>
+          {% endif %}
 
+          <!-- SUBMIT BUTTON -->
           <div class="submit-btn">
             <button type="submit">
               Submit Request
@@ -136,51 +148,234 @@
       </form>
     </div>
 
+    <!-- REQUEST HISTORY -->
     <div class="history">
       <div class="history-header">
         <img src="{% static 'images/history.png' %}" alt="History Icon" class="history-icon" />
         <h3>Request History</h3>
       </div>
+
       <div class="table-wrapper">
         <table>
           <thead>
             <tr>
               <th>Request ID</th>
               <th>Document</th>
+              <th>Copies</th>
+              <th>Date Needed</th>
               <th>Status</th>
+              <th>Payment</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td><span class="request-id">#001</span></td>
-              <td>Form 137</td>
-              <td><span class="status-badge status-completed">Completed</span></td>
-            </tr>
-            <tr>
-              <td><span class="request-id">#002</span></td>
-              <td>COE</td>
-              <td><span class="status-badge status-processing">Processing</span></td>
-            </tr>
-            <tr>
-              <td><span class="request-id">#003</span></td>
-              <td>Transcript of Records</td>
-              <td><span class="status-badge status-pending">Pending</span></td>
-            </tr>
-            <tr>
-              <td><span class="request-id">#004</span></td>
-              <td>CGMC</td>
-              <td><span class="status-badge status-completed">Completed</span></td>
-            </tr>
-            <tr>
-              <td><span class="request-id">#005</span></td>
-              <td>CGMC</td>
-              <td><span class="status-badge status-processing">Processing</span></td>
-            </tr>
+            {% for req in user_requests %}
+              <tr>
+                <td><span class="request-id">#{{ req.request_id }}</span></td>
+                <td>{{ req.document.name }}</td>
+                <td>{{ req.copies }}</td>
+                <td>{{ req.date_needed|date:"M d, Y" }}</td>
+
+                <!-- REQUEST STATUS -->
+                <td><span class="status-badge status-{{ req.status }}">{{ req.status|title }}</span></td>
+
+                <!-- PAYMENT STATUS + VIEW BUTTON -->
+                <td>
+                  {% if req.payment %}
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <span class="status-badge 
+                        {% if req.payment.payment_status == 'verified' %}status-completed
+                        {% elif req.payment.payment_status == 'pending' %}status-pending
+                        {% elif req.payment.payment_status == 'rejected' %}status-processing
+                        {% endif %}">
+                        {{ req.payment.payment_status|title }}
+                      </span>
+
+                      {% if req.payment and req.payment.proof_of_payment %}
+                        <button class="view-proof-btn" data-img-url="{{ req.payment.proof_of_payment.url }}">
+                          <img src="{% static 'images/media.png' %}" alt="View Proof" width="30" />
+                        </button>
+                      {% endif %}
+                    </div>
+                  {% else %}
+                    <span style="color:#999;">No Payment</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="6" style="text-align:center;">No requests found.</td></tr>
+            {% endfor %}
           </tbody>
         </table>
       </div>
     </div>
   </div>
+
+  <!-- MODAL -->
+  <div id="proofModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="close-btn">&times;</span>
+      <img id="proofImage" src="" alt="Proof of Payment" />
+    </div>
+  </div>
+
+    <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>DocuTrackr</h4>
+        <p>Simplifying document requests for CIT-U students.</p>
+      </div>
+      
+      <div class="footer-section">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-section">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">FAQ</a></li>
+          <li><a href="#">Report Issue</a></li>
+          <li><a href="#">Feedback</a></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <p>&copy; 2025 DocuTrackr. All rights reserved. | CIT-U Document Management System</p>
+    </div>
+  </footer>
+  <script>
+// === Restrict "Date Needed" to today or later ===
+const dateInput = document.getElementById('dateNeeded');
+if (dateInput) {
+  const today = new Date().toISOString().split('T')[0];
+  dateInput.setAttribute('min', today);
+}
+
+// === File Upload Validation ===
+const form = document.querySelector('form');
+const fileInput = document.getElementById('fileInput');
+const fileLabel = document.querySelector('.file-label');
+const allowedTypes = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'];
+
+let errorContainer = document.querySelector('.file-upload .form-error');
+if (!errorContainer && fileInput) {
+  errorContainer = document.createElement('p');
+  errorContainer.className = 'form-error';
+  errorContainer.style.color = 'red';
+  errorContainer.style.fontWeight = 'bold';
+  fileInput.parentNode.appendChild(errorContainer);
+}
+
+// Handle file selection
+if (fileInput) {
+  fileInput.addEventListener('change', () => {
+    errorContainer.textContent = '';
+    const file = fileInput.files[0];
+
+    if (!file) {
+      errorContainer.textContent = 'Proof of payment is required.';
+      fileLabel.textContent = 'Choose File';
+      return;
+    }
+
+    if (!allowedTypes.includes(file.type)) {
+      errorContainer.textContent = 'Unsupported file format. Supported: PNG, JPG, SVG, WEBP.';
+      fileInput.value = '';
+      fileLabel.textContent = 'Choose File';
+      return;
+    }
+
+    fileLabel.textContent = file.name;
+  });
+}
+
+// Validate before submit
+if (form) {
+  form.addEventListener('submit', (e) => {
+    const file = fileInput?.files[0];
+    errorContainer.textContent = '';
+
+    if (!file) {
+      e.preventDefault();
+      errorContainer.textContent = 'Proof of payment is required.';
+      return false;
+    }
+
+    if (!allowedTypes.includes(file.type)) {
+      e.preventDefault();
+      errorContainer.textContent = 'Unsupported file format. Supported: PNG, JPG, SVG, WEBP.';
+      return false;
+    }
+  });
+}
+
+// === MODAL LOGIC ===
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("✅ Modal script loaded");
+
+  const modal = document.getElementById("proofModal");
+  const modalImg = document.getElementById("proofImage");
+  const closeBtn = document.querySelector(".close-btn");
+
+  if (!modal || !modalImg) {
+    console.warn("⚠️ Modal elements not found in DOM.");
+    return;
+  }
+
+  const proofButtons = document.querySelectorAll(".view-proof-btn");
+  console.log(`🟡 Found ${proofButtons.length} proof button(s)`);
+
+  proofButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      let imgUrl = btn.getAttribute("data-img-url");
+
+      if (!imgUrl) {
+        console.warn("⚠️ Missing data-img-url for proof button");
+        return;
+      }
+
+      // Ensure correct URL format
+      if (!imgUrl.startsWith("/")) imgUrl = "/" + imgUrl;
+      modalImg.src = imgUrl;
+
+      // Wait until the image loads before showing the modal
+      modalImg.onload = () => {
+        modal.style.display = "flex";
+        document.body.style.overflow = "hidden";
+        console.log("🖼️ Proof loaded:", imgUrl);
+      };
+
+      modalImg.onerror = () => {
+        console.error("❌ Failed to load proof image:", imgUrl);
+        alert("Unable to display image. Please check if the proof file exists.");
+      };
+    });
+  });
+
+  // Close modal
+  closeBtn?.addEventListener("click", () => {
+    modal.style.display = "none";
+    modalImg.removeAttribute("src");
+    document.body.style.overflow = "auto";
+  });
+
+  // Close when clicking outside the modal content
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.style.display = "none";
+      mmodalImg.removeAttribute("src");
+      document.body.style.overflow = "auto";
+    }
+  });
+});
+</script>
 </body>
-<script src="{% static 'js/request-form.js' %}"></script>
 </html>

@@ -1,0 +1,257 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About DocuTrackr - Document Request & Tracking System</title>
+  <link rel="stylesheet" href="{% static 'css/about.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="navbar-left">
+      <a href="{{ home_url }}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" /></a>
+      <nav>
+        <ul>
+          <li><a href="{{ home_url }}">Home</a></li>
+          <li><a href="{% url 'about' %}" class="active">About</a></li>
+          <li><a href="{% url 'create_request' %}">Create Request</a></li>
+          <li><a href="#">Track Documents</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="navbar-right">
+      {% if full_name %}
+        <a href="{{ home_url }}" class="user-name">{{ full_name }}</a>
+      {% else %}
+        <span class="user-name"></span>
+      {% endif %}
+      <div class="notification-icon">
+        <img src="{% static 'images/bell.png' %}" alt="Notification Bell" />
+      </div>
+      <div class="profile-icon">
+        <img src="{% static 'images/profile.png' %}" alt="User Profile" />
+      </div>
+      <a href="#" class="logout-icon">
+        <img src="{% static 'images/logout.png' %}" alt="Logout" />
+      </a>
+    </div>
+  </header>
+
+  <main class="about-container">
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-content">
+        <h1>About DocuTrackr</h1>
+        <p class="hero-subtitle">Simplifying Document Requests for CIT-U Students</p>
+        <p class="hero-description">
+          DocuTrackr is a modern, web-based platform designed to streamline the document request process, reduce waiting times, and enhance transparency for students and registrar staff.
+        </p>
+      </div>
+    </section>
+
+    <!-- Problem Statement Section -->
+    <section class="section problem-section">
+      <div class="section-content">
+        <h2>The Challenge</h2>
+        <p class="section-intro">Before DocuTrackr, students faced significant challenges in requesting official documents:</p>
+        
+        <div class="challenges-grid">
+          <div class="challenge-card">
+            <div class="challenge-icon">📋</div>
+            <h3>Long Queues</h3>
+            <p>Students had to line up during class hours, especially during peak periods like scholarship deadlines and enrollment.</p>
+          </div>
+          <div class="challenge-card">
+            <div class="challenge-icon">⏱️</div>
+            <h3>Time-Consuming</h3>
+            <p>The manual process took significant time, leading to long waiting periods and potential missed opportunities.</p>
+          </div>
+          <div class="challenge-card">
+            <div class="challenge-icon">❌</div>
+            <h3>Inefficiency</h3>
+            <p>Manual workflows resulted in delays, errors, and missed deadlines for scholarships and applications.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section class="section solution-section">
+      <div class="section-content">
+        <h2>Our Solution</h2>
+        <p class="section-intro">DocuTrackr transforms the document request process with a modern, digital-first approach:</p>
+        
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-number">01</div>
+            <h3>Online Requests</h3>
+            <p>Submit document requests anytime, anywhere through our intuitive web platform. No more waiting in line.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-number">02</div>
+            <h3>Real-Time Tracking</h3>
+            <p>Monitor your request status in real-time with automated notifications and clear pickup timelines.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-number">03</div>
+            <h3>Secure Authentication</h3>
+            <p>Your account is protected with secure login credentials, ensuring only authorized access to your documents.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-number">04</div>
+            <h3>Admin Dashboard</h3>
+            <p>Registrar staff can efficiently manage requests, approve submissions, and update processing status.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-number">05</div>
+            <h3>Organized Records</h3>
+            <p>All document requests and history are stored securely in a centralized database for easy retrieval.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-number">06</div>
+            <h3>Reduced Processing Time</h3>
+            <p>Digital workflows reduce document-handling time by up to 50%, cutting errors and boosting productivity.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Impact Section -->
+    <section class="section impact-section">
+      <div class="section-content">
+        <h2>The Impact</h2>
+        <p class="section-intro">DocuTrackr delivers measurable improvements for students and staff:</p>
+        
+        <div class="impact-grid">
+          <div class="impact-card">
+            <div class="impact-stat">50%</div>
+            <p>Reduction in document-handling time</p>
+          </div>
+          <div class="impact-card">
+            <div class="impact-stat">70%</div>
+            <p>Faster processing compared to manual workflows</p>
+          </div>
+          <div class="impact-card">
+            <div class="impact-stat">20-30%</div>
+            <p>Time saved on administrative tasks</p>
+          </div>
+          <div class="impact-card">
+            <div class="impact-stat">95%</div>
+            <p>Automated notifications with clear timelines</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Objectives Section -->
+    <section class="section objectives-section">
+      <div class="section-content">
+        <h2>Our Objectives</h2>
+        <p class="section-intro">DocuTrackr is built on clear, measurable goals:</p>
+        
+        <div class="objectives-list">
+          <div class="objective-item">
+            <div class="objective-marker">✓</div>
+            <div class="objective-content">
+              <h3>Accessibility</h3>
+              <p>Provide students with an online platform to log in, select, request, and track official school documents.</p>
+            </div>
+          </div>
+          <div class="objective-item">
+            <div class="objective-marker">✓</div>
+            <div class="objective-content">
+              <h3>Reliability</h3>
+              <p>Ensure that at least 95% of student requests trigger automated notifications with clear timelines for pickup.</p>
+            </div>
+          </div>
+          <div class="objective-item">
+            <div class="objective-marker">✓</div>
+            <div class="objective-content">
+              <h3>Efficiency</h3>
+              <p>Reduce the average document request waiting time by at least 50% compared to the current manual process.</p>
+            </div>
+          </div>
+          <div class="objective-item">
+            <div class="objective-marker">✓</div>
+            <div class="objective-content">
+              <h3>Transparency</h3>
+              <p>Create a faster, more convenient experience for both students and registrar staff with clear communication.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Technology Section -->
+    <section class="section tech-section">
+      <div class="section-content">
+        <h2>Built With Modern Technology</h2>
+        <p class="section-intro">DocuTrackr leverages industry-standard technologies for reliability and security:</p>
+        
+        <div class="tech-grid">
+          <div class="tech-card">
+            <h3>Frontend</h3>
+            <p>HTML, CSS, and JavaScript for a responsive, user-friendly interface across all devices.</p>
+          </div>
+          <div class="tech-card">
+            <h3>Backend</h3>
+            <p>Django framework with secure REST APIs for seamless communication between frontend and database.</p>
+          </div>
+          <div class="tech-card">
+            <h3>Database</h3>
+            <p>MySQL relational database ensuring data integrity, security, and reliable record management.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section cta-section">
+      <div class="section-content">
+        <h2>Ready to Get Started?</h2>
+        <p>Join thousands of CIT-U students who are already using DocuTrackr to simplify their document requests.</p>
+        <div class="cta-buttons">
+          <a href="{% url 'student-dashboard' %}" class="btn btn-primary">Go to Dashboard</a>
+          <a href="#" class="btn btn-secondary">Contact Support</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>DocuTrackr</h4>
+        <p>Simplifying document requests for CIT-U students.</p>
+      </div>
+      <div class="footer-section">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="{% url 'student-dashboard' %}">Home</a></li>
+          <li><a href="{% url 'about' %}">About</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">FAQ</a></li>
+          <li><a href="#">Report Issue</a></li>
+          <li><a href="#">Feedback</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 DocuTrackr. All rights reserved. | CIT-U Document Management System</p>
+    </div>
+  </footer>
+</body>
+</html>
