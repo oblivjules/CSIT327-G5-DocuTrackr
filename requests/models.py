@@ -1,6 +1,7 @@
 from django.db import models
 from authentication.models import User
 from documents.models import Document
+from django.core.exceptions import ValidationError
 
 
 class Request(models.Model):
@@ -15,13 +16,19 @@ class Request(models.Model):
     request_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='requests')
     document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='requests')
+    copies = models.PositiveIntegerField(default=1)  
+    date_needed = models.DateField(null=True, blank=True)  
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Request #{self.request_id} - {self.document.name}"
-    
+
+
+def validate_file_is_image(value):
+    if not value.name.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.svg')):
+        raise ValidationError('Only image files are allowed.')
 
 class Payment(models.Model):
     PAYMENT_STATUS_CHOICES = [
@@ -33,7 +40,7 @@ class Payment(models.Model):
     payment_id = models.AutoField(primary_key=True)
     request = models.OneToOneField(Request, on_delete=models.CASCADE, related_name='payment')
 
-    proof_of_payment = models.FileField(upload_to='payments/', blank=True, null=True)
+    proof_of_payment = models.FileField(upload_to='payments/', blank=True, null=True, validators=[validate_file_is_image])
     
     verified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='verified_payments')
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
