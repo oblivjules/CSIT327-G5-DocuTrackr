@@ -191,8 +191,18 @@ def forgotPassword(request):
 
 # Logout
 def student_logout(request):
+    # Clear all session data
     request.session.flush()
-    return redirect('index')
+    
+    # Create response with redirect
+    response = redirect('index')
+    
+    # Add cache control headers to prevent back button access
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    
+    return response
 
 def adminDashboard(request):
     if request.session.get('role') != 'registrar':

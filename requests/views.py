@@ -2,9 +2,14 @@ from django.shortcuts import render, redirect
 from django.utils import timezone
 from .models import Request, Payment, Document, Request_Status_Log
 from authentication.models import User
+from authentication.decorators import login_required
 
+@login_required
 def create_request(request):
     user_id = request.session.get('user_id')
+    role = request.session.get('role')
+    if role != 'student':
+        return redirect('index')
     user = None
     user_name = None
     student_id = None

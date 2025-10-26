@@ -60,7 +60,7 @@ body {
   transition: color 0.3s ease;
 }
 
-.navbar-left a::after {
+.navbar-left nav a::after {
   content: '';
   position: absolute;
   left: 0;
@@ -71,8 +71,8 @@ body {
   transition: width 0.3s ease;
 }
 
-.navbar-left a:hover::after,
-.navbar-left a.active::after {
+.navbar-left nav a:hover::after,
+.navbar-left nav a.active::after {
   width: 100%;
 }
 
