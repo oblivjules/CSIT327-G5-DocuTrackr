@@ -17,7 +17,6 @@
         <li><a href="{{ home_url }}">Home</a></li>
         <li><a href="{% url 'about' %}">About</a></li>
         <li><a href="{% url 'create_request' %}">Create Request</a></li>
-        <li><a href="#">Track Documents</a></li>
       </ul>
     </nav>
   </div>
@@ -113,7 +112,19 @@
                   {{ req.get_status_display }}
                 </span>
               </td>
-              <td><button class="action-btn">View Details</button></td>
+              <td>
+                <button class="action-btn view-details-btn"
+                  data-request-id="{{ req.request_id }}"
+                  data-document="{{ req.document.name }}"
+                  data-copies="{{ req.copies }}"
+                  data-date-needed="{{ req.date_needed|date:'M d, Y' }}"
+                  data-status="{{ req.get_status_display }}"
+                  data-created="{{ req.created_at|date:'M d, Y h:i A' }}"
+                  data-updated="{{ req.updated_at|date:'M d, Y h:i A' }}"
+                  data-payment-status="{% if req.payment %}{{ req.payment.get_payment_status_display }}{% endif %}"
+                  data-proof-url="{% if req.payment and req.payment.proof_of_payment %}{{ req.payment.proof_of_payment.url }}{% endif %}"
+                >View Details</button>
+              </td>
             </tr>
             {% empty %}
             <tr><td colspan="5">No requests found.</td></tr>
@@ -144,5 +155,102 @@
       </div>
     </section>
   </main>
+
+  <!-- Request Details Modal -->
+  <div id="requestModal" class="dt-modal" style="display:none;">
+    <div class="dt-modal-content">
+      <button class="dt-close" aria-label="Close">&times;</button>
+      <div class="dt-modal-header">
+        <div class="dt-header-left">
+          <div class="dt-header-top">
+            <div class="dt-id" id="mRequestId">REQ-00000</div>
+            <span class="dt-status-badge" id="mStatus">Approved</span>
+          </div>
+          <div class="dt-subtitle">Request Details</div>
+        </div>
+      </div>
+      <div class="dt-modal-body">
+        <div class="dt-grid dt-main-grid">
+          <div class="dt-card">
+            <div class="dt-card-label">
+              <img class="dt-icon" src="{% static 'images/document.png' %}" alt="Document" />
+              <span>Document</span>
+            </div>
+            <div class="dt-card-value" id="mDocument"></div>
+          </div>
+          <div class="dt-card">
+            <div class="dt-card-label">
+              <img class="dt-icon" src="{% static 'images/documents-requested.png' %}" alt="Copies" />
+              <span>Copies</span>
+            </div>
+            <div class="dt-card-value" id="mCopies"></div>
+          </div>
+          <div class="dt-card">
+            <div class="dt-card-label">
+              <img class="dt-icon" src="{% static 'images/pickup.png' %}" alt="Date Needed" />
+              <span>Date Needed</span>
+            </div>
+            <div class="dt-card-value" id="mDateNeeded"></div>
+          </div>
+          <div class="dt-card">
+            <div class="dt-card-label">
+              <img class="dt-icon" src="{% static 'images/check.png' %}" alt="Created" />
+              <span>Created</span>
+            </div>
+            <div class="dt-card-value" id="mCreated"></div>
+          </div>
+          <div class="dt-card">
+            <div class="dt-card-label">
+              <img class="dt-icon" src="{% static 'images/processing.png' %}" alt="Last Updated" />
+              <span>Last Updated</span>
+            </div>
+            <div class="dt-card-value" id="mUpdated"></div>
+          </div>
+        </div>
+        <div class="dt-card dt-proof" id="mProofSection" style="display:none;">
+          <div class="dt-card-label">
+            <img class="dt-icon" src="{% static 'images/view.png' %}" alt="Proof of Payment" />
+            <span>Proof of Payment</span>
+          </div>
+          <div class="dt-proof-frame">
+            <img id="mProofImage" alt="Proof of Payment" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="{% static 'js/student-dashboard.js' %}"></script>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>DocuTrackr</h4>
+        <p>Simplifying document requests for CIT-U students.</p>
+      </div>
+      <div class="footer-section">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="{% url 'student-dashboard' %}">Home</a></li>
+          <li><a href="{% url 'about' %}">About</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">FAQ</a></li>
+          <li><a href="#">Report Issue</a></li>
+          <li><a href="#">Feedback</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 DocuTrackr. All rights reserved. | CIT-U Document Management System</p>
+    </div>
+  </footer>
 </body>
 </html>

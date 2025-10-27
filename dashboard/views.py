@@ -1,15 +1,17 @@
 from django.shortcuts import render, redirect
 from requests.models import Request, Request_Status_Log
 from authentication.models import User
+from authentication.decorators import login_required
 
 
+@login_required
 def student_dashboard(request):
     # Use session-based authentication used elsewhere in the app.
     user_id = request.session.get('user_id')
     role = request.session.get('role')
 
     # If not logged in as a student, redirect to student login (index)
-    if not user_id or role != 'student':
+    if role != 'student':
         return redirect('index')
 
     try:
@@ -19,8 +21,13 @@ def student_dashboard(request):
         request.session.flush()
         return redirect('index')
 
-    # Query all requests of this user
-    user_requests = Request.objects.filter(user=user).order_by('-created_at')
+    # Query all requests of this user with related data for modal
+    user_requests = (
+        Request.objects.filter(user=user)
+        .select_related('document', 'payment')
+        .prefetch_related('status_logs')
+        .order_by('-created_at')
+    )
 
     # Stats
     total_requested = user_requests.count()
@@ -62,5 +69,6 @@ def admin_dashboard(request):
     return render(request, 'admin-dashboard.html', context)   
 
 
+@login_required
 def about_view(request):
-    return render(request, 'about.html', {'user_role': request.session.get('role')})  
+    return render(request, 'about.html', {'user_role': request.session.get('role')})

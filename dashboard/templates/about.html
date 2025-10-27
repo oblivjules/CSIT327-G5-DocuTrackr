@@ -19,7 +19,6 @@
           <li><a href="{{ home_url }}">Home</a></li>
           <li><a href="{% url 'about' %}" class="active">About</a></li>
           <li><a href="{% url 'create_request' %}">Create Request</a></li>
-          <li><a href="#">Track Documents</a></li>
         </ul>
       </nav>
     </div>
@@ -36,7 +35,7 @@
       <div class="profile-icon">
         <img src="{% static 'images/profile.png' %}" alt="User Profile" />
       </div>
-      <a href="#" class="logout-icon">
+      <a href="{% url 'student_logout' %}" class="logout-icon">
         <img src="{% static 'images/logout.png' %}" alt="Logout" />
       </a>
     </div>
