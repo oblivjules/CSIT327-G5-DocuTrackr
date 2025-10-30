@@ -8,6 +8,7 @@
   <title>Admin Dashboard - DocuTrackr</title>
   <link rel="stylesheet" href="{% static 'css/admin-dashboard.css' %}" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="{% static 'images/docutrackr-logo.png' %}">
 </head>
 <body>
   <header class="navbar">
@@ -29,17 +30,19 @@
         <span class="user-name"></span>
       {% endif %}
 
-      <div class="notification-icon">
-        <img src="{% static 'images/bell.png' %}" alt="Notification Bell" />
-      </div>
+      <div class="navbar-icons">
+        <div class="icon-item notification-icon">
+          <img src="{% static 'images/notification.png' %}" alt="Notifications" />
+        </div>
 
-      <div class="profile-icon">
-        <img src="{% static 'images/Profile.png' %}" alt="User Profile" />
+        <div class="icon-item profile-icon">
+          <img src="{% static 'images/profile-setting.png' %}" alt="Profile Settings" />
+        </div>
+        
+        <a href="{% url 'admin_logout' %}" class="icon-item logout-icon">
+          <img src="{% static 'images/logout.png' %}" alt="Logout" />
+        </a>
       </div>
-      
-      <a href="{% url 'student_logout' %}" class="logout-icon">
-        <img src="{% static 'images/logout.png' %}" alt="Logout" />
-      </a>
     </div>
 </header>
 
@@ -50,7 +53,7 @@
             <img src="{% static 'images/pending.png' %}" alt="Pending Icon" />
         </div>
         <div class="stat-content">
-            <h3>28</h3>
+            <h3>{{ pending_count }}</h3>
             <p>Pending</p>
             <span class="subtext">Needs Action</span>
         </div>
@@ -61,7 +64,7 @@
             <img src="{% static 'images/processing.png' %}" alt="Processing Icon" />
         </div>
         <div class="stat-content">
-            <h3>15</h3>
+            <h3>{{ processing_count }}</h3>
             <p>Processing</p>
             <span class="subtext">In Progress</span>
         </div>
@@ -72,7 +75,7 @@
             <img src="{% static 'images/pickup.png' %}" alt="Ready Today Icon" />
         </div>
         <div class="stat-content">
-            <h3>8</h3>
+            <h3>{{ ready_count }}</h3>
             <p>Ready Today</p>
             <span class="subtext">For Pickup</span>
         </div>
@@ -83,7 +86,7 @@
             <img src="{% static 'images/chart.png' %}" alt="Completed Icon" />
         </div>
         <div class="stat-content">
-            <h3>156</h3>
+            <h3>{{ completed_count }}</h3>
             <p>Completed</p>
             <span class="subtext">This Month</span>
         </div>
@@ -94,17 +97,33 @@
       <div class="section-header">
         <h2>All Document Requests</h2>
         <div class="table-controls">
-          <div class="search-box">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.35-4.35"></path>
-            </svg>
-            <input type="text" placeholder="Search Request.." />
+          <form method="GET" class="search-form" style="display: inline-block;">
+            <div class="search-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+              <input type="text" name="search" placeholder="Search by Request ID, Student Name/ID, Document Type, Status..." value="{{ search_query }}" />
+              <button type="submit" style="display: none;"></button>
+            </div>
+          </form>
+          
+          <div class="filter-container">
+            <form method="GET" class="filter-form" style="display: inline-block;">
+              {% if search_query %}
+                <input type="hidden" name="search" value="{{ search_query }}" />
+              {% endif %}
+              <div class="filter-select-wrapper">
+                <img src="{% load static %}{% static 'images/dropdown.png' %}" alt="Filter" class="filter-icon" />
+                <select name="status" class="filter-select" onchange="this.form.submit()">
+                  <option value="">All Status</option>
+                  {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </form>
           </div>
-         <button class="filter-btn">
-            <img src="{% static 'images/filter.png' %}" alt="Filter Icon" class="filter-icon" />
-            Filter
-            </button>
         </div>
       </div>
 
@@ -112,7 +131,7 @@
         <table class="requests-table">
           <thead>
             <tr>
-              <th><input type="checkbox" /></th>
+              <th><input type="checkbox" id="selectAll" /></th>
               <th>REQUEST ID</th>
               <th>STUDENT INFO</th>
               <th>DOCUMENT TYPE</th>
@@ -122,73 +141,63 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td><input type="checkbox" /></td>
-              <td><strong>REQ-2025-001</strong></td>
+            {% for request in recent_requests %}
+            <tr class="request-row">
+              <td><input type="checkbox" class="row-checkbox" data-request-id="{{ request.request_id }}" /></td>
+              <td><strong>REQ-{{ request.request_id }}</strong></td>
               <td>
                 <div class="student-info">
-                  <div class="student-name">Jukary Phamad</div>
-                  <div class="student-id">20-1567-192</div>
+                  <div class="student-name">{{ request.user.name }}</div>
+                  <div class="student-id">{{ request.user.student_id }}</div>
                 </div>
               </td>
-              <td>Transcript of Records</td>
-              <td>Jan 15, 2025<br><span class="date-ago">2 days ago</span></td>
-              <td><span class="badge pending">PENDING</span></td>
+              <td>{{ request.document.name }}</td>
+              <td>{{ request.created_at|date:"M d, Y" }}<br><span class="date-ago">{{ request.created_at|timesince }} ago</span></td>
               <td>
-                <button class="action-btn process-btn">Process</button>
-                <button class="view-link">
-                <img src="{% static 'images/view.png' %}" alt="View" style="width:16px; height:16px; margin-right:4px;" />
-                View
-                </button>
-
+                {% if request.status == 'pending' %}
+                  <span class="badge pending">PENDING</span>
+                {% elif request.status == 'processing' %}
+                  <span class="badge processing">PROCESSING</span>
+                {% elif request.status == 'approved' %}
+                  <span class="badge ready">READY FOR PICKUP</span>
+                {% elif request.status == 'completed' %}
+                  <span class="badge completed">COMPLETED</span>
+                {% elif request.status == 'rejected' %}
+                  <span class="badge rejected">REJECTED</span>
+                {% endif %}
               </td>
-            </tr>
-            <tr>
-              <td><input type="checkbox" /></td>
-              <td><strong>REQ-2025-002</strong></td>
               <td>
-                <div class="student-info">
-                  <div class="student-name">kamsamnida</div>
-                  <div class="student-id">18-1367-123</div>
-                </div>
-              </td>
-              <td>Certificate of Enrollment</td>
-              <td>June 01, 2025<br><span class="date-ago">15 days ago</span></td>
-              <td><span class="badge processing">PROCESSING</span></td>
-              <td>
-                <button class="action-btn update-btn">Update</button>
+                {% if request.status == 'pending' %}
+                  <button class="action-btn process-btn" data-request-id="{{ request.request_id }}">Process</button>
+                {% elif request.status == 'processing' %}
+                  <button class="action-btn update-btn">Update</button>
+                {% elif request.status == 'approved' %}
+                  <button class="action-btn notify-btn">Notify</button>
+                {% endif %}
                 <button class="view-link">
-                <img src="{% static 'images/view.png' %}" alt="View" style="width:16px; height:16px; margin-right:4px;" />
-                View
+                  <img src="{% static 'images/view.png' %}" alt="View" style="width:16px; height:16px; margin-right:4px;" />
+                  View
                 </button>
               </td>
             </tr>
+            {% empty %}
             <tr>
-              <td><input type="checkbox" /></td>
-              <td><strong>REQ-2025-003</strong></td>
-              <td>
-                <div class="student-info">
-                  <div class="student-name">Lia Man</div>
-                  <div class="student-id">17-1217-103</div>
-                </div>
-              </td>
-              <td>Diploma Copy</td>
-              <td>June 01, 2025<br><span class="date-ago">15 days ago</span></td>
-              <td><span class="badge ready">READY FOR PICKUP</span></td>
-              <td>
-                <button class="action-btn notify-btn">Notify</button>
-                <button class="view-link">
-                <img src="{% static 'images/view.png' %}" alt="View" style="width:16px; height:16px; margin-right:4px;" />
-                View
-                </button>
-              </td>
+              <td colspan="7" style="text-align: center; padding: 20px;">No requests found</td>
             </tr>
+            {% endfor %}
           </tbody>
         </table>
       </div>
 
       <div class="table-footer">
-        <span class="showing-text">Showing 3 recent requests ( 51 total)</span>
+        {% if is_searching %}
+          <span class="showing-text">
+            Showing {{ filtered_count }} result{{ filtered_count|pluralize }} for "{{ search_query }}" 
+            <a href="?" style="margin-left: 10px; color: #007bff; text-decoration: none;">Clear search</a>
+          </span>
+        {% else %}
+          <span class="showing-text">Showing {{ recent_requests|length }} recent requests ({{ total_requests }} total)</span>
+        {% endif %}
         <button class="view-all-btn">View All Requests</button>
       </div>
     </section>
@@ -196,21 +205,47 @@
     <section class="activity-section">
       <h2>Recent Staff Activity</h2>
       <div class="activity-list">
+        {% for activity in recent_activities %}
         <div class="activity-item">
           <div class="activity-status">
-            <img src="{% static 'images/check.png' %}" alt="Check Icon" class="activity-icon" />
-        </div>
+            <img src="{% static 'images/check.png' %}" alt="Activity Icon" class="activity-icon" />
+          </div>
           <div class="activity-content">
-            <p class="activity-title">Status Updated</p>
-            <p class="activity-description">REQ-2025-001 marked as READY FOR PICKUP by Staff Maria</p>
-            <p class="activity-time">5 minutes ago</p>
+            <p class="activity-title">
+              {% if activity.new_status == 'processing' %}
+                Request Marked as Processing
+              {% elif activity.new_status == 'approved' %}
+                Request Approved
+              {% elif activity.new_status == 'rejected' %}
+                Request Rejected
+              {% elif activity.new_status == 'completed' %}
+                Request Completed
+              {% else %}
+                Request Status Changed
+              {% endif %}
+            </p>
+            <p class="activity-description">
+              REQ {{ activity.request.request_id }} marked as {{ activity.new_status|upper }} by Staff {{ activity.changed_by.name }}
+            </p>
+            <p class="activity-time">{{ activity.changed_at|timesince }} ago</p>
           </div>
         </div>
+        {% empty %}
+        <div class="activity-item">
+          <div class="activity-status">
+            <img src="{% static 'images/document.png' %}" alt="No Activity Icon" class="activity-icon" />
+          </div>
+          <div class="activity-content">
+            <p class="activity-title">No Staff Activity</p>
+            <p class="activity-description">No recent actions by staff members.</p>
+            <p class="activity-time">-</p>
+          </div>
+        </div>
+        {% endfor %}
       </div>
     </section>
   </main>
 
-  <!-- Footer -->
   <footer class="footer">
     <div class="footer-content">
       <div class="footer-section">
@@ -239,5 +274,34 @@
       <p>&copy; 2025 DocuTrackr. All rights reserved. | CIT-U Document Management System</p>
     </div>
   </footer>
+
+  <div id="processModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-logo">
+          <img src="{% static 'images/docutrackr-logo.png' %}" alt="DocuTrackr" class="modal-logo-img" />
+          <h3>DocuTrackr</h3>
+        </div>
+        <button class="modal-close" id="closeModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-icon">
+          <img src="{% static 'images/processing.png' %}" alt="Process Icon" class="process-icon" />
+        </div>
+        <h2>Process Document Request</h2>
+        <p class="modal-message">
+          Are you sure you want to process request <strong id="requestId"></strong>?
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" id="cancelProcess">Cancel</button>
+        <button class="btn-confirm" id="confirmProcess">
+          Yes
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="{% static 'js/admin-dashboard.js' %}"></script>
 </body>
 </html>

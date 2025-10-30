@@ -7,9 +7,9 @@
   <title>DocuTrackr - Request Document</title>
   <link rel="stylesheet" href="{% static 'css/style-request_form.css' %}">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="{% static 'images/docutrackr-logo.png' %}">
 </head>
 <body>
-  <!-- NAVBAR -->
   <header class="navbar">
     <div class="navbar-left">
       <a href="{{ home_url }}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" /></a>
@@ -29,23 +29,23 @@
         <span class="user-name"></span>
       {% endif %}
 
-      <div class="notification-icon">
-        <img src="{% static 'images/bell.png' %}" alt="Notification Bell" />
-      </div>
+      <div class="navbar-icons">
+        <div class="icon-item notification-icon">
+          <img src="{% static 'images/bell.png' %}" alt="Notification Bell" />
+        </div>
 
-      <div class="profile-icon">
-        <img src="{% static 'images/profile.png' %}" alt="User Profile" />
-      </div>
+        <div class="icon-item profile-icon">
+          <img src="{% static 'images/profile.png' %}" alt="User Profile" />
+        </div>
 
-      <a href="{% url 'student_logout' %}" class="logout-icon">
-        <img src="{% static 'images/logout.png' %}" alt="Logout" />
-      </a>
+        <a href="{% url 'student_logout' %}" class="icon-item logout-icon">
+          <img src="{% static 'images/logout.png' %}" alt="Logout" />
+        </a>
+      </div>
     </div>
   </header>
 
-  <!-- MAIN CONTAINER -->
   <div class="container">
-    <!-- REQUEST FORM -->
     <div class="request-form">
       <div class="form-header">
         <div class="form-icon">
@@ -60,7 +60,6 @@
       <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="form-grid">
-          <!-- STUDENT ID -->
           <div class="form-group">
             <label for="studentId" class="required">
               <img src="{% static 'images/user.png' %}" alt="Student ID Icon" class="input-icon" />
@@ -69,7 +68,6 @@
             <input type="text" id="studentId" name="student_id" value="{{ student_id }}" readonly required>
           </div>
 
-          <!-- STUDENT NAME -->
           <div class="form-group">
             <label for="studentName" class="required">
               <img src="{% static 'images/id-card.png' %}" alt="Student Name Icon" class="input-icon" />
@@ -77,8 +75,7 @@
             </label>
             <input type="text" id="studentName" name="student_name" value="{{ full_name }}" readonly required>
           </div>
-
-          <!-- DOCUMENT TYPE -->
+         
           <div class="form-group">
             <label for="docType" class="required">
               <img src="{% static 'images/doc.png' %}" alt="Document Type Icon" class="input-icon" />
@@ -96,7 +93,6 @@
             </select>
           </div>
 
-          <!-- DATE NEEDED -->
           <div class="form-group">
             <label for="dateNeeded">
               <img src="{% static 'images/datepicker.png' %}" alt="Date Picker Icon" class="input-icon" />
@@ -105,7 +101,6 @@
             <input type="date" id="dateNeeded" name="date_needed" value="{{ date_needed|default:'' }}" required>
           </div>
 
-          <!-- NUMBER OF COPIES -->
           <div class="form-group">
             <label for="copies" class="required">
               <img src="{% static 'images/copy.png' %}" alt="Copies Icon" class="input-icon" />
@@ -114,7 +109,6 @@
             <input type="number" id="copies" name="copies" min="1" value="{{ copies|default:'' }}" placeholder="1" required>
           </div>
 
-          <!-- PROOF UPLOAD -->
           <div class="file-upload">
             <div class="upload-icon">
               <img src="{% static 'images/upload.png' %}" alt="Upload Icon" />
@@ -136,7 +130,6 @@
             </script>
           {% endif %}
 
-          <!-- SUBMIT BUTTON -->
           <div class="submit-btn">
             <button type="submit">
               Submit Request
@@ -147,7 +140,6 @@
       </form>
     </div>
 
-    <!-- REQUEST HISTORY -->
     <div class="history">
       <div class="history-header">
         <img src="{% static 'images/history.png' %}" alt="History Icon" class="history-icon" />
@@ -174,10 +166,8 @@
                 <td>{{ req.copies }}</td>
                 <td>{{ req.date_needed|date:"M d, Y" }}</td>
 
-                <!-- REQUEST STATUS -->
                 <td><span class="status-badge status-{{ req.status }}">{{ req.status|title }}</span></td>
 
-                <!-- PAYMENT STATUS + VIEW BUTTON -->
                 <td>
                   {% if req.payment %}
                     <div style="display:flex;align-items:center;gap:8px;">
@@ -209,7 +199,6 @@
     </div>
   </div>
 
-  <!-- MODAL -->
   <div id="proofModal" class="modal" style="display:none;">
     <div class="modal-content">
       <span class="close-btn">&times;</span>
@@ -217,7 +206,6 @@
     </div>
   </div>
 
-    <!-- Footer -->
   <footer class="footer">
     <div class="footer-content">
       <div class="footer-section">
@@ -251,14 +239,12 @@
     </div>
   </footer>
   <script>
-// === Restrict "Date Needed" to today or later ===
 const dateInput = document.getElementById('dateNeeded');
 if (dateInput) {
   const today = new Date().toISOString().split('T')[0];
   dateInput.setAttribute('min', today);
 }
 
-// === File Upload Validation ===
 const form = document.querySelector('form');
 const fileInput = document.getElementById('fileInput');
 const fileLabel = document.querySelector('.file-label');
@@ -273,7 +259,6 @@ if (!errorContainer && fileInput) {
   fileInput.parentNode.appendChild(errorContainer);
 }
 
-// Handle file selection
 if (fileInput) {
   fileInput.addEventListener('change', () => {
     errorContainer.textContent = '';
@@ -296,7 +281,6 @@ if (fileInput) {
   });
 }
 
-// Validate before submit
 if (form) {
   form.addEventListener('submit', (e) => {
     const file = fileInput?.files[0];
@@ -316,7 +300,6 @@ if (form) {
   });
 }
 
-// === MODAL LOGIC ===
 document.addEventListener("DOMContentLoaded", () => {
   console.log("✅ Modal script loaded");
 

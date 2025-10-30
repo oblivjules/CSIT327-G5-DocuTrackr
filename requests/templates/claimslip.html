@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,10 +12,10 @@
 
 <header class="navbar">
     <div class="navbar-left">
-      <a href="{{ home_url }}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" /></a>
+      <a href="{% url 'student_dashboard' %}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" /></a>
       <nav>
         <ul>
-          <li><a href="{{ home_url }}">Home</a></li>
+          <li><a href="{% url 'student_dashboard' %}">Home</a></li>
           <li><a href="{% url 'about' %}">About</a></li>
           <li><a href="{% url 'create_request' %}" class="active">Create Request</a></li>
         </ul>
@@ -23,7 +24,7 @@
 
     <div class="navbar-right">
       {% if full_name %}
-        <a href="{{ home_url }}" class="user-name">{{ full_name }}</a>
+        <a href="{% url 'student_dashboard' %}" class="user-name">{{ full_name }}</a>
       {% else %}
         <span class="user-name"></span>
       {% endif %}
@@ -54,11 +55,11 @@
         <div class="info-pair">
           <div>
             <p class="label">CLAIM NUMBER</p>
-            <p id="claimNumber">CLAIM-3-1760509983425</p>
+            <p id="claimNumber">CLAIM-{{ request.id }}-{{ request.created_at|date:"U" }}</p>
           </div>
           <div>
             <p class="label">DATE READY</p>
-            <p id="dateReady">10/15/2025</p>
+            <p id="dateReady">{{ request.date_needed|date:"m/d/Y" }}</p>
           </div>
         </div>
       </div>
@@ -70,11 +71,11 @@
         <div class="info-pair">
           <div>
             <p class="label">NAME</p>
-            <p id="studentName">John Doe</p>
+            <p id="studentName">{{ full_name }}</p>
           </div>
           <div>
             <p class="label">STUDENT ID</p>
-            <p id="studentId">2024-001</p>
+            <p id="studentId">{{ student_id }}</p>
           </div>
         </div>
       </div>
@@ -86,15 +87,15 @@
         <div class="info-pair">
           <div>
             <p class="label">DOCUMENT TYPE</p>
-            <p id="docType">Diploma Copy</p>
+            <p id="docType">{{ document.name }}</p>
           </div>
           <div>
             <p class="label">TOTAL AMOUNT</p>
-            <p id="amount">₱150</p>
+            <p id="amount">₱{{ document.price }}</p>
           </div>
         </div>
         <p class="label">NUMBER OF COPIES</p>
-        <p id="copies">1</p>
+        <p id="copies">{{ request.copies }}</p>
       </div>
 
       <hr>
@@ -121,6 +122,6 @@
     </section>
   </main>
 
-  <script src="claimslipscript.js"></script>
+  <script src="{% static 'js/claimslipscript.js' %}"></script>
 </body>
 </html>
