@@ -1,0 +1,259 @@
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f6f9;
+  margin: 0;
+}
+
+.navbar {
+  width: 100%;
+  height: 70px;
+  background-color: #89393a;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 50px;
+}
+
+.logo {
+  height: 120px;
+  transition: transform 0.2s ease;
+}
+
+.logo:hover {
+  transform: scale(1.05);
+}
+
+.navbar-left ul {
+  display: flex;
+  list-style: none;
+  gap: 35px;
+  margin: 0;
+}
+
+.navbar-left a {
+  position: relative;
+  color: #fff;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: color 0.3s ease;
+}
+
+.navbar-left nav a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 0;
+  background-color: #ececeb;
+  transition: width 0.3s ease;
+}
+
+.navbar-left nav a:hover::after {
+  width: 100%;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.user-name {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.notification-icon,
+.profile-icon {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.notification-icon {
+  background-color: #fff;
+}
+
+.notification-icon:hover,
+.profile-icon:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.notification-icon img,
+.profile-icon img {
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.profile-icon {
+  background-color: #1a1a1a;
+}
+
+.logout-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ffffff; /* same as profile */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.logout-icon:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.logout-icon form {
+  width: 100%;
+  height: 100%;
+}
+
+.logout-icon button {
+  border: none;
+  background: transparent;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.logout-icon img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain; /* fit nicely without cropping */
+  border-radius: 0; /* keep icon shape intact */
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  margin-top: 50px;
+}
+
+.claim-card {
+  background: white;
+  border-radius: 12px;
+  width: 480px;
+  padding: 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.claim-header {
+  text-align: center;
+}
+
+.icon {
+  background: #ffcc00;
+  color: #800000;
+  border-radius: 50%;
+  display: inline-block;
+  padding: 10px 14px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+h2 {
+  color: #800000;
+  margin: 5px 0;
+}
+
+.sub {
+  font-weight: 500;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.info-pair {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.label {
+  font-size: 13px;
+  color: #800000;
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+
+.section {
+  margin-top: 15px;
+}
+
+.section h3 {
+  color: #800000;
+  font-size: 15px;
+  margin-bottom: 5px;
+  border-left: 4px solid #ffcc00;
+  padding-left: 6px;
+}
+
+.instructions-box {
+  background: #fff6df;
+  padding: 10px 15px;
+  border-radius: 8px;
+}
+
+.instructions-box p {
+  margin: 6px 0;
+}
+
+.instructions-box ul {
+  margin: 6px 0;
+  padding-left: 20px;
+}
+
+.print-btn {
+  display: block;
+  background: #800000;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  width: 100%;
+  padding: 10px;
+  margin-top: 20px;
+  cursor: pointer;
+}
+
+.print-btn:hover {
+  background: #a00000;
+}
+
+.note {
+  text-align: center;
+  font-size: 12px;
+  color: #777;
+  margin-top: 15px;
+}
