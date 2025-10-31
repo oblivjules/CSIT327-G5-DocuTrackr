@@ -5,8 +5,7 @@ from django.utils.crypto import get_random_string
 from authentication.models import User
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.hashers import make_password
-from django.shortcuts import render, redirect
-from .models import User
+from .decorators import no_cache
 
 # Student Login
 def index(request):
@@ -204,6 +203,21 @@ def student_logout(request):
     
     return response
 
+def admin_logout(request):
+    # Clear all session data
+    request.session.flush()
+    
+    # Create response with redirect to admin login
+    response = redirect('adminlogin')
+    
+    # Add cache control headers to prevent back button access
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    
+    return response
+
+@no_cache
 def adminDashboard(request):
     if request.session.get('role') != 'registrar':
         return redirect('adminlogin')

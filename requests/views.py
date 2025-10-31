@@ -1,10 +1,11 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from .models import Request, Payment, Document, Request_Status_Log
 from authentication.models import User
-from authentication.decorators import login_required
+from authentication.decorators import login_required, no_cache
 
 @login_required
+@no_cache
 def create_request(request):
     user_id = request.session.get('user_id')
     role = request.session.get('role')
@@ -86,9 +87,3 @@ def create_request(request):
         'user_requests': user_requests,
         'success': request.session.pop('success', None),
     })
-
-
-# Logout
-def student_logout(request):
-    request.session.flush()
-    return redirect('index')

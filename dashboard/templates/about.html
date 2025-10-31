@@ -7,10 +7,10 @@
   <title>About DocuTrackr - Document Request & Tracking System</title>
   <link rel="stylesheet" href="{% static 'css/about.css' %}">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="{% static 'images/docutrackr-logo.png' %}">
 </head>
 
 <body>
-  <!-- Navigation Bar -->
   <header class="navbar">
     <div class="navbar-left">
       <a href="{{ home_url }}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" /></a>
@@ -29,20 +29,21 @@
       {% else %}
         <span class="user-name"></span>
       {% endif %}
-      <div class="notification-icon">
-        <img src="{% static 'images/bell.png' %}" alt="Notification Bell" />
+      <div class="navbar-icons">
+        <div class="icon-item notification-icon">
+          <img src="{% static 'images/bell.png' %}" alt="Notification Bell" />
+        </div>
+        <div class="icon-item profile-icon">
+          <img src="{% static 'images/profile.png' %}" alt="User Profile" />
+        </div>
+        <a href="{% url 'student_logout' %}" class="icon-item logout-icon">
+          <img src="{% static 'images/logout.png' %}" alt="Logout" />
+        </a>
       </div>
-      <div class="profile-icon">
-        <img src="{% static 'images/profile.png' %}" alt="User Profile" />
-      </div>
-      <a href="{% url 'student_logout' %}" class="logout-icon">
-        <img src="{% static 'images/logout.png' %}" alt="Logout" />
-      </a>
     </div>
   </header>
 
   <main class="about-container">
-    <!-- Hero Section -->
     <section class="hero">
       <div class="hero-content">
         <h1>About DocuTrackr</h1>
@@ -53,7 +54,6 @@
       </div>
     </section>
 
-    <!-- Problem Statement Section -->
     <section class="section problem-section">
       <div class="section-content">
         <h2>The Challenge</h2>
