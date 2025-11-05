@@ -1,5 +1,4 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,18 +11,17 @@
 </head>
 <body>
   <header class="navbar">
-  <div class="navbar-left">
-    <a href="{{ home_url }}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" /></a>
-    <nav>
-    <ul>
-        <li><a href="{{ home_url }}">Dashboard</a></li>
-        <li><a href="#">Requests</a></li>
-    </ul>
-    </nav>
+    <div class="navbar-left">
+      <a href="{{ home_url }}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" /></a>
+      <nav>
+        <ul>
+          <li><a href="{{ home_url }}">Dashboard</a></li>
+          <li><a href="{% url 'admin-requests' %}">Requests</a></li>
+        </ul>
+      </nav>
+    </div>
 
-  </div>
-
-  <div class="navbar-right">
+    <div class="navbar-right">
       {% if full_name %}
         <a href="{{ home_url }}" class="user-name">{{ full_name }}</a>
       {% else %}
@@ -32,67 +30,59 @@
 
       <div class="navbar-icons">
         <div class="icon-item notification-icon">
-          <img src="{% static 'images/notification.png' %}" alt="Notifications" />
+          <img src="{% static 'images/bell.png' %}" alt="Notifications" />
         </div>
-
         <div class="icon-item profile-icon">
-          <img src="{% static 'images/profile-setting.png' %}" alt="Profile Settings" />
+          <img src="{% static 'images/profile.png' %}" alt="Profile" />
         </div>
-        
         <a href="{% url 'admin_logout' %}" class="icon-item logout-icon">
           <img src="{% static 'images/logout.png' %}" alt="Logout" />
         </a>
       </div>
     </div>
-</header>
+  </header>
 
   <main class="dashboard-container">
+    <!-- STATS CARDS -->
     <section class="stats-grid">
-            <div class="stat-card stat-red">
-        <div class="stat-icon">
-            <img src="{% static 'images/pending.png' %}" alt="Pending Icon" />
-        </div>
+      <div class="stat-card stat-red">
+        <div class="stat-icon"><img src="{% static 'images/pending.png' %}" alt="Pending" /></div>
         <div class="stat-content">
-            <h3>{{ pending_count }}</h3>
-            <p>Pending</p>
-            <span class="subtext">Needs Action</span>
+          <h3>{{ pending_count }}</h3>
+          <p>Pending</p>
+          <span class="subtext">Needs Action</span>
         </div>
-        </div>
+      </div>
 
-        <div class="stat-card stat-yellow">
-        <div class="stat-icon">
-            <img src="{% static 'images/processing.png' %}" alt="Processing Icon" />
-        </div>
+      <div class="stat-card stat-yellow">
+        <div class="stat-icon"><img src="{% static 'images/processing.png' %}" alt="Processing" /></div>
         <div class="stat-content">
-            <h3>{{ processing_count }}</h3>
-            <p>Processing</p>
-            <span class="subtext">In Progress</span>
+          <h3>{{ processing_count }}</h3>
+          <p>Processing</p>
+          <span class="subtext">In Progress</span>
         </div>
-        </div>
+      </div>
 
-        <div class="stat-card stat-green">
-        <div class="stat-icon">
-            <img src="{% static 'images/pickup.png' %}" alt="Ready Today Icon" />
-        </div>
+      <div class="stat-card stat-green">
+        <div class="stat-icon"><img src="{% static 'images/pickup.png' %}" alt="Ready" /></div>
         <div class="stat-content">
-            <h3>{{ ready_count }}</h3>
-            <p>Ready Today</p>
-            <span class="subtext">For Pickup</span>
+          <h3>{{ ready_count }}</h3>
+          <p>Ready Today</p>
+          <span class="subtext">For Pickup</span>
         </div>
-        </div>
+      </div>
 
-        <div class="stat-card stat-blue">
-        <div class="stat-icon">
-            <img src="{% static 'images/chart.png' %}" alt="Completed Icon" />
-        </div>
+      <div class="stat-card stat-blue">
+        <div class="stat-icon"><img src="{% static 'images/chart.png' %}" alt="Completed" /></div>
         <div class="stat-content">
-            <h3>{{ completed_count }}</h3>
-            <p>Completed</p>
-            <span class="subtext">This Month</span>
+          <h3>{{ completed_count }}</h3>
+          <p>Completed</p>
+          <span class="subtext">This Month</span>
         </div>
-        </div>
+      </div>
     </section>
 
+    <!-- REQUESTS TABLE -->
     <section class="table-section">
       <div class="section-header">
         <h2>All Document Requests</h2>
@@ -107,7 +97,7 @@
               <button type="submit" style="display: none;"></button>
             </div>
           </form>
-          
+
           <div class="filter-container">
             <form method="GET" class="filter-form" style="display: inline-block;">
               {% if search_query %}
@@ -132,58 +122,49 @@
           <thead>
             <tr>
               <th><input type="checkbox" id="selectAll" /></th>
-              <th>REQUEST ID</th>
-              <th>STUDENT INFO</th>
-              <th>DOCUMENT TYPE</th>
-              <th>DATE REQUESTED</th>
-              <th>STATUS</th>
-              <th>ACTION</th>
+              <th>REQ ID</th>
+              <th>Student Info</th>
+              <th>Document</th>
+              <th>Payment Proof</th>
+              <th>Status</th>
+              <th>Claim Slip</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {% for request in recent_requests %}
-            <tr class="request-row">
-              <td><input type="checkbox" class="row-checkbox" data-request-id="{{ request.request_id }}" /></td>
-              <td><strong>REQ-{{ request.request_id }}</strong></td>
+            {% for req in recent_requests %}
+            <tr class="request-row" data-request-id="{{ req.request_id }}">
+              <td><input type="checkbox" class="row-checkbox" /></td>
+              <td><strong>REQ-{{ req.request_id }}</strong></td>
+              <td>{{ req.user.name }}<br><small>{{ req.user.student_id }}</small></td>
+              <td>{{ req.document.name }}</td>
               <td>
-                <div class="student-info">
-                  <div class="student-name">{{ request.user.name }}</div>
-                  <div class="student-id">{{ request.user.student_id }}</div>
-                </div>
+                {% if req.payment and req.payment.proof_of_payment %}
+                  <button class="view-proof-btn" data-img-url="{{ req.payment.proof_of_payment|safe|default:''  }}">View Proof</button>
+                {% else %}
+                  <span class="no-proof">No Proof</span>
+                {% endif %}
               </td>
-              <td>{{ request.document.name }}</td>
-              <td>{{ request.created_at|date:"M d, Y" }}<br><span class="date-ago">{{ request.created_at|timesince }} ago</span></td>
+              <td class="status-cell">
+                <span class="badge {{ req.status }}">{{ req.status|upper }}</span>
+              </td>
               <td>
-                {% if request.status == 'pending' %}
-                  <span class="badge pending">PENDING</span>
-                {% elif request.status == 'processing' %}
-                  <span class="badge processing">PROCESSING</span>
-                {% elif request.status == 'approved' %}
-                  <span class="badge ready">READY FOR PICKUP</span>
-                {% elif request.status == 'completed' %}
-                  <span class="badge completed">COMPLETED</span>
-                {% elif request.status == 'rejected' %}
-                  <span class="badge rejected">REJECTED</span>
+                {% if req.claim_slips.exists %}
+                  <span class="badge claim">CLAIM GENERATED</span>
+                {% else %}
+                  <span class="badge none">—</span>
                 {% endif %}
               </td>
               <td>
-                {% if request.status == 'pending' %}
-                  <button class="action-btn process-btn" data-request-id="{{ request.request_id }}">Process</button>
-                {% elif request.status == 'processing' %}
-                  <button class="action-btn update-btn">Update</button>
-                {% elif request.status == 'approved' %}
-                  <button class="action-btn notify-btn">Notify</button>
+                {% if req.status != 'completed' %}
+                  <button class="action-btn process-btn" data-request-id="{{ req.request_id }}">Update</button>
+                {% else %}
+                  <span class="badge done">Completed</span>
                 {% endif %}
-                <button class="view-link">
-                  <img src="{% static 'images/view.png' %}" alt="View" style="width:16px; height:16px; margin-right:4px;" />
-                  View
-                </button>
               </td>
             </tr>
             {% empty %}
-            <tr>
-              <td colspan="7" style="text-align: center; padding: 20px;">No requests found</td>
-            </tr>
+            <tr><td colspan="8" style="text-align:center;">No requests found.</td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -198,7 +179,7 @@
         {% else %}
           <span class="showing-text">Showing {{ recent_requests|length }} recent requests ({{ total_requests }} total)</span>
         {% endif %}
-        <button class="view-all-btn">View All Requests</button>
+        <a href="{% url 'admin-requests' %}" class="view-all-btn" style="text-decoration: none;">View All Requests</a>
       </div>
     </section>
 
@@ -275,33 +256,354 @@
     </div>
   </footer>
 
-  <div id="processModal" class="modal-overlay">
-    <div class="modal-container">
-      <div class="modal-header">
-        <div class="modal-logo">
-          <img src="{% static 'images/docutrackr-logo.png' %}" alt="DocuTrackr" class="modal-logo-img" />
-          <h3>DocuTrackr</h3>
-        </div>
-        <button class="modal-close" id="closeModal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="modal-icon">
-          <img src="{% static 'images/processing.png' %}" alt="Process Icon" class="process-icon" />
-        </div>
-        <h2>Process Document Request</h2>
-        <p class="modal-message">
-          Are you sure you want to process request <strong id="requestId"></strong>?
-        </p>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-cancel" id="cancelProcess">Cancel</button>
-        <button class="btn-confirm" id="confirmProcess">
-          Yes
-        </button>
-      </div>
+  <!-- Proof Modal -->
+  <div id="proofModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="close-btn">&times;</span>
+      <img id="proofImage" src="" alt="Proof of Payment" />
     </div>
   </div>
 
-  <script src="{% static 'js/admin-dashboard.js' %}"></script>
+  <!-- Process Modal -->
+  <div id="processModal" class="modal-overlay" style="display:none;">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3>Update Request Status</h3>
+        <button class="modal-close" id="closeModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Request <strong id="requestId"></strong> will be updated.</p>
+        <label>Select Status:</label>
+        <select id="statusDropdown">
+          <option value="processing">Processing</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+          <option value="completed">Completed</option>
+        </select>
+        <label>Remarks (optional):</label>
+        <textarea id="remarks" rows="3"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelProcess" class="btn-cancel">Cancel</button>
+        <button id="confirmProcess" class="btn-confirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+  <script>
+  const proofModal = document.getElementById("proofModal");
+  const proofImage = document.getElementById("proofImage");
+  const proofClose = proofModal.querySelector(".close-btn");
+
+  const proofButtons = document.querySelectorAll(".view-proof-btn");
+
+  const processModal = document.getElementById("processModal");
+  const statusDropdown = document.getElementById("statusDropdown");
+  const remarks = document.getElementById("remarks");
+  const confirmProcess = document.getElementById("confirmProcess");
+  const cancelProcess = document.getElementById("cancelProcess");
+  const closeModal = document.getElementById("closeModal");
+  const requestIdField = document.getElementById("requestId");
+  const remarksField = document.getElementById("remarks");
+
+  let selectedRequestId = null;
+
+  // --- VIEW PROOF ---
+  proofButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      let imgUrl = btn.getAttribute("data-img-url");
+
+      // Remove any leftover unicode escapes
+      imgUrl = imgUrl.replace(/\\u002D/g, "-").trim();
+
+      if (!imgUrl.startsWith("http")) {
+        console.error("Invalid proof URL:", imgUrl);
+        alert("Invalid proof URL.");
+        return;
+      }
+
+      proofImage.src = imgUrl;
+
+      proofImage.onload = () => {
+        console.log("✅ Modal should open now");
+        proofModal.style.display = "flex";
+        document.body.style.overflow = "hidden";
+      }
+      
+      console.log("Loaded proof image:", proofImage.src);
+
+      proofImage.onerror = () => {
+        console.error("Failed to load proof image:", imgUrl);
+        alert("Unable to display image. Please check if the proof file exists.");
+      };
+    });
+
+  proofClose?.addEventListener("click", () => {
+    proofModal.style.display = "none";
+    proofImage.removeAttribute("src");
+    document.body.style.overflow = "auto";
+  });
+
+  proofModal.addEventListener("click", (e) => {
+    if (e.target === proofModal) {
+      proofModal.style.display = "none";
+      proofImage.removeAttribute("src");
+      document.body.style.overflow = "auto";
+    }
+  });
+
+   // ======== OPEN UPDATE MODAL ========
+  const processButtons = document.querySelectorAll(".process-btn");
+  processButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      selectedRequestId = btn.dataset.requestId;
+      requestIdField.textContent = `REQ-${selectedRequestId}`;
+      remarksField.value = "";
+      statusDropdown.value = "processing";
+      processModal.style.display = "flex";
+      document.body.style.overflow = "hidden";
+    });
+  });
+
+  // ======== CLOSE MODAL ========
+  [closeModal, cancelProcess].forEach((el) =>
+    el.addEventListener("click", () => {
+      processModal.style.display = "none";
+      document.body.style.overflow = "auto";
+      selectedRequestId = null;
+    })
+  );
+
+  // ======== CONFIRM STATUS UPDATE ========
+  confirmProcess.addEventListener("click", async () => {
+    if (!selectedRequestId) {
+      alert("No request selected.");
+      return;
+    }
+
+    const newStatus = statusDropdown.value;
+    const remarks = remarksField.value.trim();
+
+    // Validate status selection
+  if (!newStatus) {
+    alert("Please select a status.");
+    return;
+  }
+    // Optional: Confirm destructive actions
+    if (newStatus === 'rejected') {
+    if (!confirm(`Are you sure you want to reject this request?`)) {
+      return;
+    }
+  }
+ 
+  // Disable button to prevent double-clicks
+  confirmProcess.disabled = true;
+  const originalText = confirmProcess.textContent;
+  confirmProcess.textContent = "Updating...";
+
+    try {
+      const res = await fetch(`/dashboard/update-status/${selectedRequestId}/`, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": getCSRFToken(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+        status: newStatus,
+        remarks: remarks,
+        }),
+      });
+
+     // Handle non-OK responses
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `Server returned ${res.status}`);
+      }
+
+    const data = await res.json();
+    
+    if (data.success) {
+      processModal.style.display = "none";
+      document.body.style.overflow = "auto";
+
+        // Update UI instantly
+        const row = document.querySelector(`tr[data-request-id="${selectedRequestId}"]`);
+        if (row) {
+        const statusCell = row.querySelector('.status-cell .badge');
+        if (statusCell) {
+          statusCell.textContent = newStatus.toUpperCase();
+          // Remove all status classes and add new one
+          statusCell.className = 'badge';
+          statusCell.classList.add(newStatus);
+        }
+
+       // ✅ Build success message
+      let successMessage = `Request updated to ${newStatus.toUpperCase()} successfully!`;
+      if (data.claim_slip) {
+        successMessage += `\n\nClaim slip generated: ${data.claim_slip}`;
+      }
+
+      // ✅ Show ONE alert, then reload
+      alert(successMessage);
+      // ✅ Clear selected request
+      selectedRequestId = null;
+      // ✅ Reload immediately after alert is dismissed
+      window.location.reload();
+      } else {
+        throw new Error(data.error || "Unknown error occurred");
+      }
+    }
+    } catch (err) {
+      console.error("Update failed:", err);
+      // ✅ Re-enable button on error
+      confirmProcess.disabled = false;
+      confirmProcess.textContent = "Confirm";
+      // ✅ Show error alert (but DON'T reload)
+    alert(`Failed to update: ${err.message}\n\nPlease try again.`);
+    }
+  });
+
+  function getCSRFToken() {
+    let csrfToken = null;
+  
+  // Try to get from cookie
+  const cookies = document.cookie.split(';');
+  for (let cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === 'csrftoken') {
+      csrfToken = value;
+      break;
+    }
+  }
+
+  // Fallback: get from meta tag or hidden input
+  if (!csrfToken) {
+    const metaTag = document.querySelector('meta[name="csrf-token"]');
+    if (metaTag) {
+      csrfToken = metaTag.content;
+    } else {
+      const hiddenInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+      if (hiddenInput) {
+        csrfToken = hiddenInput.value;
+      }
+    }
+  }
+  
+  return csrfToken || '';
+}
+
+  const selectAllCheckbox = document.getElementById('selectAll');
+    const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+    const requestRows = document.querySelectorAll('.request-row');
+    const searchInput = document.querySelector('input[name="search"]');
+    const searchForm = document.querySelector('.search-form');
+    const filterSelect = document.querySelector('.filter-select');
+
+    console.log('Select All Checkbox:', selectAllCheckbox);
+    console.log('Row Checkboxes found:', rowCheckboxes.length);
+    console.log('Request Rows found:', requestRows.length);
+    console.log('Search Input:', searchInput);
+    console.log('Filter Select:', filterSelect);
+
+    if (!selectAllCheckbox) {
+        console.error('Select All checkbox not found! Make sure it has id="selectAll"');
+        return;
+    }
+
+    if (rowCheckboxes.length === 0) {
+        console.error('No row checkboxes found! Make sure they have class="row-checkbox"');
+        return;
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchForm.submit();
+            }
+        });
+
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                if (this.value.length >= 2 || this.value.length === 0) {
+                    searchForm.submit();
+                }
+            }, 500);
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'f') {
+                e.preventDefault();
+                searchInput.focus();
+                searchInput.select();
+            }
+        });
+
+        const clearSearchLink = document.querySelector('a[href="?"]');
+        if (clearSearchLink) {
+            clearSearchLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                searchInput.value = '';
+                window.location.href = window.location.pathname;
+            });
+        }
+    }
+
+    selectAllCheckbox.addEventListener('change', function() {
+        const isChecked = this.checked;
+        console.log('Select All clicked, checked:', isChecked);
+        
+        rowCheckboxes.forEach(function(checkbox) {
+            checkbox.checked = isChecked;
+            
+            const row = checkbox.closest('.request-row');
+            if (isChecked) {
+                row.classList.add('selected');
+            } else {
+                row.classList.remove('selected');
+            }
+        });
+    });
+
+    rowCheckboxes.forEach(function(checkbox) {
+        checkbox.addEventListener('change', function() {
+            const row = this.closest('.request-row');
+
+            if (this.checked) {
+                row.classList.add('selected');
+            } else {
+                row.classList.remove('selected');
+            }
+
+            const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+            selectAllCheckbox.checked = checkedBoxes.length === rowCheckboxes.length;
+            selectAllCheckbox.indeterminate = checkedBoxes.length > 0 && checkedBoxes.length < rowCheckboxes.length;
+        });
+    });
+
+    function getSelectedRequestIds() {
+        const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
+        return Array.from(selectedCheckboxes).map(checkbox => checkbox.dataset.requestId);
+    }
+
+    if (filterSelect) {
+        
+        if (filterSelect.value) {
+            filterSelect.style.borderColor = '#89393a';
+            filterSelect.style.backgroundColor = '#f8f8f8';
+        }
+
+        filterSelect.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                this.value = '';
+                this.form.submit();
+            }
+        });
+    }
+
+    window.getSelectedRequestIds = getSelectedRequestIds;
+});
+  </script>
 </body>
 </html>

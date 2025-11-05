@@ -1,47 +1,58 @@
+import time
+from django.conf import settings
+from supabase import create_client
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
-from .models import Request, Payment, Document, Request_Status_Log
+from django.contrib import messages
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+from .models import Request, Payment, Document, Request_Status_Log, Claim_Slips
 from authentication.models import User
+from notifications.models import Notification
 from authentication.decorators import login_required, no_cache
+from django.http import JsonResponse
+
+
 
 @login_required
 @no_cache
 def create_request(request):
+    """Handles creation of new document requests and uploads proof_of_payment to Supabase Storage."""
     user_id = request.session.get('user_id')
     role = request.session.get('role')
+
+    # Only allow students to access this view
     if role != 'student':
         return redirect('index')
+
+    # Initialize variables
     user = None
-    user_name = None
-    student_id = None
-    payment = None
     documents = Document.objects.all()
     user_requests = []
+    success_message = None
 
-    # Get user details
-    if user_id:
-        try:
-            user = User.objects.get(id=user_id)
-            user_name = user.name
-            student_id = user.student_id
-        except User.DoesNotExist:
-            request.session['error'] = "User not found."
-            return redirect('student-dashboard')
+    # Get user info
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        request.session.flush()
+        return redirect('index')
 
-    # Handle request form
+    # Handle form submission
     if request.method == 'POST':
         document_type = request.POST.get('document_type')
         date_needed = request.POST.get('date_needed')
         copies = request.POST.get('copies', 1)
-        proof = request.FILES.get('proof_of_payment')
+        proof_file = request.FILES.get('proof_of_payment')
 
+        # Get document instance
         try:
             document = Document.objects.get(name__iexact=document_type)
         except Document.DoesNotExist:
             request.session['error'] = "Invalid document type."
             return redirect('create_request')
 
-        # Create new request
+        # Create the new Request
         new_request = Request.objects.create(
             user=user,
             document=document,
@@ -50,16 +61,46 @@ def create_request(request):
             status='pending',
         )
 
-        # Create payment record if a proof is uploaded
-        if proof:
-            Payment.objects.create(
-                request=new_request,
-                proof_of_payment=proof,
-                payment_status='pending',
-                uploaded_at=timezone.now(),
-            )
+        # Initialize Supabase client
+        supabase_url = getattr(settings, "SUPABASE_URL", None)
+        supabase_key = getattr(settings, "SUPABASE_ANON_KEY", None)
+        supabase_bucket = getattr(settings, "SUPABASE_BUCKET", "payments")
 
-        # Log initial status
+        supabase = create_client(supabase_url, supabase_key) if supabase_url and supabase_key else None
+
+        # Upload proof file to Supabase if provided
+        uploaded_url = None
+        if proof_file:
+            try:
+                filename = f"{user.student_id}_{int(time.time())}_{proof_file.name}"
+                file_bytes = proof_file.read()
+
+                # Upload to Supabase Storage
+                res = supabase.storage.from_(supabase_bucket).upload(filename, file_bytes)
+
+                # Get public URL
+                uploaded_url = supabase.storage.from_(supabase_bucket).get_public_url(filename)
+
+                # Save payment record with Supabase URL
+                Payment.objects.create(
+                    request=new_request,
+                    proof_of_payment=uploaded_url,
+                    uploaded_at=timezone.now(),
+                )
+
+                print(f"✅ Uploaded proof to Supabase: {uploaded_url}")
+
+            except Exception as e:
+                print(f"❌ Supabase upload failed: {e}")
+                # Fallback: save locally if upload fails
+                payment = Payment.objects.create(
+                    request=new_request,
+                    proof_of_payment=proof_file,
+                    uploaded_at=timezone.now(),
+                )
+                uploaded_url = payment.proof_of_payment.url if payment.proof_of_payment else None
+
+        # Log initial request status
         Request_Status_Log.objects.create(
             request=new_request,
             old_status='none',
@@ -68,10 +109,11 @@ def create_request(request):
             changed_at=timezone.now(),
         )
 
-        request.session['success'] = "Your request has been submitted successfully."
+        success_message = "Your request has been submitted successfully."
+        request.session['success'] = success_message
         return redirect('create_request')
 
-    # Load user requests + related data
+    # Fetch user requests with related data
     if user:
         user_requests = (
             Request.objects.filter(user=user)
@@ -80,10 +122,35 @@ def create_request(request):
         )
 
     return render(request, 'request-form.html', {
-        'full_name': user_name,
-        'student_id': student_id,
-        'payment': payment,
+        'full_name': user.name,
+        'student_id': user.student_id,
         'documents': documents,
         'user_requests': user_requests,
         'success': request.session.pop('success', None),
     })
+
+
+@login_required
+@no_cache
+def view_claim_slip(request, request_id):
+    if request.session.get('role') != 'student':
+        return redirect('index')
+
+    user = User.objects.get(id=request.session.get('user_id'))
+    req = get_object_or_404(Request, pk=request_id, user=user)
+    claim = Claim_Slips.objects.filter(request=req).first()
+
+    if not claim:
+        messages.error(request, "No claim slip available yet for this request.")
+        return redirect('student-dashboard')
+
+    context = {
+        'request': req,
+        'claim': claim,
+        'document': req.document,
+        'full_name': user.name,
+        'student_id': user.student_id,
+    }
+
+    return render(request, 'claimslip.html', context)
+
