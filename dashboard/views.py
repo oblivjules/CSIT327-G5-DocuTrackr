@@ -1,8 +1,18 @@
-from django.shortcuts import render, redirect
-from requests.models import Request, Request_Status_Log
-from authentication.models import User
-from authentication.decorators import login_required, no_cache
+from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
+from django.db import transaction
+from django.utils import timezone
+from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from authentication.decorators import login_required, no_cache
+import json
+import hashlib
+
+from requests.models import Request, Request_Status_Log, Claim_Slips
+from authentication.models import User
+from notifications.models import Notification
+
 
 
 @login_required
@@ -77,7 +87,7 @@ def admin_dashboard(request):
     completed_count = Request.objects.filter(status='completed').count()
 
     # Base queryset for requests
-    requests_queryset = Request.objects.select_related('user', 'document')
+    requests_queryset = Request.objects.select_related('user', 'document','payment')
 
     # Apply status filter if selected
     if status_filter:
@@ -98,6 +108,10 @@ def admin_dashboard(request):
     recent_requests = requests_queryset.order_by('-created_at')[:10]
 
     # Calculate total requests count
+    pending_count = Request.objects.filter(status='pending').count()
+    processing_count = Request.objects.filter(status='processing').count()
+    ready_count = Request.objects.filter(status__in=['approved', 'completed']).count()
+    completed_count = Request.objects.filter(status='completed').count()
     total_requests = Request.objects.count()
     
     # Count of filtered results (always limited to 10)
@@ -127,7 +141,10 @@ def admin_dashboard(request):
         'status_choices': status_choices,
         'is_searching': bool(search_query),
         'is_filtering': bool(status_filter),
-        'recent_activities': recent_activities,
+        'recent_activities': Request_Status_Log.objects.select_related(
+            'request', 'request__user', 'changed_by'
+        ).filter(
+            changed_by__role='registrar').order_by('-changed_at')[:5],
     }
 
     return render(request, 'admin-dashboard.html', context)   
@@ -135,60 +152,180 @@ def admin_dashboard(request):
 
 @login_required
 @no_cache
-def about_view(request):
+def about(request):
     return render(request, 'about.html', {'user_role': request.session.get('role')})
 
-
 @login_required
-@no_cache
-def process_request(request, request_id):
-    """Handle processing of a document request by staff"""
-    from django.http import JsonResponse
-    from django.shortcuts import get_object_or_404
-    from django.utils import timezone
-    
-    # Only allow POST requests
-    if request.method != 'POST':
+@csrf_exempt  
+def update_request_status(request, request_id):
+    """Unified handler for updating request status (Registrar only)"""
+    if request.method != "POST":
         return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
     
-    # Check if user is staff (registrar)
+    # ✅ Check registrar role
     if request.session.get('role') != 'registrar':
         return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
     
+    # ✅ Extract POST data (handle both form-data and JSON)
+    if request.content_type == 'application/json':
+        try:
+            data = json.loads(request.body)
+            new_status = data.get('status')
+            remarks = data.get('remarks', '').strip()
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    else:
+        new_status = request.POST.get('status')
+        remarks = request.POST.get('remarks', '').strip()
+    
+    if not new_status:
+        return JsonResponse({'success': False, 'error': 'Status is required'}, status=400)
+    
+    # ✅ Validate status value
+    valid_statuses = ['pending', 'processing', 'approved', 'rejected', 'completed']
+    if new_status not in valid_statuses:
+        return JsonResponse({'success': False, 'error': 'Invalid status value'}, status=400)
+
     try:
-        # Get the document request
-        doc_request = get_object_or_404(Request, request_id=request_id)
+        # ✅ Get records safely
+        staff_user = get_object_or_404(User, id=request.session.get("user_id"))
+        doc_request = get_object_or_404(Request, pk=request_id)  # Changed variable name to avoid conflict
+        old_status = doc_request.status
         
-        # Check if request is in pending status
-        if doc_request.status != 'pending':
+        # ✅ Skip if no change
+        if old_status == new_status:
             return JsonResponse({
                 'success': False, 
-                'error': f'Request is already {doc_request.status}'
+                'error': f'Request is already {new_status}'
             }, status=400)
         
-        # Get the staff user
-        staff_user = get_object_or_404(User, id=request.session.get('user_id'))
+        # ✅ Optional: Add status transition validation
+        # For example, can't go from 'completed' back to 'pending'
+        invalid_transitions = {
+            'completed': ['pending', 'processing']
+        }
+        if old_status in invalid_transitions and new_status in invalid_transitions[old_status]:
+            return JsonResponse({
+                'success': False,
+                'error': f'Cannot change from {old_status} to {new_status}'
+            }, status=400)
         
-        # Update request status to processing
-        doc_request.status = 'processing'
-        doc_request.save()
-        
-        # Create status log entry
-        Request_Status_Log.objects.create(
-            request=doc_request,
-            old_status='pending',
-            new_status='processing',
-            changed_by=staff_user
-        )
+        with transaction.atomic():
+            # --- Update main request ---
+            doc_request = Request.objects.select_for_update().get(pk=request_id)
+            old_status = doc_request.status
+
+            doc_request.status = new_status
+            doc_request.updated_at = timezone.now()
+            doc_request.save()
+            
+            # --- Log status change ---
+            Request_Status_Log.objects.create(
+                request=doc_request,
+                old_status=old_status,
+                new_status=new_status,
+                changed_by=staff_user,
+                changed_at=timezone.now()
+            )
+            
+            # --- Auto-create claim slip if approved ---
+            claim_slip_info = None
+            if new_status == 'approved':
+                # Check if claim slip already exists
+                existing_claim = Claim_Slips.objects.filter(request=doc_request).first()
+                if existing_claim:
+                    claim_slip_info = existing_claim.claim_number
+                else:
+                    claim_slip = Claim_Slips.objects.create(
+                        request=doc_request,
+                        claim_number=f"CLAIM-{doc_request.request_id}-{int(timezone.now().timestamp())}",
+                        date_ready=doc_request.date_needed if doc_request.date_needed else timezone.now().date(),
+                        issued_by=staff_user
+                    )
+                    claim_slip_info = claim_slip.claim_number
+            
+            # --- Send notification to student ---
+            message = f"Your document request (REQ-{doc_request.request_id}) status has been updated to {new_status.upper()}."
+            if remarks:
+                message += f" Remarks: {remarks}"
+            
+            Notification.objects.create(
+                user=doc_request.user,
+                request=doc_request,
+                message=message,
+                is_read=False,
+                created_at=timezone.now()
+            )
         
         return JsonResponse({
             'success': True,
-            'message': 'Request has been processed successfully',
-            'new_status': 'processing'
+            'message': f"Request updated to {new_status}",
+            'new_status': new_status,
+            'claim_slip': claim_slip_info,
         })
         
     except Exception as e:
+        # Log the error for debugging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error updating request {request_id}: {str(e)}", exc_info=True)
+        
         return JsonResponse({
-            'success': False,
-            'error': f'An error occurred: {str(e)}'
+            'success': False, 
+            'error': f'An error occurred while updating the request'
         }, status=500)
+
+
+def claim_slip_view(request, slip_id):
+    claim_slip = get_object_or_404(Claim_Slips, pk=slip_id)
+
+    user_id = request.session.get("user_id")
+    role = request.session.get("role")
+
+    # ✅ Generate actual URLs
+    if role == "student":
+        home_url = reverse("student-dashboard")
+    else:
+        home_url = reverse("admin-dashboard")
+
+    return render(request, "claimslip.html", {
+        "claim_slip": claim_slip,
+        "home_url": home_url,
+    })
+
+@login_required
+@no_cache
+def requests_list(request):
+    # Only registrar can access
+    if request.session.get('role') != 'registrar':
+        return redirect('adminlogin')
+
+    # Basic filters and search (reuse same params as admin_dashboard)
+    search_query = request.GET.get('search', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+
+    qs = Request.objects.select_related('user', 'document').order_by('-created_at')
+
+    if status_filter:
+        qs = qs.filter(status=status_filter)
+
+    if search_query:
+        qs = qs.filter(
+            Q(request_id__icontains=search_query) |
+            Q(user__name__icontains=search_query) |
+            Q(user__student_id__icontains=search_query) |
+            Q(document__name__icontains=search_query)
+        )
+
+    # No limit here — show full set (or can paginate later)
+    all_requests = qs
+
+    context = {
+        'full_name': User.objects.get(id=request.session.get('user_id')).name if request.session.get('user_id') else None,
+        'recent_requests': all_requests,
+        'status_choices': Request.STATUS_CHOICES,
+        'search_query': search_query,
+        'status_filter': status_filter,
+    }
+
+    return render(request, 'requests-list.html', context)

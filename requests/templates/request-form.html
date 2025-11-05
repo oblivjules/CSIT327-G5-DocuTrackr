@@ -156,6 +156,7 @@
               <th>Date Needed</th>
               <th>Status</th>
               <th>Payment</th>
+              <th>Claim Slip</th>
             </tr>
           </thead>
           <tbody>
@@ -165,28 +166,29 @@
                 <td>{{ req.document.name }}</td>
                 <td>{{ req.copies }}</td>
                 <td>{{ req.date_needed|date:"M d, Y" }}</td>
-
                 <td><span class="status-badge status-{{ req.status }}">{{ req.status|title }}</span></td>
 
                 <td>
                   {% if req.payment %}
                     <div style="display:flex;align-items:center;gap:8px;">
-                      <span class="status-badge 
-                        {% if req.payment.payment_status == 'verified' %}status-completed
-                        {% elif req.payment.payment_status == 'pending' %}status-pending
-                        {% elif req.payment.payment_status == 'rejected' %}status-processing
-                        {% endif %}">
-                        {{ req.payment.payment_status|title }}
-                      </span>
-
                       {% if req.payment and req.payment.proof_of_payment %}
-                        <button class="view-proof-btn" data-img-url="{{ req.payment.proof_of_payment.url }}">
+                        <button class="view-proof-btn" data-img-url="{{ req.payment.proof_of_payment }}">
                           <img src="{% static 'images/media.png' %}" alt="View Proof" width="30" />
                         </button>
                       {% endif %}
                     </div>
                   {% else %}
                     <span style="color:#999;">No Payment</span>
+                  {% endif %}
+                </td>
+
+                <td>
+                  {% if req.claim_slips.exists %}
+                    {% with slip=req.claim_slips.first %}
+                    <a href="{% url 'claim-slip' slip.claim_id %}" class="claim-slip-link">View Claim Slip</a>
+                    {% endwith %}
+                  {% else %}
+                    <span style="color:#999;">Not Available</span>
                   {% endif %}
                 </td>
               </tr>
@@ -216,7 +218,7 @@
       <div class="footer-section">
         <h4>Quick Links</h4>
         <ul>
-          <li><a href="{% url 'student-dashboard' %}">Home</a></li>
+          <li><a href="{{ home_url }}">Home</a></li>
           <li><a href="{% url 'about' %}">About</a></li>
           <li><a href="#">Privacy Policy</a></li>
           <li><a href="#">Contact</a></li>
@@ -238,122 +240,111 @@
       <p>&copy; 2025 DocuTrackr. All rights reserved. | CIT-U Document Management System</p>
     </div>
   </footer>
-  <script>
-const dateInput = document.getElementById('dateNeeded');
-if (dateInput) {
-  const today = new Date().toISOString().split('T')[0];
-  dateInput.setAttribute('min', today);
-}
 
-const form = document.querySelector('form');
-const fileInput = document.getElementById('fileInput');
-const fileLabel = document.querySelector('.file-label');
-const allowedTypes = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'];
-
-let errorContainer = document.querySelector('.file-upload .form-error');
-if (!errorContainer && fileInput) {
-  errorContainer = document.createElement('p');
-  errorContainer.className = 'form-error';
-  errorContainer.style.color = 'red';
-  errorContainer.style.fontWeight = 'bold';
-  fileInput.parentNode.appendChild(errorContainer);
-}
-
-if (fileInput) {
-  fileInput.addEventListener('change', () => {
-    errorContainer.textContent = '';
-    const file = fileInput.files[0];
-
-    if (!file) {
-      errorContainer.textContent = 'Proof of payment is required.';
-      fileLabel.textContent = 'Choose File';
-      return;
-    }
-
-    if (!allowedTypes.includes(file.type)) {
-      errorContainer.textContent = 'Unsupported file format. Supported: PNG, JPG, SVG, WEBP.';
-      fileInput.value = '';
-      fileLabel.textContent = 'Choose File';
-      return;
-    }
-
-    fileLabel.textContent = file.name;
-  });
-}
-
-if (form) {
-  form.addEventListener('submit', (e) => {
-    const file = fileInput?.files[0];
-    errorContainer.textContent = '';
-
-    if (!file) {
-      e.preventDefault();
-      errorContainer.textContent = 'Proof of payment is required.';
-      return false;
-    }
-
-    if (!allowedTypes.includes(file.type)) {
-      e.preventDefault();
-      errorContainer.textContent = 'Unsupported file format. Supported: PNG, JPG, SVG, WEBP.';
-      return false;
-    }
-  });
-}
-
+<script>
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("✅ Modal script loaded");
+  const dateInput = document.getElementById('dateNeeded');
+  if (dateInput) {
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.setAttribute('min', today);
+  }
 
+  const form = document.querySelector('form');
+  const fileInput = document.getElementById('fileInput');
+  const fileLabel = document.querySelector('.file-label');
+  const allowedTypes = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'];
+
+  let errorContainer = document.querySelector('.file-upload .form-error');
+  if (!errorContainer && fileInput) {
+    errorContainer = document.createElement('p');
+    errorContainer.className = 'form-error';
+    errorContainer.style.color = 'red';
+    errorContainer.style.fontWeight = 'bold';
+    fileInput.parentNode.appendChild(errorContainer);
+  }
+
+  if (fileInput) {
+    fileInput.addEventListener('change', () => {
+      errorContainer.textContent = '';
+      const file = fileInput.files[0];
+
+      if (!file) {
+        errorContainer.textContent = 'Proof of payment is required.';
+        fileLabel.textContent = 'Choose File';
+        return;
+      }
+
+      if (!allowedTypes.includes(file.type)) {
+        errorContainer.textContent = 'Unsupported file format. Supported: PNG, JPG, SVG, WEBP.';
+        fileInput.value = '';
+        fileLabel.textContent = 'Choose File';
+        return;
+      }
+
+      fileLabel.textContent = file.name;
+    });
+  }
+
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      const file = fileInput?.files[0];
+      errorContainer.textContent = '';
+
+      if (!file) {
+        e.preventDefault();
+        errorContainer.textContent = 'Proof of payment is required.';
+        return false;
+      }
+
+      if (!allowedTypes.includes(file.type)) {
+        e.preventDefault();
+        errorContainer.textContent = 'Unsupported file format. Supported: PNG, JPG, SVG, WEBP.';
+        return false;
+      }
+    });
+  }
+
+  // 🔹 FIXED MODAL PROOF VIEWER
   const modal = document.getElementById("proofModal");
   const modalImg = document.getElementById("proofImage");
   const closeBtn = document.querySelector(".close-btn");
 
-  if (!modal || !modalImg) {
-    console.warn("⚠️ Modal elements not found in DOM.");
-    return;
-  }
-
   const proofButtons = document.querySelectorAll(".view-proof-btn");
-  console.log(`🟡 Found ${proofButtons.length} proof button(s)`);
 
   proofButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       let imgUrl = btn.getAttribute("data-img-url");
 
       if (!imgUrl) {
-        console.warn("⚠️ Missing data-img-url for proof button");
+        alert("No proof of payment available.");
         return;
       }
 
-      // Ensure correct URL format
-      if (!imgUrl.startsWith("/")) imgUrl = "/" + imgUrl;
-      modalImg.src = imgUrl;
+      // ✅ FIX: Don't prepend '/' for Supabase URLs
+      modalImg.src = imgUrl.startsWith("http") ? imgUrl : "/" + imgUrl;
 
-      // Wait until the image loads before showing the modal
       modalImg.onload = () => {
         modal.style.display = "flex";
         document.body.style.overflow = "hidden";
-        console.log("🖼️ Proof loaded:", imgUrl);
       };
 
       modalImg.onerror = () => {
-        console.error("❌ Failed to load proof image:", imgUrl);
+        console.error("Failed to load proof image:", imgUrl);
         alert("Unable to display image. Please check if the proof file exists.");
       };
     });
   });
 
-  // Close modal
   closeBtn?.addEventListener("click", () => {
     modal.style.display = "none";
     modalImg.removeAttribute("src");
     document.body.style.overflow = "auto";
   });
 
-  // Close when clicking outside the modal content
   modal.addEventListener("click", (e) => {
     if (e.target === modal) {
       modal.style.display = "none";
-      mmodalImg.removeAttribute("src");
+      modalImg.removeAttribute("src");
       document.body.style.overflow = "auto";
     }
   });

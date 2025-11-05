@@ -1,0 +1,121 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>All Requests - Admin</title>
+  <link rel="stylesheet" href="{% static 'css/admin-dashboard.css' %}">
+</head>
+<body>
+  <header class="navbar">
+    <div class="navbar-left">
+      <a href="{{ home_url }}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr" class="logo"></a>
+      <nav>
+        <ul>
+          <li><a href="{% url 'admin-dashboard' %}">Dashboard</a></li>
+          <li><a href="#" class="active">Requests</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="navbar-right">
+      <a href="{{ home_url }}" class="user-name">{{ full_name }}</a>
+      <div class="navbar-icons">
+        <a href="{% url 'admin_logout' %}" class="icon-item logout-icon"><img src="{% static 'images/logout.png' %}" alt="Logout"></a>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard-container">
+    <section class="table-section">
+      <div class="section-header">
+        <h2>All Document Requests</h2>
+        <div class="table-controls">
+          <form method="GET" class="search-form">
+            <div class="search-box">
+              <input type="text" name="search" placeholder="Search..." value="{{ search_query }}" />
+              <button type="submit" style="display:none"></button>
+            </div>
+          </form>
+          <div class="filter-container">
+            <form method="GET" class="filter-form">
+              {% if search_query %}
+                <input type="hidden" name="search" value="{{ search_query }}" />
+              {% endif %}
+              <div class="filter-select-wrapper">
+                <img src="{% static 'images/dropdown.png' %}" alt="Filter" class="filter-icon" />
+                <select name="status" class="filter-select" onchange="this.form.submit()">
+                  <option value="">All Status</option>
+                  {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="requests-table">
+          <thead>
+            <tr>
+              <th>REQ ID</th>
+              <th>Student Info</th>
+              <th>Document</th>
+              <th>Payment Proof</th>
+              <th>Status</th>
+              <th>Claim Slip</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for req in recent_requests %}
+            <tr class="request-row" data-request-id="{{ req.request_id }}">
+              <td><strong>REQ-{{ req.request_id }}</strong></td>
+              <td>{{ req.user.name }}<br><small>{{ req.user.student_id }}</small></td>
+              <td>{{ req.document.name }}</td>
+              <td>
+                {% if req.payment and req.payment.proof_of_payment %}
+                  <button class="view-proof-btn" data-img-url="{{ req.payment.proof_of_payment }}">View Proof</button>
+                {% else %}
+                  <span class="no-proof">No Proof</span>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge {{ req.status }}">{{ req.status|upper }}</span>
+              </td>
+              <td>
+                {% if req.claim_slips.exists %}
+                  <span class="badge claim">CLAIM GENERATED</span>
+                {% else %}
+                  <span class="badge none">—</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if req.status == 'pending' or req.status == 'processing' or req.status == 'approved' %}
+                  <button class="action-btn process-btn" data-request-id="{{ req.request_id }}">Update</button>
+                {% else %}
+                  <span class="badge done">Completed</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" style="text-align:center;">No requests found.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div id="proofModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <img id="proofImage" src="" alt="Proof of Payment" />
+    </div>
+  </div>
+
+  <script src="{% static 'js/admin-dashboard.js' %}"></script>
+</body>
+</html>

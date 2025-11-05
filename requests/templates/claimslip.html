@@ -7,121 +7,117 @@
   <title>Document Claim Slip</title>
   <link rel="stylesheet" href="{% static 'css/claimslipstyle.css' %}" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="{% static 'images/docutrackr-logo.png' %}">
 </head>
 <body>
-
-<header class="navbar">
+  <header class="navbar">
     <div class="navbar-left">
-      <a href="{% url 'student_dashboard' %}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" /></a>
+      <a href="{{ home_url }}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" /></a>
       <nav>
         <ul>
-          <li><a href="{% url 'student_dashboard' %}">Home</a></li>
+          <li><a href="{{ home_url }}">Home</a></li>
           <li><a href="{% url 'about' %}">About</a></li>
           <li><a href="{% url 'create_request' %}" class="active">Create Request</a></li>
         </ul>
       </nav>
     </div>
 
-    <div class="navbar-right">
+  <div class="navbar-right">
       {% if full_name %}
-        <a href="{% url 'student_dashboard' %}" class="user-name">{{ full_name }}</a>
+        <a href="{{ home_url }}" class="user-name">{{ full_name }}</a>
       {% else %}
         <span class="user-name"></span>
       {% endif %}
 
-      <div class="notification-icon">
-        <img src="{% static 'images/bell.png' %}" alt="Notification Bell" />
-      </div>
+      <div class="navbar-icons">
+        <div class="icon-item notification-icon">
+          <img src="{% static 'images/bell.png' %}" alt="Notification Bell" />
+        </div>
 
-      <div class="profile-icon">
-        <img src="{% static 'images/profile.png' %}" alt="User Profile" />
-      </div>
+        <div class="icon-item profile-icon">
+          <img src="{% static 'images/profile.png' %}" alt="User Profile" />
+        </div>
 
-      <a href="{% url 'student_logout' %}" class="logout-icon">
-        <img src="{% static 'images/logout.png' %}" alt="Logout" />
-      </a>
+        <a href="{% url 'student_logout' %}" class="icon-item logout-icon">
+          <img src="{% static 'images/logout.png' %}" alt="Logout" />
+        </a>
+      </div>
     </div>
   </header>
 
-  <main class="container">
-    <section class="claim-card">
-      <div class="claim-header">
-        <div class="icon">✔</div>
-        <h2>DOCUMENT CLAIM SLIP</h2>
-        <p class="sub">CITEDOCS</p>
-      </div>
+<main class="container">
+  <section class="claim-card">
+    <div class="claim-header">
+      <div class="icon">✔</div>
+      <h2>DOCUMENT CLAIM SLIP</h2>
+      <p class="sub">DocuTrackr</p>
+    </div>
 
-      <div class="claim-info">
-        <div class="info-pair">
-          <div>
-            <p class="label">CLAIM NUMBER</p>
-            <p id="claimNumber">CLAIM-{{ request.id }}-{{ request.created_at|date:"U" }}</p>
-          </div>
-          <div>
-            <p class="label">DATE READY</p>
-            <p id="dateReady">{{ request.date_needed|date:"m/d/Y" }}</p>
-          </div>
+    <div class="claim-info">
+      <div class="info-pair">
+        <div>
+          <p class="label">CLAIM NUMBER</p>
+          <p id="claimNumber">{{ claim_slip.claim_number }}</p>
+        </div>
+        <div>
+          <p class="label">DATE READY</p>
+          <p id="dateReady">{{ claim_slip.date_ready|date:"m/d/Y" }}</p>
         </div>
       </div>
+    </div>
 
-      <hr>
+    <hr>
 
-      <div class="section">
-        <h3>STUDENT INFORMATION</h3>
-        <div class="info-pair">
-          <div>
-            <p class="label">NAME</p>
-            <p id="studentName">{{ full_name }}</p>
-          </div>
-          <div>
-            <p class="label">STUDENT ID</p>
-            <p id="studentId">{{ student_id }}</p>
-          </div>
+    <div class="section">
+      <h3>STUDENT INFORMATION</h3>
+      <div class="info-pair">
+        <div>
+          <p class="label">NAME</p>
+          <p id="studentName">{{ claim_slip.request.user.name }}</p>
+        </div>
+        <div>
+          <p class="label">STUDENT ID</p>
+          <p id="studentId">{{ claim_slip.request.user.student_id }}</p>
         </div>
       </div>
+    </div>
 
-      <hr>
+    <hr>
 
-      <div class="section">
-        <h3>DOCUMENT DETAILS</h3>
-        <div class="info-pair">
-          <div>
-            <p class="label">DOCUMENT TYPE</p>
-            <p id="docType">{{ document.name }}</p>
-          </div>
-          <div>
-            <p class="label">TOTAL AMOUNT</p>
-            <p id="amount">₱{{ document.price }}</p>
-          </div>
-        </div>
-        <p class="label">NUMBER OF COPIES</p>
-        <p id="copies">{{ request.copies }}</p>
-      </div>
-
-      <hr>
-
-      <div class="section">
-        <h3>CLAIM INSTRUCTIONS</h3>
-        <div class="instructions-box">
-          <p><strong>Location:</strong><br>Registrar Office</p>
-          <p><strong>Office Hours:</strong><br>Monday–Friday, 8:00 AM–5:00 PM</p>
-          <p><strong>Requirements:</strong></p>
-          <ul>
-            <li>Valid School ID or Government-issued ID</li>
-            <li>This claim slip (printed or digital)</li>
-          </ul>
+    <div class="section">
+      <h3>DOCUMENT DETAILS</h3>
+      <div class="info-pair">
+        <div>
+          <p class="label">DOCUMENT TYPE</p>
+          <p id="docType">{{ claim_slip.request.document.name }}</p>
         </div>
       </div>
+      <p class="label">NUMBER OF COPIES</p>
+      <p id="copies">{{ claim_slip.request.copies }}</p>
+    </div>
 
-      <button class="print-btn" onclick="printClaimSlip()">🖨 Print Claim Slip</button>
+    <hr>
 
-      <p class="note">
-        Please present this claim slip when picking up your documents.<br>
-        For inquiries, contact the Registrar Office at registrar@cite.edu
-      </p>
-    </section>
-  </main>
+    <div class="section">
+      <h3>CLAIM INSTRUCTIONS</h3>
+      <div class="instructions-box">
+        <p><strong>Location:</strong><br>Registrar’s Office</p>
+        <p><strong>Office Hours:</strong><br>Monday–Friday, 8:00 AM–5:00 PM</p>
+        <p><strong>Requirements:</strong></p>
+        <ul>
+          <li>Valid School ID or Government-issued ID</li>
+          <li>This claim slip (printed or digital)</li>
+        </ul>
+      </div>
+    </div>
 
-  <script src="{% static 'js/claimslipscript.js' %}"></script>
+    <button class="print-btn" onclick="window.print()">🖨 Print Claim Slip</button>
+
+    <p class="note">
+      Please present this claim slip when picking up your documents.<br>
+      For inquiries, contact the Registrar’s Office at <strong>registrar@cit.edu</strong>
+    </p>
+  </section>
+</main>
 </body>
 </html>
