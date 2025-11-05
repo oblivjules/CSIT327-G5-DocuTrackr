@@ -1,0 +1,26 @@
+/* Scoped styles for requests-list.html to replace previous inline CSS */
+
+.requests-list-page .search-form,
+.requests-list-page .filter-form {
+  display: inline-block;
+}
+
+/* Hide the implicit submit button used to allow Enter key trigger */
+.requests-list-page .search-form button[type="submit"] {
+  display: none;
+}
+
+/* Center the empty-state row text */
+.requests-list-page .requests-table .center-cell {
+  text-align: center;
+}
+
+/* Keep action links visually consistent without underlines */
+.requests-list-page .table-footer .view-all-btn {
+  text-decoration: none;
+}
+
+/* Default modal hidden; toggled via JS */
+.requests-list-page .modal {
+  display: none;
+}

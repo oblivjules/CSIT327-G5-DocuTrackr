@@ -215,6 +215,13 @@ def update_request_status(request, request_id):
             doc_request = Request.objects.select_for_update().get(pk=request_id)
             old_status = doc_request.status
 
+            # Guard against duplicates under concurrency
+            if old_status == new_status:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Request is already {new_status}'
+                }, status=400)
+
             doc_request.status = new_status
             doc_request.updated_at = timezone.now()
             doc_request.save()
