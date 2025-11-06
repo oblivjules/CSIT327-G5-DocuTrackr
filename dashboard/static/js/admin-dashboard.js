@@ -20,26 +20,26 @@ document.addEventListener('DOMContentLoaded', function() {
   // --- VIEW PROOF ---
   proofButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
-      let imgUrl = btn.getAttribute("data-img-url") || "";
+      let imgUrl = btn.getAttribute("data-img-url");
 
-      // Normalize and accept relative or absolute URLs
-      imgUrl = imgUrl.replace(/\u002D/g, "-").trim();
+      // Remove any leftover unicode escapes
+      imgUrl = imgUrl.replace(/\\u002D/g, "-").trim();
 
-      const isAbsolute = imgUrl.startsWith("http://") || imgUrl.startsWith("https://");
-      const isRelative = imgUrl.startsWith("/");
-
-      if (!isAbsolute && !isRelative) {
+      if (!imgUrl.startsWith("http")) {
         console.error("Invalid proof URL:", imgUrl);
-        alert("Invalid or missing proof URL.");
+        alert("Invalid proof URL.");
         return;
       }
 
       proofImage.src = imgUrl;
 
       proofImage.onload = () => {
+        console.log("✅ Modal should open now");
         proofModal.style.display = "flex";
         document.body.style.overflow = "hidden";
-      };
+      }
+      
+      console.log("Loaded proof image:", proofImage.src);
 
       proofImage.onerror = () => {
         console.error("Failed to load proof image:", imgUrl);

@@ -124,7 +124,7 @@
                   data-created="{{ req.created_at|date:'M d, Y h:i A' }}"
                   data-updated="{{ req.updated_at|date:'M d, Y h:i A' }}"
                   data-payment-status="{% if req.payment %}{{ req.payment.get_payment_status_display }}{% endif %}"
-                  data-proof-url="{% if req.payment and req.payment.proof_of_payment %}{{ req.payment.proof_of_payment.url }}{% endif %}"
+                  data-proof-url="{{ req.payment.proof_of_payment|safe|default:'' }}"
                 >View Details</button>
                 {% if req.status == 'completed' and req.claim_slips.exists %}
                   {% with slip=req.claim_slips.first %}
