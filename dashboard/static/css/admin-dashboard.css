@@ -219,6 +219,12 @@ body {
   flex: 1;
 }
 
+/* Narrower layout for requests-list page */
+.requests-list-page.dashboard-container {
+  max-width: 1360px;
+  padding: 0 40px;
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -314,6 +320,7 @@ body {
   border-radius: 16px;
   margin-bottom: 50px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
 }
 
 .section-header {
@@ -445,11 +452,13 @@ body {
 .table-container {
   overflow-x: auto;
   margin-bottom: 40px;
+  width: 100%;
 }
 
 .requests-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .requests-table thead {
@@ -550,6 +559,26 @@ input[type="checkbox"]:indeterminate {
   background-color: #6d2d2e;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(137, 57, 58, 0.3);
+}
+
+/* Claim Slip button styling consistent with student dashboard */
+.action-btn.claim-slip-btn {
+  text-decoration: none;
+  background-color: #89393a;
+  color: #ffffff;
+  border: 2px solid #89393a;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.action-btn.claim-slip-btn:hover {
+  background-color: #89393a;
+  color: #ffffff;
+  transform: none;
+  box-shadow: none;
 }
 
 .view-link {
@@ -819,6 +848,53 @@ input[type="checkbox"]:indeterminate {
   font-size: 16px;
   margin-bottom: 12px;
   line-height: 1.5;
+}
+
+/* Structured form layout inside the modal */
+.modal-form {
+  margin-top: 8px;
+  display: grid;
+  gap: 16px;
+  text-align: left;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.form-label {
+  color: #3c3c3c;
+  font-weight: 600;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 10px;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background-color: #fff;
+}
+
+.input-control:focus {
+  outline: none;
+  border-color: #a04547;
+  box-shadow: 0 0 0 4px rgba(160, 69, 71, 0.1);
+}
+
+.helper-text {
+  color: #8a8a8a;
+  font-size: 12px;
+  margin-top: 8px;
 }
 
 .modal-submessage {

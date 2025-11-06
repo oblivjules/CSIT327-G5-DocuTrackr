@@ -6,6 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>All Requests - Admin</title>
   <link rel="stylesheet" href="{% static 'css/admin-dashboard.css' %}">
+  <link rel="stylesheet" href="{% static 'css/requests-list.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="{% static 'images/docutrackr-logo.png' %}">
 </head>
 <body>
   <header class="navbar">
@@ -19,22 +22,36 @@
       </nav>
     </div>
     <div class="navbar-right">
-      <a href="{{ home_url }}" class="user-name">{{ full_name }}</a>
+      {% if full_name %}
+        <a href="{% url 'admin-dashboard' %}" class="user-name">{{ full_name }}</a>
+      {% else %}
+        <span class="user-name"></span>
+      {% endif %}
       <div class="navbar-icons">
+        <div class="icon-item notification-icon">
+          <img src="{% static 'images/bell.png' %}" alt="Notifications" />
+        </div>
+        <div class="icon-item profile-icon">
+          <img src="{% static 'images/profile.png' %}" alt="Profile" />
+        </div>
         <a href="{% url 'admin_logout' %}" class="icon-item logout-icon"><img src="{% static 'images/logout.png' %}" alt="Logout"></a>
       </div>
     </div>
   </header>
 
-  <main class="dashboard-container">
+  <main class="dashboard-container requests-list-page">
     <section class="table-section">
       <div class="section-header">
         <h2>All Document Requests</h2>
         <div class="table-controls">
           <form method="GET" class="search-form">
             <div class="search-box">
-              <input type="text" name="search" placeholder="Search..." value="{{ search_query }}" />
-              <button type="submit" style="display:none"></button>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+              <input type="text" name="search" placeholder="Search by Request ID, Student Name/ID, Document Type, Status..." value="{{ search_query }}" />
+              <button type="submit"></button>
             </div>
           </form>
           <div class="filter-container">
@@ -58,8 +75,19 @@
 
       <div class="table-container">
         <table class="requests-table">
+          <colgroup>
+            <col style="width:42px;" />
+            <col style="width:110px;" />
+            <col style="width:220px;" />
+            <col style="width:210px;" />
+            <col style="width:120px;" />
+            <col style="width:120px;" />
+            <col style="width:160px;" />
+            <col style="width:120px;" />
+          </colgroup>
           <thead>
             <tr>
+              <th><input type="checkbox" id="selectAll" /></th>
               <th>REQ ID</th>
               <th>Student Info</th>
               <th>Document</th>
@@ -72,28 +100,33 @@
           <tbody>
             {% for req in recent_requests %}
             <tr class="request-row" data-request-id="{{ req.request_id }}">
+              <td><input type="checkbox" class="row-checkbox" data-request-id="{{ req.request_id }}" /></td>
               <td><strong>REQ-{{ req.request_id }}</strong></td>
               <td>{{ req.user.name }}<br><small>{{ req.user.student_id }}</small></td>
               <td>{{ req.document.name }}</td>
               <td>
                 {% if req.payment and req.payment.proof_of_payment %}
-                  <button class="view-proof-btn" data-img-url="{{ req.payment.proof_of_payment }}">View Proof</button>
+                  <button class="view-proof-btn" data-img-url="{{ req.payment.proof_of_payment.url|default:'' }}">View Proof</button>
                 {% else %}
                   <span class="no-proof">No Proof</span>
                 {% endif %}
               </td>
-              <td>
+              <td class="status-cell">
                 <span class="badge {{ req.status }}">{{ req.status|upper }}</span>
               </td>
               <td>
-                {% if req.claim_slips.exists %}
+                {% if req.status == 'completed' and req.claim_slips.exists %}
+                  {% with slip=req.claim_slips.first %}
+                  <a href="{% url 'claim-slip' slip.claim_id %}" class="action-btn claim-slip-btn">Claim Slip</a>
+                  {% endwith %}
+                {% elif req.status == 'approved' and req.claim_slips.exists %}
                   <span class="badge claim">CLAIM GENERATED</span>
                 {% else %}
                   <span class="badge none">—</span>
                 {% endif %}
               </td>
               <td>
-                {% if req.status == 'pending' or req.status == 'processing' or req.status == 'approved' %}
+                {% if req.status != 'completed' %}
                   <button class="action-btn process-btn" data-request-id="{{ req.request_id }}">Update</button>
                 {% else %}
                   <span class="badge done">Completed</span>
@@ -101,15 +134,23 @@
               </td>
             </tr>
             {% empty %}
-            <tr><td colspan="7" style="text-align:center;">No requests found.</td></tr>
+            <tr><td colspan="8" class="center-cell">No requests found.</td></tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
+      <div class="table-footer">
+        {% if search_query %}
+          <span class="showing-text">Showing {{ recent_requests|length }} result{{ recent_requests|length|pluralize }} for "{{ search_query }}"</span>
+          <a href="?" class="view-all-btn">Clear search</a>
+        {% else %}
+          <span class="showing-text">Showing {{ recent_requests|length }} requests</span>
+        {% endif %}
+      </div>
     </section>
   </main>
 
-  <div id="proofModal" class="modal" style="display:none;">
+  <div id="proofModal" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
       <img id="proofImage" src="" alt="Proof of Payment" />
@@ -117,5 +158,6 @@
   </div>
 
   <script src="{% static 'js/admin-dashboard.js' %}"></script>
+  <script src="{% static 'js/requests-list.js' %}"></script>
 </body>
 </html>

@@ -208,19 +208,19 @@ body {
 
 .container {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 50px 40px;
-  gap: 30px;
-  max-width: 1700px;
+  justify-content: space-between;
+  align-items: stretch;
+  padding: 28px 24px;
+  gap: 70px;
+  max-width: 1840px;
   margin: 0 auto;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .request-form {
-  flex: 3;
-  min-width: 400px;
-  max-width: 1300px;
+  flex: 0 0 50%;
+  min-width: 0;
+  max-width: none;
   background: linear-gradient(135deg, #f8c400 0%, #ffd740 100%);
   border-radius: 20px;
   box-shadow: 0 10px 40px rgba(248, 196, 0, 0.3);
@@ -241,8 +241,8 @@ body {
 .form-header {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 40px 40px 30px;
+  gap: 16px;
+  padding: 24px 24px 16px;
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
 }
@@ -278,7 +278,7 @@ body {
 }
 
 form {
-  padding: 40px;
+  padding: 24px;
 }
 
 .form-grid {
@@ -345,7 +345,7 @@ input[readonly] {
   text-align: center;
   border: 3px dashed rgba(137, 57, 58, 0.3);
   border-radius: 16px;
-  padding: 40px 20px;
+  padding: 24px 16px;
   background: rgba(255, 255, 255, 0.6);
   transition: all 0.3s ease;
   position: relative;
@@ -462,22 +462,36 @@ label.required::after {
 }
 
 .history {
-  flex: 1;
-  min-width: 650px;
+  flex: 0 1 59%;
+  min-width: 0;
   background: white;
   padding: 0;
   border-radius: 20px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   overflow: hidden; 
-  max-height: 600px;
   width: auto;
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start; /* prevent stretching; fit to content height */
+}
+
+@media (max-width: 1280px) {
+  .container {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .request-form,
+  .history {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
 }
 
 .history-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 30px 30px 20px;
+  gap: 10px;
+  padding: 18px 24px 12px;
   background: linear-gradient(135deg, #89393a 0%, #6d2d2e 100%);
 }
 
@@ -494,19 +508,37 @@ label.required::after {
 }
 
 .table-wrapper {
-  padding: 20px 30px 30px;
-  max-height: 500px;
+  padding: 12px 8px 14px;
   overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1 1 auto;
+  max-height: 560px;
 }
 
-.history table {
+.history table,
+.history-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.history-table th,
+.history-table td {
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Keep Copies and Claim Slip on one line */
+.history-table th:nth-child(3),
+.history-table td:nth-child(3),
+.history-table th:nth-child(7),
+.history-table td:nth-child(7) {
+  white-space: nowrap;
 }
 
 .history th {
   text-align: left;
-  padding: 14px 12px;
+  padding: 8px 6px;
   border-bottom: 2px solid #89393a;
   font-weight: 600;
   color: #89393a;
@@ -516,8 +548,18 @@ label.required::after {
   background: rgba(248, 196, 0, 0.1);
 }
 
+/* Sticky table header within scrollable history */
+.history-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: rgba(248, 196, 0, 0.12);
+  backdrop-filter: blur(2px);
+  box-shadow: 0 1px 0 #89393a;
+}
+
 .history td {
-  padding: 16px 12px;
+  padding: 8px 6px;
   border-bottom: 1px solid #f0f0f0;
   font-size: 13px;
   color: #555;
@@ -563,6 +605,19 @@ label.required::after {
   background: linear-gradient(135deg, #ff9800 0%, #ffa726 100%);
   color: white;
   box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+}
+
+/* Added to style Approved and Rejected consistently with other statuses */
+.status-approved {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  color: #155724;
+  box-shadow: 0 2px 8px rgba(21, 87, 36, 0.15);
+}
+
+.status-rejected {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  color: #721c24;
+  box-shadow: 0 2px 8px rgba(114, 28, 36, 0.15);
 }
 
 .table-wrapper::-webkit-scrollbar {
@@ -930,6 +985,27 @@ label.required::after {
     grid-template-columns: 1fr;
     gap: 24px;
   }
+}
+
+
+/* Claim Slip button styling consistent with student dashboard */
+.action-btn.claim-slip-btn {
+  text-decoration: none;
+  background-color: #89393a;
+  color: #ffffff;
+  border: 2px solid #89393a;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.action-btn.claim-slip-btn:hover {
+  background-color: #89393a;
+  color: #ffffff;
+  transform: none;
 }
 
 

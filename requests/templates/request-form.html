@@ -146,8 +146,17 @@
         <h3>Request History</h3>
       </div>
 
-      <div class="table-wrapper">
-        <table>
+          <div class="table-wrapper">
+        <table class="history-table">
+          <colgroup>
+            <col style="width:85px;" />
+            <col style="width:220px;" />
+            <col style="width:60px;" />
+            <col style="width:110px;" />
+            <col style="width:125px;" />
+            <col style="width:110px;" />
+            <col style="width:130px;" />
+          </colgroup>
           <thead>
             <tr>
               <th>Request ID</th>
@@ -172,7 +181,7 @@
                   {% if req.payment %}
                     <div style="display:flex;align-items:center;gap:8px;">
                       {% if req.payment and req.payment.proof_of_payment %}
-                        <button class="view-proof-btn" data-img-url="{{ req.payment.proof_of_payment }}">
+                        <button class="view-proof-btn" data-request-id="{{ req.request_id }}" data-img-url="{{ req.payment.proof_of_payment.url }}">
                           <img src="{% static 'images/media.png' %}" alt="View Proof" width="30" />
                         </button>
                       {% endif %}
@@ -183,9 +192,9 @@
                 </td>
 
                 <td>
-                  {% if req.claim_slips.exists %}
+                  {% if req.status == 'completed' and req.claim_slips.exists %}
                     {% with slip=req.claim_slips.first %}
-                    <a href="{% url 'claim-slip' slip.claim_id %}" class="claim-slip-link">View Claim Slip</a>
+                    <a href="{% url 'claim-slip' slip.claim_id %}" class="action-btn claim-slip-btn">Claim Slip</a>
                     {% endwith %}
                   {% else %}
                     <span style="color:#999;">Not Available</span>
@@ -313,23 +322,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
   proofButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
-      let imgUrl = btn.getAttribute("data-img-url");
+      const imgUrlRaw = btn.getAttribute("data-img-url") || "";
 
-      if (!imgUrl) {
+      if (!imgUrlRaw) {
         alert("No proof of payment available.");
         return;
       }
 
-      // ✅ FIX: Don't prepend '/' for Supabase URLs
-      modalImg.src = imgUrl.startsWith("http") ? imgUrl : "/" + imgUrl;
+      // Resolve relative or absolute URL safely
+      const resolvedUrl = imgUrlRaw.startsWith("http")
+        ? imgUrlRaw
+        : (imgUrlRaw.startsWith("/") ? imgUrlRaw : "/" + imgUrlRaw);
 
-      modalImg.onload = () => {
-        modal.style.display = "flex";
-        document.body.style.overflow = "hidden";
-      };
+      // Open modal immediately; load image in place
+      modal.style.display = "flex";
+      document.body.style.overflow = "hidden";
+      modalImg.src = resolvedUrl;
 
       modalImg.onerror = () => {
-        console.error("Failed to load proof image:", imgUrl);
+        console.error("Failed to load proof image:", resolvedUrl);
+        modal.style.display = "none";
+        modalImg.removeAttribute("src");
+        document.body.style.overflow = "auto";
         alert("Unable to display image. Please check if the proof file exists.");
       };
     });
@@ -348,6 +362,48 @@ document.addEventListener("DOMContentLoaded", () => {
       document.body.style.overflow = "auto";
     }
   });
+
+  // Close on ESC for better accessibility and consistent UX
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal.style.display === "flex") {
+      modal.style.display = "none";
+      modalImg.removeAttribute("src");
+      document.body.style.overflow = "auto";
+    }
+  });
+
+  // 🔹 Set Request History height to include row "#18" (or ~12 rows fallback)
+  const tableWrapper = document.querySelector('.table-wrapper');
+  const thead = document.querySelector('.history-table thead');
+  const rows = Array.from(document.querySelectorAll('.history-table tbody tr'));
+  if (tableWrapper && thead && rows.length) {
+    const paddingTop = 12;   // matches .table-wrapper top padding
+    const paddingBottom = 14; // matches .table-wrapper bottom padding
+    const headerHeight = thead.getBoundingClientRect().height;
+
+    // Find the row that contains request id "#18"
+    const targetRow = rows.find((row) => {
+      const idEl = row.querySelector('.request-id');
+      return idEl && idEl.textContent.trim().startsWith('#18');
+    });
+
+    let rowsHeight = 0;
+    if (targetRow) {
+      for (const row of rows) {
+        rowsHeight += row.getBoundingClientRect().height;
+        if (row === targetRow) break;
+      }
+    } else {
+      // Fallback: show roughly 12 rows
+      const count = Math.min(rows.length, 12);
+      for (let i = 0; i < count; i++) {
+        rowsHeight += rows[i].getBoundingClientRect().height;
+      }
+    }
+
+    const maxHeight = Math.ceil(headerHeight + rowsHeight + paddingTop + paddingBottom);
+    tableWrapper.style.maxHeight = `${maxHeight}px`;
+  }
 });
 </script>
 </body>

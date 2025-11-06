@@ -126,6 +126,11 @@
                   data-payment-status="{% if req.payment %}{{ req.payment.get_payment_status_display }}{% endif %}"
                   data-proof-url="{% if req.payment and req.payment.proof_of_payment %}{{ req.payment.proof_of_payment.url }}{% endif %}"
                 >View Details</button>
+                {% if req.status == 'completed' and req.claim_slips.exists %}
+                  {% with slip=req.claim_slips.first %}
+                  <a href="{% url 'claim-slip' slip.claim_id %}" class="action-btn claim-slip-btn">Claim Slip</a>
+                  {% endwith %}
+                {% endif %}
               </td>
             </tr>
             {% empty %}
