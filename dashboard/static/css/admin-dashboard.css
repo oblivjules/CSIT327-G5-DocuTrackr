@@ -466,8 +466,8 @@ body {
 }
 
 .requests-table th {
-  padding: 18px 16px;
-  font-size: 12px;
+  padding: 18px 12px;
+  font-size: 14px;
   text-align: left;
   color: #89393a;
   text-transform: uppercase;
@@ -476,7 +476,7 @@ body {
 }
 
 .requests-table td {
-  padding: 10px 16px;
+  padding: 10px 12px;
   font-size: 14px;
   border-bottom: 1px solid #f0f0f0;
   vertical-align: middle;
@@ -516,7 +516,7 @@ input[type="checkbox"]:hover {
 }
 
 #selectAll {
-  margin-right: 8px;
+  margin: 0;
 }
 
 input[type="checkbox"]:indeterminate {
@@ -525,8 +525,49 @@ input[type="checkbox"]:indeterminate {
 }
 
 .requests-table td:last-child {
-  text-align: left;
+  text-align: center;
   padding: 10px 16px;
+}
+
+/* Align columns under their headers for better readability */
+.requests-table thead th:nth-child(1),
+.requests-table tbody td:nth-child(1) {
+  text-align: center;
+}
+
+.requests-table thead th:nth-child(2),
+.requests-table tbody td:nth-child(2) {
+  text-align: center;
+}
+
+.requests-table thead th:nth-child(3),
+.requests-table tbody td:nth-child(3) {
+  text-align: left;
+}
+
+.requests-table thead th:nth-child(4),
+.requests-table tbody td:nth-child(4) {
+  text-align: left;
+}
+
+.requests-table thead th:nth-child(5),
+.requests-table tbody td:nth-child(5) {
+  text-align: center;
+}
+
+.requests-table thead th:nth-child(6),
+.requests-table tbody td:nth-child(6) {
+  text-align: center;
+}
+
+.requests-table thead th:nth-child(7),
+.requests-table tbody td:nth-child(7) {
+  text-align: center;
+}
+
+.requests-table thead th:nth-child(8),
+.requests-table tbody td:nth-child(8) {
+  text-align: center;
 }
 
 .requests-table td .action-btn,
@@ -646,6 +687,13 @@ input[type="checkbox"]:indeterminate {
 .badge.pending { background-color: #f8d7da; color: #721c24; }
 .badge.processing { background-color: #fff3cd; color: #856404; }
 .badge.ready { background-color: #d4edda; color: #155724; }
+/* Add missing statuses to match student dashboard */
+.badge.approved { background-color: #d4edda; color: #155724; }
+.badge.completed { background-color: #d1ecf1; color: #0c5460; }
+.badge.rejected { background-color: #f8d7da; color: #721c24; }
+
+/* Ensure the STATUS column is centered */
+.status-cell { text-align: center; }
 
 .table-footer {
   display: flex;
@@ -1272,4 +1320,20 @@ input[type="checkbox"]:indeterminate {
 .badge.cancelled {
   background-color: #f3f4f6;
   color: #374151;
+}
+
+/* DONE badge with check icon */
+.badge.done {
+  background-color: transparent; /* remove green background */
+  color: #065f46; /* match checkmark green tone */
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+}
+
+.badge.done .done-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
 }

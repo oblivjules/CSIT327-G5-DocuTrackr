@@ -45,8 +45,8 @@ def student_dashboard(request):
     total_requested = user_requests.count()
     ready_for_pickup = user_requests.filter(status__in=['approved', 'completed']).count()
 
-    # Limit to 5 most recent requests for display
-    recent_requests = user_requests[:5]
+    # Limit to 10 most recent requests for display
+    recent_requests = user_requests[:10]
 
     # Optionally: get recent status changes (activity feed)
     recent_activities = Request_Status_Log.objects.filter(request__user=user).order_by('-changed_at')[:5]
@@ -84,6 +84,7 @@ def admin_dashboard(request):
     pending_count = Request.objects.filter(status='pending').count()
     processing_count = Request.objects.filter(status='processing').count()
     ready_count = Request.objects.filter(status__in=['approved', 'completed']).count()
+    # Completed overall: match the Requests list filter for current status
     completed_count = Request.objects.filter(status='completed').count()
 
     # Base queryset for requests
@@ -111,7 +112,7 @@ def admin_dashboard(request):
     pending_count = Request.objects.filter(status='pending').count()
     processing_count = Request.objects.filter(status='processing').count()
     ready_count = Request.objects.filter(status__in=['approved', 'completed']).count()
-    completed_count = Request.objects.filter(status='completed').count()
+    # Completed overall already computed above; avoid overriding to prevent mismatches
     total_requests = Request.objects.count()
     
     # Count of filtered results (always limited to 10)
@@ -154,6 +155,53 @@ def admin_dashboard(request):
 @no_cache
 def about(request):
     return render(request, 'about.html', {'user_role': request.session.get('role')})
+
+
+@login_required
+@no_cache
+def student_requests_list(request):
+    """Student-side list of all their document requests with simple search/filter."""
+    # Ensure only students can access
+    if request.session.get('role') != 'student':
+        return redirect('index')
+
+    user_id = request.session.get('user_id')
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        request.session.flush()
+        return redirect('index')
+
+    search_query = request.GET.get('search', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+
+    qs = Request.objects.filter(user=user).select_related('document', 'payment')
+
+    if status_filter:
+        qs = qs.filter(status=status_filter)
+
+    if search_query:
+        qs = qs.filter(
+            Q(request_id__icontains=search_query) |
+            Q(document__name__icontains=search_query) |
+            Q(status__icontains=search_query) |
+            Q(created_at__date__icontains=search_query)
+        )
+
+    recent_requests = qs.order_by('-created_at')  # show all, newest first
+    total_requests = Request.objects.filter(user=user).count()
+
+    context = {
+        'full_name': user.name,
+        'recent_requests': recent_requests,
+        'total_requests': total_requests,
+        'search_query': search_query,
+        'status_filter': status_filter,
+        'status_choices': Request.STATUS_CHOICES,
+        'is_searching': bool(search_query),
+    }
+
+    return render(request, 'student-requests-list.html', context)
 
 @login_required
 @csrf_exempt  
@@ -321,7 +369,9 @@ def requests_list(request):
             Q(request_id__icontains=search_query) |
             Q(user__name__icontains=search_query) |
             Q(user__student_id__icontains=search_query) |
-            Q(document__name__icontains=search_query)
+            Q(document__name__icontains=search_query) |
+            Q(status__icontains=search_query) |
+            Q(created_at__date__icontains=search_query)
         )
 
     # No limit here — show full set (or can paginate later)

@@ -91,8 +91,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (placeholder) placeholder.style.display = 'none';
             }
 
-            if (imgUrl && imgUrl.startsWith('http')) {
-                // Valid absolute URL
+            // Normalize URL: handle /media-wrapped absolute, root-relative, and bare storage paths
+            if (imgUrl) {
+                if (imgUrl.startsWith('/media/http')) {
+                    imgUrl = imgUrl.replace(/^\/media\//, '');
+                } else if (imgUrl.startsWith('http')) {
+                    // absolute URL
+                } else if (imgUrl.startsWith('/')) {
+                    // root-relative (/media/...)
+                } else {
+                    // bare file path like "payments/filename" -> prefix with /media
+                    imgUrl = '/media/' + imgUrl;
+                }
+            }
+
+            if (imgUrl) {
                 proofImage.style.display = 'none';
                 
                 proofImage.onload = function() {
@@ -107,8 +120,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 proofImage.src = imgUrl;
             } else {
-                // No valid proof URL
-                console.error('Invalid proof URL (must be absolute http/https):', imgUrl);
                 showPlaceholder();
             }
 

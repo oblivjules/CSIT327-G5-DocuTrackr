@@ -77,7 +77,7 @@
         <div class="stat-content">
           <h3>{{ completed_count }}</h3>
           <p>Completed</p>
-          <span class="subtext">This Month</span>
+          <span class="subtext">Overall</span>
         </div>
       </div>
     </section>
@@ -121,9 +121,9 @@
         <table class="requests-table">
           <colgroup>
             <col style="width:42px;" />
-            <col style="width:110px;" />
-            <col style="width:220px;" />
-            <col style="width:210px;" />
+            <col style="width:100px;" />
+            <col style="width:160px;" />
+            <col style="width:160px;" />
             <col style="width:120px;" />
             <col style="width:120px;" />
             <col style="width:160px;" />
@@ -150,7 +150,7 @@
               <td>{{ req.document.name }}</td>
               <td>
                 {% if req.payment and req.payment.proof_of_payment %}
-                  <button class="view-proof-btn" data-img-url="{{ req.payment.proof_of_payment|safe|default:''  }}">View Proof</button>
+                  <button class="view-proof-btn" data-img-url="{{ req.payment.proof_of_payment.url|default:'' }}">View Proof</button>
                 {% else %}
                   <span class="no-proof">No Proof</span>
                 {% endif %}
@@ -159,12 +159,14 @@
                 <span class="badge {{ req.status }}">{{ req.status|upper }}</span>
               </td>
               <td>
-                {% if req.status == 'completed' and req.claim_slips.exists %}
-                  {% with slip=req.claim_slips.first %}
-                  <a href="{% url 'claim-slip' slip.claim_id %}" class="action-btn claim-slip-btn">Claim Slip</a>
-                  {% endwith %}
-                {% elif req.status == 'approved' and req.claim_slips.exists %}
-                  <span class="badge claim">CLAIM GENERATED</span>
+                {% if req.claim_slips.exists %}
+                  {% if req.status == 'approved' or req.status == 'completed' %}
+                    {% with slip=req.claim_slips.first %}
+                    <a href="{% url 'claim-slip' slip.claim_id %}" class="action-btn claim-slip-btn">Claim Slip</a>
+                    {% endwith %}
+                  {% else %}
+                    <span class="badge none">—</span>
+                  {% endif %}
                 {% else %}
                   <span class="badge none">—</span>
                 {% endif %}
@@ -173,7 +175,7 @@
                 {% if req.status != 'completed' %}
                   <button class="action-btn process-btn" data-request-id="{{ req.request_id }}">Update</button>
                 {% else %}
-                  <span class="badge done">Completed</span>
+                  <span class="badge done"><img src="{% static 'images/done.png' %}" alt="Done" class="done-icon" /> Done</span>
                 {% endif %}
               </td>
             </tr>

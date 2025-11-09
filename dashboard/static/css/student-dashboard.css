@@ -221,7 +221,7 @@ main {
 }
 
 .dashboard-container {
-  max-width: 1400px;
+  max-width: 1600px; /* widen overall dashboard content area */
   margin: 0 auto;
   padding: 40px;
   width: 100%;
@@ -309,6 +309,19 @@ main {
   margin-bottom: 40px;
 }
 
+/* Narrower container for Recent Document Requests to bring columns closer */
+.table-section.recent-requests {
+  max-width: 1580px;
+  margin-left: auto;
+  margin-right: auto;
+  justify-self: center; /* center within grid track */
+}
+
+/* Avoid horizontal scroll in the Recent Requests table */
+.recent-requests .table-container {
+  overflow-x: hidden;
+}
+
 .section-header {
   display: flex;
   justify-content: space-between;
@@ -324,29 +337,48 @@ main {
 
 .view-all-btn {
   background-color: #89393a;
-  color: white;
-  padding: 10px 24px;
+  color: #fff;
   border: none;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 8px 20px;
+  border-radius: 6px;
   font-weight: 600;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .view-all-btn:hover {
   background-color: #6d2d2e;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(137, 57, 58, 0.3);
+  transform: translateY(-2px);
 }
 
 .table-container {
   overflow-x: auto;
 }
 
+.table-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+}
+
+.showing-text { 
+  font-size: 13px; 
+  color: #999; 
+}
+
 .requests-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed; /* honor colgroup widths for equal spacing */
+}
+
+/* All Requests container narrower for balanced spacing */
+.requests-list-page .table-section {
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .requests-table thead {
@@ -355,20 +387,32 @@ main {
 
 .requests-table th {
   text-align: left;
-  padding: 16px 12px;
+  padding: 16px 14px; /* equal horizontal padding for consistent column gaps */
   font-weight: 600;
   color: #89393a;
-  font-size: 13px;
+  font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border-bottom: 2px solid #89393a;
 }
 
 .requests-table td {
-  padding: 16px 12px;
+  padding: 16px 14px; /* equal horizontal padding for consistent column gaps */
   border-bottom: 1px solid #e8e8e8;
   font-size: 14px;
   color: #555;
+}
+
+/* Center the Status column under its header */
+.requests-table thead th:nth-child(4),
+.requests-table tbody td:nth-child(4) {
+  text-align: center;
+}
+
+/* Move Date Requested slightly to the right for better balance */
+.requests-table thead th:nth-child(3),
+.requests-table tbody td:nth-child(3) {
+  text-align: center;
 }
 
 .requests-table tbody tr:hover {
@@ -382,9 +426,9 @@ main {
 
 .status-badge {
   display: inline-block;
-  padding: 6px 14px;
+  padding: 6px 12px; /* match student-requests-list sizing */
   border-radius: 20px;
-  font-size: 12px;
+  font-size: 11px; /* match student-requests-list sizing */
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -410,6 +454,12 @@ main {
   color: #0c5460;
 }
 
+/* Add rejected style for consistency */
+.status-rejected {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
 .action-btn {
   background-color: transparent;
   color: #89393a;
@@ -426,6 +476,32 @@ main {
   background-color: #89393a;
   color: white;
   transform: translateY(-1px);
+}
+
+/* Ensure action buttons never wrap their text */
+.action-btn {
+  white-space: nowrap;
+}
+
+/* Action column: place buttons side-by-side with compact sizing */
+.requests-table td.action-cell {
+  white-space: nowrap;
+}
+
+.requests-table td.action-cell .action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 8px;
+  margin: 0;
+  box-sizing: border-box;
+  font-size: 12px;
+}
+
+.requests-table td.action-cell .claim-slip-btn {
+  margin-left: 8px;
+  padding: 0 8px;
 }
 
 /* Claim Slip: solid red button with no hover change */
@@ -453,6 +529,57 @@ main {
   padding: 32px;
   border-radius: 16px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  max-width: 1000px; /* default single-column width */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Two-up layout: place Recent Requests (left) and Recent Activity (right) */
+.dashboard-row.two-up {
+  display: grid;
+  grid-template-columns: 7fr 3fr; /* allocate more width to Recent Requests */
+  gap: 24px;
+  align-items: stretch; /* make cards equal height */
+}
+
+.dashboard-row.two-up .recent-requests,
+.dashboard-row.two-up .activity-section {
+  max-width: none;
+  margin: 0; /* let grid control alignment */
+}
+
+/* Allow both cards to stretch to equal heights */
+.dashboard-row.two-up > .table-section,
+.dashboard-row.two-up > .activity-section {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-row.two-up .table-container,
+.dashboard-row.two-up .activity-list {
+  flex: 1 1 auto; /* fill available height */
+}
+
+.dashboard-row.two-up .table-footer {
+  margin-top: auto; /* keep footer pinned to bottom */
+}
+
+.dashboard-row.two-up .requests-table {
+  table-layout: fixed; /* honor narrower colgroup widths reliably */
+}
+
+.dashboard-row.two-up .requests-table th,
+.dashboard-row.two-up .requests-table td {
+  padding: 12px 10px; /* tighter spacing to fit side-by-side */
+}
+
+/* Keep Request ID and Date Requested on a single line */
+.dashboard-row.two-up .requests-table th:nth-child(1),
+.dashboard-row.two-up .requests-table td:nth-child(1),
+.dashboard-row.two-up .requests-table th:nth-child(3),
+.dashboard-row.two-up .requests-table td:nth-child(3) {
+  white-space: nowrap;
 }
 
 .activity-section h2 {
@@ -549,6 +676,10 @@ main {
   .table-section,
   .activity-section {
     padding: 24px 20px;
+  }
+
+  .dashboard-row.two-up {
+    grid-template-columns: 1fr; /* stack on small screens */
   }
 }
 
@@ -810,12 +941,16 @@ main {
   border-radius: 6px;
   padding: 16px;
   background: #f9fafb;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .dt-proof-frame img {
+  display: block;
   max-width: 100%;
   max-height: 400px;
+  object-fit: contain;
   border-radius: 4px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
