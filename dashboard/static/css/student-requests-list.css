@@ -1,0 +1,116 @@
+/* Student Requests List page layout-only tweaks to align spacing with dashboard */
+
+.requests-list-page .section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.requests-list-page .table-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.search-form .search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+}
+
+.search-form input[type="text"] {
+  width: 280px;
+  font-size: 14px;
+}
+
+.filter-select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+}
+
+.filter-select { font-size: 14px; }
+
+.table-container { overflow: hidden; }
+
+table.requests-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* honor equal colgroup widths */
+}
+
+
+table.requests-table th,
+table.requests-table td { padding: 12px 14px; text-align: left; }
+
+table.requests-table thead th { font-weight: 600; }
+
+.badge { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; line-height: 1; }
+
+/* Buttons inherit styling from student-dashboard.css; keep layout only */
+.view-proof-btn,
+.claim-slip-btn { padding: 6px 10px; }
+
+.no-proof { color: #999; }
+
+.center-cell { text-align: center; padding: 18px; color: #777; }
+
+.table-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+
+.showing-text { color: #555; font-size: 14px; }
+
+.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; }
+
+.modal-content { margin: 60px auto; padding: 20px; width: min(800px, 92vw); border-radius: 12px; text-align: center; }
+
+.modal-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+.close-btn { position: absolute; right: 16px; top: 12px; font-size: 28px; font-weight: bold; cursor: pointer; }
+
+/* --- Consistency with admin-dashboard: typography & buttons --- */
+.requests-list-page .requests-table thead th {
+  padding: 18px 14px; /* equal horizontal padding for consistent column gaps */
+  font-size: 14px;
+}
+
+.requests-list-page .requests-table tbody td {
+  padding: 12px 14px; /* equal horizontal padding for consistent column gaps */
+  font-size: 14px;
+}
+
+/* Center the Status column (4th) to match header */
+.requests-list-page .requests-table thead th:nth-child(4),
+.requests-list-page .requests-table tbody td:nth-child(4) {
+  text-align: center;
+}
+
+/* Move Date Requested slightly to the right for better balance */
+.requests-list-page .requests-table thead th:nth-child(3),
+.requests-list-page .requests-table tbody td:nth-child(3) {
+  text-align: center;
+}
+
+.requests-list-page .status-badge {
+  padding: 6px 12px; /* match admin badge sizing */
+  font-size: 11px;
+}
+
+.requests-list-page .requests-table td.action-cell .action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px; /* match admin */
+  padding: 0 12px; /* match admin */
+  font-size: 12px; /* match admin */
+}
+
+.requests-list-page .requests-table td.action-cell .claim-slip-btn {
+  margin-left: 8px;
+}

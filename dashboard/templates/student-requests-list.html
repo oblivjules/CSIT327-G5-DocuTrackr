@@ -2,90 +2,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Dashboard - DocuTrackr</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>All Requests - Student</title>
   <link rel="stylesheet" href="{% static 'css/student-dashboard.css' %}">
+  <link rel="stylesheet" href="{% static 'css/student-requests-list.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="{% static 'images/docutrackr-logo.png' %}">
 </head>
 <body>
   <header class="navbar">
-  <div class="navbar-left">
-    <a href="{{ home_url }}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" /></a>
-    <nav>
-      <ul>
-        <li><a href="{{ home_url }}">Home</a></li>
-        <li><a href="{% url 'about' %}">About</a></li>
-        <li><a href="{% url 'create_request' %}">Create Request</a></li>
-      </ul>
-    </nav>
-  </div>
-
-  <div class="navbar-right">
+    <div class="navbar-left">
+      <a href="{% url 'student-dashboard' %}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr" class="logo"></a>
+      <nav>
+        <ul>
+          <li><a href="{% url 'student-dashboard' %}">Dashboard</a></li>
+          <li><a href="#" class="active">Requests</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="navbar-right">
       {% if full_name %}
-        <a href="{{ home_url }}" class="user-name">{{ full_name }}</a>
+        <a href="{% url 'student-dashboard' %}" class="user-name">{{ full_name }}</a>
       {% else %}
         <span class="user-name"></span>
       {% endif %}
-
       <div class="navbar-icons">
         <div class="icon-item notification-icon">
-          <img src="{% static 'images/bell.png' %}" alt="Notification Bell" />
+          <img src="{% static 'images/bell.png' %}" alt="Notifications" />
         </div>
-
         <div class="icon-item profile-icon">
-          <img src="{% static 'images/profile.png' %}" alt="User Profile" />
+          <img src="{% static 'images/profile.png' %}" alt="Profile" />
         </div>
-
-        <a href="{% url 'student_logout' %}" class="icon-item logout-icon">
-          <img src="{% static 'images/logout.png' %}" alt="Logout" />
-        </a>
+        <a href="{% url 'student_logout' %}" class="icon-item logout-icon"><img src="{% static 'images/logout.png' %}" alt="Logout"></a>
       </div>
     </div>
-</header>
+  </header>
 
-  <main class="dashboard-container">
-
-    <section class="stats-grid">
-      <a href="{% url 'create_request' %}" style="text-decoration: none; color: inherit;">
-        <div class="stat-card stat-card-primary">
-          <div class="stat-icon">
-            <img src="{% static 'images/document.png' %}" alt="Request Document">
-          </div>
-          <div class="stat-content">
-            <h3>Request Document</h3>
-            <p>Submit a new document request</p>
-          </div>
-        </div>
-      </a>
-
-    <div class="stat-card stat-card-yellow">
-    <div class="stat-icon">
-      <img src="{% static 'images/documents-requested.png' %}" alt="Documents Requested">
-    </div>
-    <div class="stat-content">
-      <h3>{{ total_requested }}</h3>
-      <p>Documents Requested</p>
-    </div>
-  </div>
-
-  <div class="stat-card stat-card-white">
-    <div class="stat-icon">
-      <img src="{% static 'images/pickup.png' %}" alt="Ready for Pickup">
-    </div>
-    <div class="stat-content">
-      <h3>{{ ready_for_pickup }}</h3>
-      <p>Ready for Pickup</p>
-    </div>
-  </div>
-    </section>
-
-    <div class="dashboard-row two-up">
-    <section class="table-section recent-requests">
+  <main class="dashboard-container requests-list-page">
+    <section class="table-section">
       <div class="section-header">
-        <h2>Recent Document Requests</h2>
+        <h2>All Document Requests</h2>
       </div>
-      
+
       <div class="table-container">
         <table class="requests-table">
           <colgroup>
@@ -143,68 +102,18 @@
               </td>
             </tr>
             {% empty %}
-            <tr><td colspan="5">No requests found.</td></tr>
+            <tr><td colspan="5" class="center-cell">No requests found.</td></tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
-
       <div class="table-footer">
-        <span class="showing-text">Showing {{ recent_requests|length }} recent requests ({{ total_requested }} total)</span>
-        <a href="{% url 'student-requests' %}" class="view-all-btn" style="text-decoration: none;">View All Requests</a>
+        <span class="showing-text">Showing {{ recent_requests|length }} requests ({{ total_requests }} total)</span>
       </div>
     </section>
-
-    <section class="activity-section">
-      <h2>Recent Activity</h2>
-        <div class="activity-list">
-        {% for log in recent_activities %}
-        <div class="activity-item">
-          <div class="activity-dot"></div>
-          <div class="activity-content">
-            {% if log.old_status == 'none' %}
-              <p class="activity-title">Request Submitted</p>
-              <p class="activity-description">
-                You submitted REQ-{{ log.request.request_id|stringformat:"05d" }} ({{ log.request.document.name }})
-              </p>
-            {% elif log.new_status == 'processing' %}
-              <p class="activity-title">Request Processing</p>
-              <p class="activity-description">
-                Your REQ-{{ log.request.request_id|stringformat:"05d" }} ({{ log.request.document.name }}) is now being processed
-              </p>
-            {% elif log.new_status == 'approved' %}
-              <p class="activity-title">Request Approved</p>
-              <p class="activity-description">
-                Your REQ-{{ log.request.request_id|stringformat:"05d" }} ({{ log.request.document.name }}) has been approved
-              </p>
-            {% elif log.new_status == 'completed' %}
-              <p class="activity-title">Ready for Pickup</p>
-              <p class="activity-description">
-                Your REQ-{{ log.request.request_id|stringformat:"05d" }} ({{ log.request.document.name }}) is ready for pickup
-              </p>
-            {% elif log.new_status == 'rejected' %}
-              <p class="activity-title">Request Rejected</p>
-              <p class="activity-description">
-                Your REQ-{{ log.request.request_id|stringformat:"05d" }} ({{ log.request.document.name }}) has been rejected
-              </p>
-            {% else %}
-              <p class="activity-title">Recent Staff Activity</p>
-              <p class="activity-description">
-                Your REQ-{{ log.request.request_id|stringformat:"05d" }} ({{ log.request.document.name }}) status updated to {{ log.new_status }}
-              </p>
-            {% endif %}
-            <p class="activity-time">{{ log.changed_at|timesince }} ago</p>
-          </div>
-        </div>
-        {% empty %}
-        <p>No recent activity.</p>
-        {% endfor %}
-      </div>
-    </section>
-    </div>
   </main>
 
-  <!-- Request Details Modal -->
+  <!-- Request Details Modal (same as student dashboard) -->
   <div id="requestModal" class="dt-modal" style="display:none;">
     <div class="dt-modal-content">
       <button class="dt-close" aria-label="Close">&times;</button>
@@ -269,36 +178,5 @@
   </div>
 
   <script src="{% static 'js/student-dashboard.js' %}"></script>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="footer-content">
-      <div class="footer-section">
-        <h4>DocuTrackr</h4>
-        <p>Simplifying document requests for CIT-U students.</p>
-      </div>
-      <div class="footer-section">
-        <h4>Quick Links</h4>
-        <ul>
-          <li><a href="{{ home_url }}">Home</a></li>
-          <li><a href="{% url 'about' %}">About</a></li>
-          <li><a href="#">Privacy Policy</a></li>
-          <li><a href="#">Contact</a></li>
-        </ul>
-      </div>
-      <div class="footer-section">
-        <h4>Support</h4>
-        <ul>
-          <li><a href="#">Help Center</a></li>
-          <li><a href="#">FAQ</a></li>
-          <li><a href="#">Report Issue</a></li>
-          <li><a href="#">Feedback</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>&copy; 2025 DocuTrackr. All rights reserved. | CIT-U Document Management System</p>
-    </div>
-  </footer>
 </body>
 </html>

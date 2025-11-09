@@ -192,10 +192,14 @@
                 </td>
 
                 <td>
-                  {% if req.status == 'completed' and req.claim_slips.exists %}
-                    {% with slip=req.claim_slips.first %}
-                    <a href="{% url 'claim-slip' slip.claim_id %}" class="action-btn claim-slip-btn">Claim Slip</a>
-                    {% endwith %}
+                  {% if req.claim_slips.exists %}
+                    {% if req.status == 'approved' or req.status == 'completed' %}
+                      {% with slip=req.claim_slips.first %}
+                      <a href="{% url 'claim-slip' slip.claim_id %}" class="action-btn claim-slip-btn">Claim Slip</a>
+                      {% endwith %}
+                    {% else %}
+                      <span style="color:#999;">Not Available</span>
+                    {% endif %}
                   {% else %}
                     <span style="color:#999;">Not Available</span>
                   {% endif %}
