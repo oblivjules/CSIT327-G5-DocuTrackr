@@ -15,7 +15,7 @@
       <a href="{{ home_url }}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" /></a>
       <nav>
         <ul>
-          <li><a href="{{ home_url }}">Dashboard</a></li>
+          <li><a href="{{ home_url }}">Home</a></li>
           <li><a href="{% url 'admin-requests' %}">Requests</a></li>
         </ul>
       </nav>
@@ -150,7 +150,7 @@
               <td>{{ req.document.name }}</td>
               <td>
                 {% if req.payment and req.payment.proof_of_payment %}
-                  <button class="view-proof-btn" data-img-url="{{ req.payment.proof_of_payment.url|default:'' }}">View Proof</button>
+                  <button class="view-proof-btn" data-img-url="{{ req.payment.proof_of_payment|safe|default:''  }}">View Proof</button>
                 {% else %}
                   <span class="no-proof">No Proof</span>
                 {% endif %}

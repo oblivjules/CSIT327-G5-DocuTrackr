@@ -17,20 +17,15 @@ document.addEventListener('DOMContentLoaded', function() {
   let selectedRequestId = null;
   let confirmBound = false;
 
-  // --- VIEW PROOF ---
+ // --- VIEW PROOF ---
   proofButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
-      let imgUrl = btn.getAttribute("data-img-url") || "";
+      let imgUrl = btn.getAttribute("data-img-url");
 
-      // Normalize and sanitize
+      // Remove any leftover unicode escapes
       imgUrl = imgUrl.replace(/\\u002D/g, "-").trim();
 
-      // Accept absolute (http/https) or relative (/media/...) URLs
-      if (imgUrl.startsWith("/")) {
-        imgUrl = `${window.location.origin}${imgUrl}`;
-      }
-
-      if (!/^https?:\/\//i.test(imgUrl)) {
+      if (!imgUrl.startsWith("http")) {
         console.error("Invalid proof URL:", imgUrl);
         alert("Invalid proof URL.");
         return;
@@ -39,9 +34,12 @@ document.addEventListener('DOMContentLoaded', function() {
       proofImage.src = imgUrl;
 
       proofImage.onload = () => {
+        console.log("✅ Modal should open now");
         proofModal.style.display = "flex";
         document.body.style.overflow = "hidden";
-      };
+      }
+      
+      console.log("Loaded proof image:", proofImage.src);
 
       proofImage.onerror = () => {
         console.error("Failed to load proof image:", imgUrl);

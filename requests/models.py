@@ -32,17 +32,27 @@ def validate_file_is_image(value):
 
 class Payment(models.Model):
     payment_id = models.AutoField(primary_key=True)
-    request = models.OneToOneField(Request, on_delete=models.CASCADE, related_name='payment')
+    request_id = models.OneToOneField(
+        'requests.Request',
+        on_delete=models.CASCADE,
+        related_name='payment',
+        db_column='request_id'  # ✅ force clean column name
+    )
 
-    proof_of_payment = models.FileField(upload_to='payments/', blank=True, null=True, max_length=500, validators=[validate_file_is_image])
-    
-    verified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='verified_payments')
+    proof_of_payment = models.FileField(
+        upload_to='payments/',
+        blank=True,
+        null=True,
+        max_length=500,
+        validators=[validate_file_is_image],
+    )
+
     remarks = models.TextField(blank=True, null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
-    verified_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
-        return f"Payment #{self.payment_id} - {self.payment_status}"
+        return f"Payment #{self.payment_id}"
+
 
     
 class Request_Status_Log(models.Model):

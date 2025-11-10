@@ -18,6 +18,7 @@
           <li><a href="{{ home_url }}">Home</a></li>
           <li><a href="{% url 'about' %}">About</a></li>
           <li><a href="{% url 'create_request' %}" class="active">Create Request</a></li>
+          <li><a href="{% url 'student-requests' %}">Requests</a></li>
         </ul>
       </nav>
     </div>
@@ -179,9 +180,9 @@
 
                 <td>
                   {% if req.payment %}
-                    <div style="display:flex;align-items:center;gap:8px;">
+                    <div style="display:flex;align-items:center;gap:8px;margin-left: 10px;">
                       {% if req.payment and req.payment.proof_of_payment %}
-                        <button class="view-proof-btn" data-request-id="{{ req.request_id }}" data-img-url="{{ req.payment.proof_of_payment.url }}">
+                        <button class="view-proof-btn" data-request-id="{{ req.request_id }}" data-img-url="{{ req.payment.proof_of_payment }}">
                           <img src="{% static 'images/media.png' %}" alt="View Proof" width="30" />
                         </button>
                       {% endif %}
@@ -326,28 +327,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   proofButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
-      const imgUrlRaw = btn.getAttribute("data-img-url") || "";
+      let imgUrl = btn.getAttribute("data-img-url");
 
-      if (!imgUrlRaw) {
+      if (!imgUrl) {
         alert("No proof of payment available.");
         return;
       }
 
-      // Resolve relative or absolute URL safely
-      const resolvedUrl = imgUrlRaw.startsWith("http")
-        ? imgUrlRaw
-        : (imgUrlRaw.startsWith("/") ? imgUrlRaw : "/" + imgUrlRaw);
+      // ✅ FIX: Don't prepend '/' for Supabase URLs
+      modalImg.src = imgUrl.startsWith("http") ? imgUrl : "/" + imgUrl;
 
-      // Open modal immediately; load image in place
-      modal.style.display = "flex";
-      document.body.style.overflow = "hidden";
-      modalImg.src = resolvedUrl;
+      modalImg.onload = () => {
+        modal.style.display = "flex";
+        document.body.style.overflow = "hidden";
+      };
 
       modalImg.onerror = () => {
-        console.error("Failed to load proof image:", resolvedUrl);
-        modal.style.display = "none";
-        modalImg.removeAttribute("src");
-        document.body.style.overflow = "auto";
+        console.error("Failed to load proof image:", imgUrl);
         alert("Unable to display image. Please check if the proof file exists.");
       };
     });
@@ -366,48 +362,6 @@ document.addEventListener("DOMContentLoaded", () => {
       document.body.style.overflow = "auto";
     }
   });
-
-  // Close on ESC for better accessibility and consistent UX
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && modal.style.display === "flex") {
-      modal.style.display = "none";
-      modalImg.removeAttribute("src");
-      document.body.style.overflow = "auto";
-    }
-  });
-
-  // 🔹 Set Request History height to include row "#18" (or ~12 rows fallback)
-  const tableWrapper = document.querySelector('.table-wrapper');
-  const thead = document.querySelector('.history-table thead');
-  const rows = Array.from(document.querySelectorAll('.history-table tbody tr'));
-  if (tableWrapper && thead && rows.length) {
-    const paddingTop = 12;   // matches .table-wrapper top padding
-    const paddingBottom = 14; // matches .table-wrapper bottom padding
-    const headerHeight = thead.getBoundingClientRect().height;
-
-    // Find the row that contains request id "#18"
-    const targetRow = rows.find((row) => {
-      const idEl = row.querySelector('.request-id');
-      return idEl && idEl.textContent.trim().startsWith('#18');
-    });
-
-    let rowsHeight = 0;
-    if (targetRow) {
-      for (const row of rows) {
-        rowsHeight += row.getBoundingClientRect().height;
-        if (row === targetRow) break;
-      }
-    } else {
-      // Fallback: show roughly 12 rows
-      const count = Math.min(rows.length, 12);
-      for (let i = 0; i < count; i++) {
-        rowsHeight += rows[i].getBoundingClientRect().height;
-      }
-    }
-
-    const maxHeight = Math.ceil(headerHeight + rowsHeight + paddingTop + paddingBottom);
-    tableWrapper.style.maxHeight = `${maxHeight}px`;
-  }
 });
 </script>
 </body>

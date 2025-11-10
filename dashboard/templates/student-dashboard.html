@@ -14,9 +14,10 @@
     <a href="{{ home_url }}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" /></a>
     <nav>
       <ul>
-        <li><a href="{{ home_url }}">Home</a></li>
+        <li><a href="{{ home_url }}" class="active">Home</a></li>
         <li><a href="{% url 'about' %}">About</a></li>
         <li><a href="{% url 'create_request' %}">Create Request</a></li>
+        <li><a href="{% url 'student-requests' %}">Requests</a></li>
       </ul>
     </nav>
   </div>
@@ -58,7 +59,8 @@
           </div>
         </div>
       </a>
-
+    
+    <a href="{% url 'student-requests' %}" style="text-decoration: none; color: inherit;">
     <div class="stat-card stat-card-yellow">
     <div class="stat-icon">
       <img src="{% static 'images/documents-requested.png' %}" alt="Documents Requested">
@@ -68,6 +70,7 @@
       <p>Documents Requested</p>
     </div>
   </div>
+</a>
 
   <div class="stat-card stat-card-white">
     <div class="stat-icon">
