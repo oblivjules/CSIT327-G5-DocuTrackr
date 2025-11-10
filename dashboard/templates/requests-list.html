@@ -16,8 +16,8 @@
       <a href="{{ home_url }}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr" class="logo"></a>
       <nav>
         <ul>
-          <li><a href="{% url 'admin-dashboard' %}">Dashboard</a></li>
-          <li><a href="#" class="active">Requests</a></li>
+          <li><a href="{% url 'admin-dashboard' %}">Home</a></li>
+          <li><a href="{% url 'admin-requests' %}" class="active">Requests</a></li>
         </ul>
       </nav>
     </div>
@@ -106,7 +106,7 @@
               <td>{{ req.document.name }}</td>
               <td>
                 {% if req.payment and req.payment.proof_of_payment %}
-                  <button class="view-proof-btn" data-img-url="{{ req.payment.proof_of_payment.url|default:'' }}">View Proof</button>
+                  <button class="view-proof-btn" data-img-url="{{ req.payment.proof_of_payment|safe|default:''  }}">View Proof</button>
                 {% else %}
                   <span class="no-proof">No Proof</span>
                 {% endif %}
@@ -151,6 +151,36 @@
       </div>
     </section>
   </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>DocuTrackr</h4>
+        <p>Simplifying document requests for CIT-U students.</p>
+      </div>
+      <div class="footer-section">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="{% url 'admin-dashboard' %}">Home</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">FAQ</a></li>
+          <li><a href="#">Report Issue</a></li>
+          <li><a href="#">Feedback</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 DocuTrackr. All rights reserved. | CIT-U Document Management System</p>
+    </div>
+  </footer>
+
 
   <div id="proofModal" class="modal">
     <div class="modal-content">

@@ -16,8 +16,10 @@
       <a href="{% url 'student-dashboard' %}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr" class="logo"></a>
       <nav>
         <ul>
-          <li><a href="{% url 'student-dashboard' %}">Dashboard</a></li>
-          <li><a href="#" class="active">Requests</a></li>
+          <li><a href="{% url 'student-dashboard' %}">Home</a></li>
+          <li><a href="{% url 'about' %}">About</a></li>
+          <li><a href="{% url 'create_request' %}">Create Request</a></li>
+          <li><a href="{% url 'student-requests' %}" class="active">Requests</a></li>
         </ul>
       </nav>
     </div>
@@ -176,6 +178,36 @@
       </div>
     </div>
   </div>
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>DocuTrackr</h4>
+        <p>Simplifying document requests for CIT-U students.</p>
+      </div>
+      <div class="footer-section">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="{% url 'student-dashboard' %}">Home</a></li>
+          <li><a href="{% url 'about' %}">About</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">FAQ</a></li>
+          <li><a href="#">Report Issue</a></li>
+          <li><a href="#">Feedback</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 DocuTrackr. All rights reserved. | CIT-U Document Management System</p>
+    </div>
+  </footer>
 
   <script src="{% static 'js/student-dashboard.js' %}"></script>
 </body>
