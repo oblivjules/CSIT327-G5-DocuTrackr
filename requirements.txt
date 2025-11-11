@@ -1,7 +1,15 @@
 asgiref==3.10.0
 dj-database-url==3.0.1
 Django==5.2.7
-python-dotenv==1.1.1
+python-dotenv==1.0.1
 sqlparse==0.5.3
 tzdata==2025.2
+
+# Database + ORM
+psycopg2-binary==2.9.9 
+
+# Deployment tools
+gunicorn==21.2.0       
+whitenoise==6.6.0        
+
 supabase
