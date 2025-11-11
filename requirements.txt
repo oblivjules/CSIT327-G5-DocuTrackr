@@ -6,7 +6,7 @@ sqlparse==0.5.3
 tzdata==2025.2
 
 # Database + ORM
-psycopg2-binary==2.9.9 
+psycopg[binary,pool]==3.2.3
 
 # Deployment tools
 gunicorn==21.2.0       
