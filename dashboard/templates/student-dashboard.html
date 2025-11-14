@@ -34,7 +34,9 @@
         </div>
 
         <div class="icon-item profile-icon">
+          <a href="{% url 'profile' %}">
           <img src="{% static 'images/profile.png' %}" alt="User Profile" />
+          </a>
         </div>
 
         <a href="{% url 'student_logout' %}" class="icon-item logout-icon">
