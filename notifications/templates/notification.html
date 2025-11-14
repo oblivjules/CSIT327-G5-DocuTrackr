@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Popup Notification Example</title>
+  <link rel="stylesheet" href="notification.css" />
+</head>
+<body>
+
+  <div class="container">
+    <h2>Notification Example</h2>
+    <button onclick="showNotification('success', 'Request Approved Successfully!')">Show Success</button>
+    <button onclick="showNotification('error', 'Request Rejected!')">Show Error</button>
+    <button onclick="showNotification('warning', 'Incomplete Form Submitted!')">Show Warning</button>
+  </div>
+
+  <!-- Notification Container -->
+  <div id="notification-container"></div>
+
+  <script src="notification.js"></script>
+</body>
+</html>
