@@ -83,7 +83,7 @@ def create_request(request):
 
                 # Save payment record with Supabase URL
                 Payment.objects.create(
-                    request=new_request,
+                    request_id=new_request,
                     proof_of_payment=uploaded_url,
                     uploaded_at=timezone.now(),
                 )
@@ -94,7 +94,7 @@ def create_request(request):
                 print(f"❌ Supabase upload failed: {e}")
                 # Fallback: save locally if upload fails
                 payment = Payment.objects.create(
-                    request=new_request,
+                    request_id=new_request,
                     proof_of_payment=proof_file,
                     uploaded_at=timezone.now(),
                 )
