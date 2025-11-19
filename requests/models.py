@@ -36,7 +36,7 @@ class Payment(models.Model):
         'requests.Request',
         on_delete=models.CASCADE,
         related_name='payment',
-        db_column='request_id'  # ✅ force clean column name
+        db_column='request_id'  
     )
 
     proof_of_payment = models.FileField(
