@@ -1,315 +1,200 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-
 body {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f4f6f9;
-  margin: 0;
+  background: #f1f1f1;
+  font-family: "Montserrat", sans-serif;
 }
 
-
-.navbar {
-  width: 100%;
-  height: 70px;
-  background-color: #89393a;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 40px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.navbar-left {
-  display: flex;
-  align-items: center;
-  gap: 50px;
-}
-
-.logo {
-  height: 120px;
-  transition: transform 0.2s ease;
-}
-
-.logo:hover {
-  transform: scale(1.05);
-}
-
-.navbar-left ul {
-  display: flex;
-  list-style: none;
-  gap: 35px;
-  margin: 0;
-}
-
-.navbar-left a {
-  position: relative;
-  color: #fff;
-  text-decoration: none;
-  font-size: 15px;
-  font-weight: 500;
-  padding: 8px 12px;
+/* Back Button */
+.back-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: #8B2635;
+  padding: 10px 18px;
+  color: white;
   border-radius: 6px;
-  transition: color 0.3s ease;
-}
-
-.navbar-left nav a::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  height: 2px;
-  width: 0;
-  background-color: #ececeb;
-  transition: width 0.3s ease;
-}
-
-.navbar-left nav a:hover::after {
-  width: 100%;
-}
-
-.navbar-right {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.user-name {
+  text-decoration: none;
   font-weight: 600;
-  text-decoration: none;
-  padding: 8px 16px;
-  border-radius: 25px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  letter-spacing: 0.5px;
-  color: #fff;
-  font-size: 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
-.user-name::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transition: left 0.5s ease;
+.back-btn:hover {
+  background: #FDB714;
+  color: #8B2635;
 }
 
-.user-name:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
-}
-
-.user-name:hover::before {
-  left: 100%;
-}
-
-.navbar-icons {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.icon-item {
-  position: relative;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
+/* Center Layout */
+.claim-slip-container {
   display: flex;
   justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-  text-decoration: none;
+  padding: 50px 20px;
 }
 
-.notification-icon {
-  background: linear-gradient(135deg, #3498db, #2980b9);
-  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
-}
-
-.profile-icon {
-  background: linear-gradient(135deg, #f8c400, #e6b800);
-  box-shadow: 0 4px 15px rgba(248, 196, 0, 0.3);
-}
-
-.logout-icon {
-  background: linear-gradient(135deg, #ececeb, #d5d5d4);
-  box-shadow: 0 4px 15px rgba(236, 236, 235, 0.3);
-}
-
-.icon-item img {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-  filter: brightness(0) invert(1);
-  transition: all 0.3s ease;
-}
-
-.logout-icon img {
-  filter: brightness(0) invert(0);
-}
-
-.icon-item:hover {
-  transform: translateY(-3px) scale(1.05);
-}
-
-.notification-icon:hover {
-  box-shadow: 0 8px 25px rgba(52, 152, 219, 0.5);
-}
-
-.profile-icon:hover {
-  box-shadow: 0 8px 25px rgba(248, 196, 0, 0.5);
-}
-
-.logout-icon:hover {
-  box-shadow: 0 8px 25px rgba(236, 236, 235, 0.5);
-}
-
-.icon-item:hover img {
-  transform: scale(1.1);
-}
-
-.icon-item:active {
-  transform: translateY(-1px) scale(0.98);
-}
-
-.icon-item::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  transition: all 0.3s ease;
-}
-
-.icon-item:active::before {
-  width: 100%;
-  height: 100%;
-}
-
-.container {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 50px 40px;
-  gap: 30px;
-  max-width: 1700px;
-  margin: 0 auto;
-  flex-wrap: wrap;
-}
-
-.claim-card {
+/* Main Card */
+.claim-slip-card {
+  width: 650px;
   background: white;
-  border-radius: 12px;
-  width: 480px;
-  padding: 30px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  padding: 40px 50px;
+  border-top: 5px solid #FDB714;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
 
-.claim-header {
+/* Header */
+.citu-seal {
+  width: 80px;
+  display: block;
+  margin: 0 auto 10px auto;
+}
+
+.claim-header h1 {
   text-align: center;
+  font-size: 26px;
+  color: #8B2635;
+  font-weight: 800;
 }
 
-.icon {
-  background: #ffcc00;
-  color: #800000;
-  border-radius: 50%;
-  display: inline-block;
-  padding: 10px 14px;
-  font-weight: bold;
-  margin-bottom: 8px;
+.claim-header h2 {
+  text-align: center;
+  font-size: 14px;
+  margin-top: 4px;
+  color: #444;
+  letter-spacing: 1px;
 }
 
-h2 {
-  color: #800000;
-  margin: 5px 0;
+.line {
+  height: 3px;
+  background: #FDB714;
+  margin: 20px 0;
 }
 
-.sub {
-  font-weight: 500;
-  color: #666;
+/* Section Titles */
+.section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #8B2635;
   margin-bottom: 10px;
+  text-transform: uppercase;
 }
 
-.info-pair {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
+.section-title.maroon {
+  color: #8B2635;
 }
 
-.label {
-  font-size: 13px;
-  color: #800000;
-  font-weight: 600;
-  margin-bottom: 3px;
+/* Info Grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
 }
 
-.section {
-  margin-top: 15px;
+label {
+  font-size: 11px;
+  font-weight: bold;
+  color: #777;
+  letter-spacing: 1px;
 }
 
-.section h3 {
-  color: #800000;
+p {
+  margin-top: 4px;
   font-size: 15px;
-  margin-bottom: 5px;
-  border-left: 4px solid #ffcc00;
-  padding-left: 6px;
+  font-weight: 600;
 }
 
+/* Instructions Box */
 .instructions-box {
-  background: #fff6df;
-  padding: 10px 15px;
+  background: #fff4cc;
+  padding: 18px;
+  border-left: 4px solid #FDB714;
   border-radius: 8px;
+  margin-top: 18px;
 }
 
 .instructions-box p {
-  margin: 6px 0;
+  margin-bottom: 8px;
 }
 
-.instructions-box ul {
-  margin: 6px 0;
-  padding-left: 20px;
+.instructions-box li {
+  margin: 4px 0;
+  font-size: 14px;
 }
 
+/* Footer */
+.claim-footer {
+  margin-top: 30px;
+  text-align: center;
+  font-size: 12px;
+  color: #777;
+  padding-top: 20px;
+  border-top: 1px dashed #ccc;
+}
+
+/* Print Button */
 .print-btn {
-  display: block;
-  background: #800000;
+  position: fixed;
+  right: 25px;
+  bottom: 25px;
+  background: #8B2635;
   color: white;
-  font-weight: bold;
+  padding: 14px 26px;
+  border-radius: 50px;
   border: none;
-  border-radius: 8px;
-  width: 100%;
-  padding: 10px;
-  margin-top: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.2);
   cursor: pointer;
 }
 
 .print-btn:hover {
-  background: #a00000;
+  background: #FDB714;
+  color: #8B2635;
 }
 
-.note {
-  text-align: center;
-  font-size: 12px;
-  color: #777;
-  margin-top: 15px;
+/* Print */
+@media print {
+
+    body {
+        margin: 0;
+        padding: 0;
+        background: white !important;
+        display: flex;
+        justify-content: center; 
+        align-items: center; 
+        height: 100vh; 
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    
+    .claim-slip-container {
+    width: 70%;
+  
+    display: flex;
+    justify-content: center; 
+    align-items: center;   
+    border: 1px solid #ccc;
+    padding: 20px;
+    box-sizing: border-box;
+    }
+
+    .claim-slip-card {
+        width: 700px !important;
+        padding: 25px;
+        box-shadow: none !important;
+        background: white !important;
+    }
+
+    /* Logo prints clearly */
+    .citu-seal {
+        width: 80px !important;
+        print-color-adjust: exact !important;
+        -webkit-print-color-adjust: exact !important;
+    }
+
+    /* Make sure colors print properly */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
 }

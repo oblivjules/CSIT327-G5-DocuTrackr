@@ -10,114 +10,91 @@
   <link rel="icon" type="image/png" href="{% static 'images/docutrackr-logo.png' %}">
 </head>
 <body>
-  <header class="navbar">
-    <div class="navbar-left">
-      <a href="{{ home_url }}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" /></a>
-      <nav>
-        <ul>
-          <li><a href="{{ home_url }}">Home</a></li>
-          <li><a href="{% url 'about' %}">About</a></li>
-          <li><a href="{% url 'create_request' %}" class="active">Create Request</a></li>
-        </ul>
-      </nav>
-    </div>
 
-  <div class="navbar-right">
-      {% if full_name %}
-        <a href="{{ home_url }}" class="user-name">{{ full_name }}</a>
-      {% else %}
-        <span class="user-name"></span>
-      {% endif %}
+<a href="javascript:history.back()" class="back-btn no-print">← Back</a>
 
-      <div class="navbar-icons">
-        <div class="icon-item notification-icon">
-          <img src="{% static 'images/bell.png' %}" alt="Notification Bell" />
+<div class="claim-slip-container">
+
+    <div class="claim-slip-card">
+
+        <!-- Header -->
+        <div class="claim-header">
+            <img src="{% static 'images/citseal.png' %}" class="citu-seal" alt="CIT Logo">
+            <h1>CLAIM SLIP</h1>
+            <h2>OFFICIAL DOCUMENT RELEASE</h2>
         </div>
 
-        <div class="icon-item profile-icon">
-          <img src="{% static 'images/Profile.png' %}" alt="User Profile" />
+        <div class="line"></div>
+
+        <!-- Claim Info -->
+        <section>
+            <div class="section-title">CLAIM NUMBER</div>
+            <div class="info-grid">
+                <div>
+                    <label>CLAIM NUMBER</label>
+                    <p>REQ-2025-002</p>
+                </div>
+                <div>
+                    <label>DATE READY</label>
+                    <p>11/11/2025</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="line"></div>
+
+        <!-- Student Info -->
+        <section>
+            <div class="section-title maroon">STUDENT INFORMATION</div>
+            <div class="info-grid">
+                <div>
+                    <label>NAME</label>
+                    <p>John Doe</p>
+                </div>
+                <div>
+                    <label>STUDENT ID</label>
+                    <p>20-2423-001</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="line"></div>
+
+        <!-- Document Details -->
+        <section>
+            <div class="section-title maroon">DOCUMENT DETAILS</div>
+            <div class="info-grid">
+                <div>
+                    <label>DOCUMENT TYPE</label>
+                    <p>Transcript of Records</p>
+                </div>
+                <div>
+                    <label>NUMBER OF COPIES</label>
+                    <p>2</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="line"></div>
+
+        <!-- Instructions -->
+        <div class="instructions-box">
+            <p>Please present this slip to the Registrar’s Office to claim your document.</p>
+            <ul>
+                <li>Bring a valid school ID.</li>
+                <li>Ensure your payment has been verified.</li>
+                <li>Only the requester can claim the document.</li>
+            </ul>
         </div>
 
-        <a href="{% url 'student_logout' %}" class="icon-item logout-icon">
-          <img src="{% static 'images/logout.png' %}" alt="Logout" />
-        </a>
-      </div>
-    </div>
-  </header>
+        <footer class="claim-footer">
+            © 2025 CIT-U Registrar’s Office | CITeDocs
+        </footer>
 
-<main class="container">
-  <section class="claim-card">
-    <div class="claim-header">
-      <div class="icon">✔</div>
-      <h2>DOCUMENT CLAIM SLIP</h2>
-      <p class="sub">DocuTrackr</p>
     </div>
 
-    <div class="claim-info">
-      <div class="info-pair">
-        <div>
-          <p class="label">CLAIM NUMBER</p>
-          <p id="claimNumber">{{ claim_slip.claim_number }}</p>
-        </div>
-        <div>
-          <p class="label">DATE READY</p>
-          <p id="dateReady">{{ claim_slip.date_ready|date:"m/d/Y" }}</p>
-        </div>
-      </div>
-    </div>
+</div>
 
-    <hr>
-
-    <div class="section">
-      <h3>STUDENT INFORMATION</h3>
-      <div class="info-pair">
-        <div>
-          <p class="label">NAME</p>
-          <p id="studentName">{{ claim_slip.request.user.name }}</p>
-        </div>
-        <div>
-          <p class="label">STUDENT ID</p>
-          <p id="studentId">{{ claim_slip.request.user.student_id }}</p>
-        </div>
-      </div>
-    </div>
-
-    <hr>
-
-    <div class="section">
-      <h3>DOCUMENT DETAILS</h3>
-      <div class="info-pair">
-        <div>
-          <p class="label">DOCUMENT TYPE</p>
-          <p id="docType">{{ claim_slip.request.document.name }}</p>
-        </div>
-      </div>
-      <p class="label">NUMBER OF COPIES</p>
-      <p id="copies">{{ claim_slip.request.copies }}</p>
-    </div>
-
-    <hr>
-
-    <div class="section">
-      <h3>CLAIM INSTRUCTIONS</h3>
-      <div class="instructions-box">
-        <p><strong>Location:</strong><br>Registrar’s Office</p>
-        <p><strong>Office Hours:</strong><br>Monday–Friday, 8:00 AM–5:00 PM</p>
-        <p><strong>Requirements:</strong></p>
-        <ul>
-          <li>Valid School ID or Government-issued ID</li>
-          <li>This claim slip (printed or digital)</li>
-        </ul>
-      </div>
-    </div>
-
-    <button class="print-btn" onclick="window.print()">🖨 Print Claim Slip</button>
-
-    <p class="note">
-      Please present this claim slip when picking up your documents.<br>
-      For inquiries, contact the Registrar’s Office at <strong>registrar@cit.edu</strong>
-    </p>
-  </section>
-</main>
+<button class="print-btn no-print" onclick="window.print()">🖨 Print Claim Slip</button>
 </body>
 </html>
