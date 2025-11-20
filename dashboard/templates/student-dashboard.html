@@ -112,7 +112,7 @@
           <tbody>
             {% for req in recent_requests %}
             <tr class="request-row" data-request-id="{{ req.request_id }}">
-              <td class="request-id"><strong>REQ-{{ req.request_id|stringformat:"05d" }}</strong></td>
+              <td class="request-id"><strong>REQ-{{ req.request_id }}</strong></td>
               <td>{{ req.document.name }}</td>
               <td>{{ req.created_at|date:"M d, Y" }}</td>
               <td>
@@ -170,32 +170,32 @@
             {% if log.old_status == 'none' %}
               <p class="activity-title">Request Submitted</p>
               <p class="activity-description">
-                You submitted REQ-{{ log.request.request_id|stringformat:"05d" }} ({{ log.request.document.name }})
+                You submitted REQ-{{ log.request.request_id }} ({{ log.request.document.name }})
               </p>
             {% elif log.new_status == 'processing' %}
               <p class="activity-title">Request Processing</p>
               <p class="activity-description">
-                Your REQ-{{ log.request.request_id|stringformat:"05d" }} ({{ log.request.document.name }}) is now being processed
+                Your REQ-{{ log.request.request_id }} ({{ log.request.document.name }}) is now being processed
               </p>
             {% elif log.new_status == 'approved' %}
               <p class="activity-title">Request Approved</p>
               <p class="activity-description">
-                Your REQ-{{ log.request.request_id|stringformat:"05d" }} ({{ log.request.document.name }}) has been approved
+                Your REQ-{{ log.request.request_id }} ({{ log.request.document.name }}) has been approved
               </p>
             {% elif log.new_status == 'completed' %}
               <p class="activity-title">Ready for Pickup</p>
               <p class="activity-description">
-                Your REQ-{{ log.request.request_id|stringformat:"05d" }} ({{ log.request.document.name }}) is ready for pickup
+                Your REQ-{{ log.request.request_id }} ({{ log.request.document.name }}) is ready for pickup
               </p>
             {% elif log.new_status == 'rejected' %}
               <p class="activity-title">Request Rejected</p>
               <p class="activity-description">
-                Your REQ-{{ log.request.request_id|stringformat:"05d" }} ({{ log.request.document.name }}) has been rejected
+                Your REQ-{{ log.request.request_id }} ({{ log.request.document.name }}) has been rejected
               </p>
             {% else %}
               <p class="activity-title">Recent Staff Activity</p>
               <p class="activity-description">
-                Your REQ-{{ log.request.request_id|stringformat:"05d" }} ({{ log.request.document.name }}) status updated to {{ log.new_status }}
+                Your REQ-{{ log.request.request_id }} ({{ log.request.document.name }}) status updated to {{ log.new_status }}
               </p>
             {% endif %}
             <p class="activity-time">{{ log.changed_at|timesince }} ago</p>

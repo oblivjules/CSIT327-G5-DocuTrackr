@@ -221,7 +221,7 @@
               {% endif %}
             </p>
             <p class="activity-description">
-              REQ {{ activity.request.request_id }} marked as {{ activity.new_status|upper }} by Staff {{ activity.changed_by.name }}
+              REQ-{{ activity.request.request_id }} marked as {{ activity.new_status|upper }} by Staff {{ activity.changed_by.name }}
             </p>
             <p class="activity-time">{{ activity.changed_at|timesince }} ago</p>
           </div>
