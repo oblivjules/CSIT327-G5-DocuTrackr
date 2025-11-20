@@ -172,7 +172,7 @@
           <tbody>
             {% for req in user_requests %}
               <tr>
-                <td><span class="request-id">#{{ req.request_id }}</span></td>
+                <td><span class="request-id">REQ-{{ req.request_id }}</span></td>
                 <td>{{ req.document.name }}</td>
                 <td>{{ req.copies }}</td>
                 <td>{{ req.date_needed|date:"M d, Y" }}</td>

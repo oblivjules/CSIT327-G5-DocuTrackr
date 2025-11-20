@@ -69,7 +69,7 @@
           <tbody>
             {% for req in recent_requests %}
             <tr class="request-row" data-request-id="{{ req.request_id }}">
-              <td class="request-id"><strong>REQ-{{ req.request_id|stringformat:"05d" }}</strong></td>
+              <td class="request-id"><strong>REQ-{{ req.request_id }}</strong></td>
               <td>{{ req.document.name }}</td>
               <td>{{ req.created_at|date:"M d, Y" }}</td>
               <td>

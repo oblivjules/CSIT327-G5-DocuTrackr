@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const updated = button.dataset.updated || '—';
             const proofUrl = button.dataset.proofUrl;
 
-            requestIdElement.textContent = 'REQ-' + String(requestId).padStart(4, '0');
+            requestIdElement.textContent = `REQ-${requestId}`;
             statusElement.textContent = status;
             statusElement.className = 'dt-status-badge ' + status.toLowerCase();
             documentElement.textContent = docName;
