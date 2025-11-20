@@ -17,7 +17,7 @@
       <nav>
         <ul>
           <li><a href="{{ home_url }}">Home</a></li>
-          <li><a href="{% url 'about' %}" class="active">About</a></li>
+          <li><a href="{% url 'about' %}">About</a></li>
           <li><a href="{% url 'create_request' %}">Create Request</a></li>
           <li><a href="{% url 'student-requests' %}">Requests</a></li>
         </ul>
@@ -34,9 +34,9 @@
         <div class="icon-item notification-icon">
           <img src="{% static 'images/bell.png' %}" alt="Notification Bell" />
         </div>
-        <div class="icon-item profile-icon">
+        <a href="{% url 'profile' %}" class="icon-item profile-icon">
           <img src="{% static 'images/Profile.png' %}" alt="User Profile" />
-        </div>
+        </a>
         <a href="{% url 'student_logout' %}" class="icon-item logout-icon">
           <img src="{% static 'images/logout.png' %}" alt="Logout" />
         </a>
@@ -80,7 +80,6 @@
       </div>
     </section>
 
-    <!-- Solution Section -->
     <section class="section solution-section">
       <div class="section-content">
         <h2>Our Solution</h2>
@@ -148,7 +147,6 @@
       </div>
     </section>
 
-    <!-- Objectives Section -->
     <section class="section objectives-section">
       <div class="section-content">
         <h2>Our Objectives</h2>
@@ -187,7 +185,6 @@
       </div>
     </section>
 
-    <!-- Technology Section -->
     <section class="section tech-section">
       <div class="section-content">
         <h2>Built With Modern Technology</h2>
@@ -210,7 +207,6 @@
       </div>
     </section>
 
-    <!-- CTA Section -->
     <section class="section cta-section">
       <div class="section-content">
         <h2>Ready to Get Started?</h2>
@@ -223,7 +219,6 @@
     </section>
   </main>
 
-  <!-- Footer -->
   <footer class="footer">
     <div class="footer-content">
       <div class="footer-section">

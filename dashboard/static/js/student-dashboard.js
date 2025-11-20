@@ -1,4 +1,24 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Sync Recent Activity card height to Recent Document Requests card
+    function syncActivityHeight() {
+        const recent = document.querySelector('.dashboard-row.two-up .recent-requests');
+        const activity = document.querySelector('.dashboard-row.two-up .activity-section');
+        if (!recent || !activity) return;
+        // Measure the actual card height including header and footer
+        const height = recent.offsetHeight;
+        if (height && Math.abs(activity.offsetHeight - height) > 2) {
+            activity.style.height = height + 'px';
+        }
+    }
+
+    // Initial sync after layout
+    requestAnimationFrame(syncActivityHeight);
+    // Re-sync on window resize (debounced)
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(syncActivityHeight, 100);
+    });
   
     const modal = document.getElementById('requestModal');
     
@@ -33,7 +53,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const requestId = button.dataset.requestId || '';
             const status = button.dataset.status || '';
-            // Avoid shadowing the global `document` object
             const docName = button.dataset.document || '';
             const copies = button.dataset.copies || '—';
             const dateNeeded = button.dataset.dateNeeded || '—';
@@ -50,9 +69,6 @@ document.addEventListener('DOMContentLoaded', function() {
             createdElement.textContent = created;
             updatedElement.textContent = updated;
 
-            // Normalize proof URL (clean unicode escapes).
-            // We'll accept absolute http(s) URLs. If the value contains an encoded absolute URL
-            // (e.g. "/media/https%3A/..."), try decoding and accept the decoded absolute URL.
             let imgUrl = proofUrl ? proofUrl.replace(/\\u002D/g, "-").trim() : '';
             
             if (imgUrl) {
@@ -63,16 +79,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-             // Ensure the proof section is visible when opening the modal
             proofSection.style.display = 'block';
 
-
-            // Helper to show a placeholder text inside proof section
             function showPlaceholder() {
                 proofImage.removeAttribute('src');
                 proofImage.style.display = 'none';
-
-                // Create or update a small placeholder node
                 let placeholder = proofSection.querySelector('.proof-not-available');
                 if (!placeholder) {
                     placeholder = document.createElement('div');
@@ -91,16 +102,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (placeholder) placeholder.style.display = 'none';
             }
 
-            // Normalize URL: handle /media-wrapped absolute, root-relative, and bare storage paths
             if (imgUrl) {
                 if (imgUrl.startsWith('/media/http')) {
                     imgUrl = imgUrl.replace(/^\/media\//, '');
                 } else if (imgUrl.startsWith('http')) {
-                    // absolute URL
                 } else if (imgUrl.startsWith('/')) {
-                    // root-relative (/media/...)
                 } else {
-                    // bare file path like "payments/filename" -> prefix with /media
                     imgUrl = '/media/' + imgUrl;
                 }
             }

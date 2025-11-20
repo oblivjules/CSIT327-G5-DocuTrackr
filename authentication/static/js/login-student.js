@@ -3,7 +3,6 @@ const emailInput = document.querySelector("input[type='email']");
 const passwordInput = document.querySelector("input[type='password']");
 const togglePasswordIcon = document.querySelector(".password-group .hide");
 
-// Validate email
 function validateEmail() {
   const value = emailInput.value.trim();
 
@@ -16,7 +15,6 @@ function validateEmail() {
   }
 }
 
-// Validate password
 function validatePassword() {
   const value = passwordInput.value.trim();
 
@@ -27,18 +25,16 @@ function validatePassword() {
   }
 }
 
-// Validate only on submit click
 form.addEventListener("submit", (e) => {
   validateEmail();
   validatePassword();
 
   if (!form.checkValidity()) {
     e.preventDefault();
-    form.reportValidity(); // show tooltip
+    form.reportValidity();
   }
 });
 
-// Clear tooltip after correction
 emailInput.addEventListener("input", () => {
   emailInput.setCustomValidity("");
 });
@@ -47,7 +43,6 @@ passwordInput.addEventListener("input", () => {
   passwordInput.setCustomValidity("");
 });
 
-// Toggle password visibility
 togglePasswordIcon.addEventListener("click", () => {
   if (passwordInput.type === "password") {
     passwordInput.type = "text";

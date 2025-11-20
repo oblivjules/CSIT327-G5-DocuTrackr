@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', function () {
   form.addEventListener('submit', function(event) {
     const email = emailField.value.trim();
 
-    // Check empty
     if (email === "") {
       emailField.setCustomValidity("Email is required");
       emailField.reportValidity();
@@ -13,7 +12,6 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    // Check institutional email
     if (!email.endsWith("@cit.edu")) {
       emailField.setCustomValidity("Please enter a valid institutional email address (e.g., name@cit.edu)");
       emailField.reportValidity();
@@ -21,11 +19,9 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    // Clear previous error
     emailField.setCustomValidity("");
   });
 
-  // Clear custom validity on input
   emailField.addEventListener('input', function() {
     emailField.setCustomValidity("");
   });

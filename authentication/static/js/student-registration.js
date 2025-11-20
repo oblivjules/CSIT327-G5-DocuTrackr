@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
     confirmPassword: document.getElementById("confirm_password")
   };
 
-  // Toggle password visibility
   const toggleIcons = document.querySelectorAll(".password-group .hide");
   toggleIcons.forEach(icon => {
     icon.addEventListener("click", () => {
@@ -25,7 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Validation functions
   function validateNames() {
     if (fields.firstname.value.trim() === "") {
       fields.firstname.setCustomValidity("First name is required");
@@ -94,7 +92,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Form submit
   form.addEventListener("submit", (e) => {
     validateNames();
     validateStudentId();
@@ -104,11 +101,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!form.checkValidity()) {
       e.preventDefault();
-      form.reportValidity(); // show tooltip on first invalid field
+      form.reportValidity();
     }
   });
 
-  // Clear tooltip on input so users can navigate freely
   Object.values(fields).forEach(field => {
     field.addEventListener("input", () => field.setCustomValidity(""));
   });

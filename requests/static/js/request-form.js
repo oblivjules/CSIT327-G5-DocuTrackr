@@ -1,13 +1,11 @@
 console.log("🔥 JS Loaded Successfully!");
 
-// === Restrict "Date Needed" to today or later ===
 const dateInput = document.getElementById('dateNeeded');
 if (dateInput) {
   const today = new Date().toISOString().split('T')[0];
   dateInput.setAttribute('min', today);
 }
 
-// === File Upload Validation ===
 const form = document.querySelector('form');
 const fileInput = document.getElementById('fileInput');
 const fileLabel = document.querySelector('.file-label');
@@ -22,7 +20,6 @@ if (!errorContainer && fileInput) {
   fileInput.parentNode.appendChild(errorContainer);
 }
 
-// Handle file selection
 if (fileInput) {
   fileInput.addEventListener('change', () => {
     errorContainer.textContent = '';
@@ -45,7 +42,6 @@ if (fileInput) {
   });
 }
 
-// Validate before submit
 if (form) {
   form.addEventListener('submit', (e) => {
     const file = fileInput?.files[0];
@@ -65,7 +61,6 @@ if (form) {
   });
 }
 
-// === MODAL LOGIC ===
 document.addEventListener("DOMContentLoaded", () => {
   console.log("✅ Modal script loaded");
 
@@ -90,11 +85,9 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // Ensure correct URL format
       if (!imgUrl.startsWith("/")) imgUrl = "/" + imgUrl;
       modalImg.src = imgUrl;
 
-      // Wait until the image loads before showing the modal
       modalImg.onload = () => {
         modal.style.display = "flex";
         document.body.style.overflow = "hidden";
@@ -108,14 +101,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Close modal
   closeBtn?.addEventListener("click", () => {
     modal.style.display = "none";
     modalImg.src = "";
     document.body.style.overflow = "auto";
   });
 
-  // Close when clicking outside the modal content
   modal.addEventListener("click", (e) => {
     if (e.target === modal) {
       modal.style.display = "none";

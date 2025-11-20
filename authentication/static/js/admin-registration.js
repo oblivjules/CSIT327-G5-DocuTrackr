@@ -24,7 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Validation functions
   function validateNames() {
     if (fields.firstname.value.trim() === "") {
       fields.firstname.setCustomValidity("First name is required");
@@ -43,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const value = fields.registrarId.value.trim();
     if (value === "") {
       fields.registrarId.setCustomValidity("Registrar ID is required");
-    } else if (!/^\d{4}$/.test(value)) { // exactly 4 digits
+    } else if (!/^\d{4}$/.test(value)) {
       fields.registrarId.setCustomValidity("Registrar ID must be exactly 4 digits");
     } else {
       fields.registrarId.setCustomValidity("");
@@ -70,7 +69,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Common password rules
     const rules = [
       { regex: /.{8,}/, message: "at least 8 characters" },
       { regex: /[A-Z]/, message: "at least one uppercase letter" },
@@ -104,11 +102,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!form.checkValidity()) {
       e.preventDefault();
-      form.reportValidity(); // show tooltip on first invalid field
+      form.reportValidity();
     }
   });
 
-  // Clear tooltip on input
   Object.values(fields).forEach(field => {
     field.addEventListener("input", () => field.setCustomValidity(""));
   });

@@ -1,4 +1,5 @@
 {% load static %}
+{% load tz %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,9 +34,9 @@
         <div class="icon-item notification-icon">
           <img src="{% static 'images/bell.png' %}" alt="Notifications" />
         </div>
-        <div class="icon-item profile-icon">
+        <a href="{% url 'profile' %}" class="icon-item profile-icon">
           <img src="{% static 'images/Profile.png' %}" alt="Profile" />
-        </div>
+        </a>
         <a href="{% url 'student_logout' %}" class="icon-item logout-icon"><img src="{% static 'images/logout.png' %}" alt="Logout"></a>
       </div>
     </div>
@@ -89,8 +90,8 @@
                   data-copies="{{ req.copies }}"
                   data-date-needed="{{ req.date_needed|date:'M d, Y' }}"
                   data-status="{{ req.get_status_display }}"
-                  data-created="{{ req.created_at|date:'M d, Y h:i A' }}"
-                  data-updated="{{ req.updated_at|date:'M d, Y h:i A' }}"
+                  data-created="{{ req.created_at|localtime|date:'M d, Y h:i A' }}"
+                  data-updated="{{ req.updated_at|localtime|date:'M d, Y h:i A' }}"
                   data-payment-status="{% if req.payment %}{{ req.payment.get_payment_status_display }}{% endif %}"
                   data-proof-url="{{ req.payment.proof_of_payment|safe|default:'' }}"
                 >View Details</button>
