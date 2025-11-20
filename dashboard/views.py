@@ -60,12 +60,12 @@ def student_dashboard(request):
 @login_required
 @no_cache
 def profile(request):
-    """Render the profile page for students and registrars."""
+    """Render the student profile page."""
     role = request.session.get('role')
-    if role not in ['student', 'registrar']:
+    if role != 'student':
         return redirect('index')
 
-    return render(request, 'profile.html', { 'user_role': role })
+    return render(request, 'profile.html')
 
 @login_required
 @no_cache
