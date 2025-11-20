@@ -14,87 +14,88 @@
 <a href="javascript:history.back()" class="back-btn no-print">← Back</a>
 
 <div class="claim-slip-container">
+  <div class="claim-slip-card">
 
-    <div class="claim-slip-card">
-
-        <!-- Header -->
-        <div class="claim-header">
-            <img src="{% static 'images/citseal.png' %}" class="citu-seal" alt="CIT Logo">
-            <h1>CLAIM SLIP</h1>
-            <h2>OFFICIAL DOCUMENT RELEASE</h2>
-        </div>
-
-        <div class="line"></div>
-
-        <!-- Claim Info -->
-        <section>
-            <div class="section-title">CLAIM NUMBER</div>
-            <div class="info-grid">
-                <div>
-                    <label>CLAIM NUMBER</label>
-                    <p>REQ-2025-002</p>
-                </div>
-                <div>
-                    <label>DATE READY</label>
-                    <p>11/11/2025</p>
-                </div>
-            </div>
-        </section>
-
-        <div class="line"></div>
-
-        <!-- Student Info -->
-        <section>
-            <div class="section-title maroon">STUDENT INFORMATION</div>
-            <div class="info-grid">
-                <div>
-                    <label>NAME</label>
-                    <p>John Doe</p>
-                </div>
-                <div>
-                    <label>STUDENT ID</label>
-                    <p>20-2423-001</p>
-                </div>
-            </div>
-        </section>
-
-        <div class="line"></div>
-
-        <!-- Document Details -->
-        <section>
-            <div class="section-title maroon">DOCUMENT DETAILS</div>
-            <div class="info-grid">
-                <div>
-                    <label>DOCUMENT TYPE</label>
-                    <p>Transcript of Records</p>
-                </div>
-                <div>
-                    <label>NUMBER OF COPIES</label>
-                    <p>2</p>
-                </div>
-            </div>
-        </section>
-
-        <div class="line"></div>
-
-        <!-- Instructions -->
-        <div class="instructions-box">
-            <p>Please present this slip to the Registrar’s Office to claim your document.</p>
-            <ul>
-                <li>Bring a valid school ID.</li>
-                <li>Ensure your payment has been verified.</li>
-                <li>Only the requester can claim the document.</li>
-            </ul>
-        </div>
-
-        <footer class="claim-footer">
-            © 2025 CIT-U Registrar’s Office | CITeDocs
-        </footer>
-
+    <!-- Header -->
+    <div class="claim-header">
+        <img src="{% static 'images/citseal.png' %}" class="citu-seal" alt="CIT Logo">
+        <h1>CLAIM SLIP</h1>
+        <h2>OFFICIAL DOCUMENT RELEASE</h2>
     </div>
 
+    <div class="line"></div>
+
+    {% with cs=claim|default:claim_slip %}
+    <!-- Claim Info -->
+    <section>
+        <div class="section-title">CLAIM INFORMATION</div>
+        <div class="info-grid">
+            <div>
+                <label>CLAIM NUMBER</label>
+                <p>{{ cs.claim_number }}</p>
+            </div>
+            <div>
+                <label>DATE READY</label>
+                <p>{{ cs.date_ready|date:"m/d/Y" }}</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="line"></div>
+
+    <!-- Student Info -->
+    <section>
+        <div class="section-title maroon">STUDENT INFORMATION</div>
+        <div class="info-grid">
+            <div>
+                <label>NAME</label>
+                <p>{{ cs.request.user.name }}</p>
+            </div>
+            <div>
+                <label>STUDENT ID</label>
+                <p>{{ cs.request.user.student_id }}</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="line"></div>
+
+    <!-- Document Details -->
+    <section>
+        <div class="section-title maroon">DOCUMENT DETAILS</div>
+        <div class="info-grid">
+            <div>
+                <label>DOCUMENT TYPE</label>
+                <p>{{ cs.request.document.name }}</p>
+            </div>
+            <div>
+                <label>NUMBER OF COPIES</label>
+                <p>{{ cs.request.copies }}</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="line"></div>
+
+    <!-- Instructions -->
+    <div class="instructions-box">
+        <p>Please present this slip to the Registrar’s Office to claim your document.</p>
+        <ul>
+            <li>Bring a valid school ID.</li>
+            <li>Ensure your payment has been verified.</li>
+            <li>Only the requester can claim the document.</li>
+        </ul>
+    </div>
+
+    <footer class="claim-footer">
+        © 2025 CIT-U Registrar’s Office | CITeDocs
+    </footer>
+
+  </div>
 </div>
 
 <button class="print-btn no-print" onclick="window.print()">🖨 Print Claim Slip</button>
+
+{% endwith %}
 </body>
 </html>

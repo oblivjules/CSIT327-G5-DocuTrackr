@@ -1,101 +1,120 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Profile - DocuTrackr</title>
-  <link rel="stylesheet" href="{% static 'css/profile.css' %}" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile - DocuTrackr</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="{% static 'images/docutrackr-logo.png' %}">
+  <link rel="stylesheet" href="{% static 'css/profile.css' %}">
 </head>
 <body>
-  <!-- Navbar -->
-<header class="navbar">
-  <div class="navbar-left">
-    <a href="{{ home_url }}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" /></a>
-    <nav>
-      <ul>
-        <li><a href="{{ home_url }}">Home</a></li>
-        <li><a href="{% url 'about' %}">About</a></li>
-        <li><a href="{% url 'create_request' %}">Create Request</a></li>
-      </ul>
-    </nav>
-  </div>
 
-  <div class="navbar-right">
+  <header class="navbar">
+    <div class="navbar-left">
+      <a href="{{ home_url }}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" /></a>
+      <nav>
+        <ul>
+          <li><a href="{{ home_url }}">Home</a></li>
+          <li><a href="{% url 'about' %}">About</a></li>
+          <li><a href="{% url 'create_request' %}">Create Request</a></li>
+          <li><a href="{% url 'student-requests' %}">Requests</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="navbar-right">
       {% if full_name %}
         <a href="{{ home_url }}" class="user-name">{{ full_name }}</a>
       {% else %}
         <span class="user-name"></span>
       {% endif %}
-
       <div class="navbar-icons">
         <div class="icon-item notification-icon">
           <img src="{% static 'images/bell.png' %}" alt="Notification Bell" />
         </div>
-
-        <div class="icon-item profile-icon">
+        <a href="{% url 'profile' %}" class="icon-item profile-icon">
           <img src="{% static 'images/Profile.png' %}" alt="User Profile" />
-        </div>
-
+        </a>
         <a href="{% url 'student_logout' %}" class="icon-item logout-icon">
           <img src="{% static 'images/logout.png' %}" alt="Logout" />
         </a>
       </div>
     </div>
-</header>
+  </header>
 
-  <!-- Profile Section -->
-  <main class="profile-container">
-    <h2>My Profile</h2>
-
-    <div class="profile-card">
-      <div class="profile-info">
-        <p><strong>Name:</strong> <span id="displayName">John Doe</span></p>
-        <p><strong>Email:</strong> johndoe@example.com</p>
-        <button id="editBtn" class="btn">Edit Name</button>
+  <div class="profile-container">
+    <div class="profile-header">
+      <div class="profile-avatar-section">
+        <div class="profile-avatar">
+          <img src="{% static 'images/profile-default.png' %}" alt="Profile Picture" class="avatar-img" />
+        </div>
+        <button class="edit-profile-btn">📷 Change Photo</button>
       </div>
-
-      <div class="password-section">
-        <h3>Change Password</h3>
-        <form id="passwordForm">
-          <label for="oldPassword">Old Password:</label>
-          <div class="password-field">
-            <input type="password" id="oldPassword" required>
-            <button type="button" class="toggle-password" data-target="oldPassword">👁️</button>
-          </div>
-
-          <label for="newPassword">New Password:</label>
-          <div class="password-field">
-            <input type="password" id="newPassword" required>
-            <button type="button" class="toggle-password" data-target="newPassword">👁️</button>
-          </div>
-
-          <label for="confirmPassword">Confirm Password:</label>
-          <div class="password-field">
-            <input type="password" id="confirmPassword" required>
-            <button type="button" class="toggle-password" data-target="confirmPassword">👁️</button>
-          </div>
-
-          <button type="submit" class="btn">Update Password</button>
-        </form>
+      
+      <div class="profile-info">
+        <h1>{{ student_name|default:"Alex Martinez" }}</h1>
+        <p class="profile-subtitle">Update your personal information</p>
       </div>
     </div>
-  </main>
 
-  <!-- Edit Name Modal -->
-  <div id="editModal" class="modal">
-    <div class="modal-content">
-      <span id="closeModal" class="close">&times;</span>
-      <h3>Edit Name</h3>
-      <label for="newName">Enter New Name:</label>
-      <input type="text" id="newName" placeholder="Enter your new name" />
-      <button id="saveName" class="btn">Save</button>
+    <div class="profile-sections">
+      <div class="profile-card">
+        <div class="card-header">
+          <h2 class="card-title">Full Name</h2>
+          <button class="edit-btn" data-section="name">Edit</button>
+        </div>
+        <div class="card-content">
+          <p class="info-value">{{ student_name|default:"Alex Martinez" }}</p>
+        </div>
+      </div>
+
+      <div class="profile-card">
+        <div class="card-header">
+          <h2 class="card-title">About Me</h2>
+          <button class="edit-btn" data-section="about">Edit</button>
+        </div>
+        <div class="card-content">
+          <p class="info-value about-value">
+            {{ about_text|default:"Passionate computer science student with a keen interest in web development and system design." }}
+          </p>
+        </div>
+      </div>
+
+      <div class="profile-card">
+        <div class="card-header">
+          <h2 class="card-title">Contact Number</h2>
+          <button class="edit-btn" data-section="contact">Edit</button>
+        </div>
+        <div class="card-content">
+          <p class="info-value">{{ phone|default:"+63 912 345 6789" }}</p>
+        </div>
+      </div>
+
+      <div class="profile-card">
+        <div class="card-header">
+          <h2 class="card-title">Email Address</h2>
+          <button class="edit-btn" data-section="email">Edit</button>
+        </div>
+        <div class="card-content">
+          <p class="info-value">{{ email|default:"alex.martinez@citu.edu" }}</p>
+        </div>
+      </div>
+
+      <div class="profile-card">
+        <div class="card-header">
+          <h2 class="card-title">Password</h2>
+          <button class="edit-btn" data-section="password">Change</button>
+        </div>
+        <div class="card-content">
+          <p class="info-value password-value">••••••••••</p>
+        </div>
+      </div>
     </div>
   </div>
 
-  <script src="{% static 'js/profile.js' %}"></script>
-
-  <!-- Footer -->
   <footer class="footer">
     <div class="footer-content">
       <div class="footer-section">
@@ -105,7 +124,7 @@
       <div class="footer-section">
         <h4>Quick Links</h4>
         <ul>
-          <li><a href="{{ home_url }}">Home</a></li>
+          <li><a href="{% url 'student-dashboard' %}">Home</a></li>
           <li><a href="{% url 'about' %}">About</a></li>
           <li><a href="#">Privacy Policy</a></li>
           <li><a href="#">Contact</a></li>

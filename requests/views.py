@@ -130,22 +130,37 @@ def create_request(request):
     })
 
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from authentication.models import User
+from .models import Request, Claim_Slips
+from authentication.decorators import login_required, no_cache
+
 @login_required
 @no_cache
 def view_claim_slip(request, request_id):
-    if request.session.get('role') != 'student':
-        return redirect('index')
+    # Get the request object directly
+    try:
+        req = Request.objects.get(request_id=request_id)
+    except Request.DoesNotExist:
+        messages.error(request, "Request not found.")
+        return redirect('student-dashboard')
 
-    user = User.objects.get(id=request.session.get('user_id'))
-    req = get_object_or_404(Request, pk=request_id, user=user)
+    # Get claim slip
     claim = Claim_Slips.objects.filter(request=req).first()
-
     if not claim:
         messages.error(request, "No claim slip available yet for this request.")
         return redirect('student-dashboard')
 
+    user = req.user  # use the actual request owner
+
+    # Debug prints
+    print("Request object:", req)
+    print("Claim object:", claim)
+    print("Request owner:", user.name, user.id)
+
     context = {
-        'request': req,
+        'req_obj': req,
         'claim': claim,
         'document': req.document,
         'full_name': user.name,
@@ -153,4 +168,3 @@ def view_claim_slip(request, request_id):
     }
 
     return render(request, 'claimslip.html', context)
-

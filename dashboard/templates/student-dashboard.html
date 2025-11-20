@@ -1,10 +1,12 @@
 {% load static %}
+{% load tz %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student Dashboard - DocuTrackr</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/student-dashboard.css' %}">
   <link rel="icon" type="image/png" href="{% static 'images/docutrackr-logo.png' %}">
 </head>
@@ -34,9 +36,9 @@
           <img src="{% static 'images/bell.png' %}" alt="Notification Bell" />
         </div>
 
-        <div class="icon-item profile-icon">
+        <a href="{% url 'profile' %}" class="icon-item profile-icon">
           <img src="{% static 'images/Profile.png' %}" alt="User Profile" />
-        </div>
+        </a>
 
         <a href="{% url 'student_logout' %}" class="icon-item logout-icon">
           <img src="{% static 'images/logout.png' %}" alt="Logout" />
@@ -131,8 +133,8 @@
                   data-copies="{{ req.copies }}"
                   data-date-needed="{{ req.date_needed|date:'M d, Y' }}"
                   data-status="{{ req.get_status_display }}"
-                  data-created="{{ req.created_at|date:'M d, Y h:i A' }}"
-                  data-updated="{{ req.updated_at|date:'M d, Y h:i A' }}"
+                  data-created="{{ req.created_at|localtime|date:'M d, Y h:i A' }}"
+                  data-updated="{{ req.updated_at|localtime|date:'M d, Y h:i A' }}"
                   data-payment-status="{% if req.payment %}{{ req.payment.get_payment_status_display }}{% endif %}"
                   data-proof-url="{{ req.payment.proof_of_payment|safe|default:'' }}"
                 >View Details</button>
@@ -273,7 +275,6 @@
 
   <script src="{% static 'js/student-dashboard.js' %}"></script>
 
-  <!-- Footer -->
   <footer class="footer">
     <div class="footer-content">
       <div class="footer-section">

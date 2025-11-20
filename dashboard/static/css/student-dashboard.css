@@ -221,7 +221,7 @@ main {
 }
 
 .dashboard-container {
-  max-width: 1600px; /* widen overall dashboard content area */
+  max-width: 1600px;
   margin: 0 auto;
   padding: 40px;
   width: 100%;
@@ -309,15 +309,13 @@ main {
   margin-bottom: 40px;
 }
 
-/* Narrower container for Recent Document Requests to bring columns closer */
 .table-section.recent-requests {
   max-width: 1580px;
   margin-left: auto;
   margin-right: auto;
-  justify-self: center; /* center within grid track */
+  justify-self: center;/
 }
 
-/* Avoid horizontal scroll in the Recent Requests table */
 .recent-requests .table-container {
   overflow-x: hidden;
 }
@@ -371,10 +369,9 @@ main {
 .requests-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed; /* honor colgroup widths for equal spacing */
+  table-layout: fixed;
 }
 
-/* All Requests container narrower for balanced spacing */
 .requests-list-page .table-section {
   max-width: 1400px;
   margin-left: auto;
@@ -387,7 +384,7 @@ main {
 
 .requests-table th {
   text-align: left;
-  padding: 16px 14px; /* equal horizontal padding for consistent column gaps */
+  padding: 16px 14px;
   font-weight: 600;
   color: #89393a;
   font-size: 14px;
@@ -397,19 +394,17 @@ main {
 }
 
 .requests-table td {
-  padding: 16px 14px; /* equal horizontal padding for consistent column gaps */
+  padding: 16px 14px;
   border-bottom: 1px solid #e8e8e8;
   font-size: 14px;
   color: #555;
 }
 
-/* Center the Status column under its header */
 .requests-table thead th:nth-child(4),
 .requests-table tbody td:nth-child(4) {
   text-align: center;
 }
 
-/* Move Date Requested slightly to the right for better balance */
 .requests-table thead th:nth-child(3),
 .requests-table tbody td:nth-child(3) {
   text-align: center;
@@ -426,9 +421,9 @@ main {
 
 .status-badge {
   display: inline-block;
-  padding: 6px 12px; /* match student-requests-list sizing */
+  padding: 6px 12px;
   border-radius: 20px;
-  font-size: 11px; /* match student-requests-list sizing */
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -454,7 +449,6 @@ main {
   color: #0c5460;
 }
 
-/* Add rejected style for consistency */
 .status-rejected {
   background-color: #f8d7da;
   color: #721c24;
@@ -478,12 +472,10 @@ main {
   transform: translateY(-1px);
 }
 
-/* Ensure action buttons never wrap their text */
 .action-btn {
   white-space: nowrap;
 }
 
-/* Action column: place buttons side-by-side with compact sizing */
 .requests-table td.action-cell {
   white-space: nowrap;
 }
@@ -504,7 +496,6 @@ main {
   padding: 0 8px;
 }
 
-/* Claim Slip: solid red button with no hover change */
 .action-btn.claim-slip-btn {
   margin-left: 10px;
   text-decoration: none;
@@ -534,47 +525,89 @@ main {
   margin-right: auto;
 }
 
-/* Two-up layout: place Recent Requests (left) and Recent Activity (right) */
 .dashboard-row.two-up {
   display: grid;
-  grid-template-columns: 7fr 3fr; /* allocate more width to Recent Requests */
+  grid-template-columns: 7fr 3fr;
   gap: 24px;
-  align-items: stretch; /* make cards equal height */
+  align-items: stretch;
 }
 
 .dashboard-row.two-up .recent-requests,
 .dashboard-row.two-up .activity-section {
   max-width: none;
-  margin: 0; /* let grid control alignment */
+  margin: 0;
 }
 
-/* Allow both cards to stretch to equal heights */
 .dashboard-row.two-up > .table-section,
 .dashboard-row.two-up > .activity-section {
-  height: 100%;
+  height: 780px;           /* shared fixed height for both cards */
   display: flex;
   flex-direction: column;
 }
 
 .dashboard-row.two-up .table-container,
 .dashboard-row.two-up .activity-list {
-  flex: 1 1 auto; /* fill available height */
+  flex: 1 1 auto;
 }
 
 .dashboard-row.two-up .table-footer {
-  margin-top: auto; /* keep footer pinned to bottom */
+  margin-top: auto;
 }
 
 .dashboard-row.two-up .requests-table {
-  table-layout: fixed; /* honor narrower colgroup widths reliably */
+  table-layout: fixed;
 }
 
 .dashboard-row.two-up .requests-table th,
 .dashboard-row.two-up .requests-table td {
-  padding: 12px 10px; /* tighter spacing to fit side-by-side */
+  padding: 12px 10px;
 }
 
-/* Keep Request ID and Date Requested on a single line */
+.dashboard-row.two-up > .activity-section {
+  align-self: stretch;      /* keep equal height with the left card */
+  display: flex;
+  flex-direction: column;
+}
+
+.activity-section .activity-list {
+  /* Fill card height and scroll internally */
+  overflow-y: auto;
+  padding-right: 24px;     /* breathing room so text never touches scrollbar */
+  margin-right: -24px;     /* visually move scrollbar closer to card edge */
+  scrollbar-gutter: stable both-edges; /* reserve space for scrollbar */
+  overscroll-behavior: contain;        /* prevent bounce on scroll */
+  min-height: 0;           /* allow flex child to shrink and scroll */
+  flex: 1 1 auto;          /* fill available height under the header */
+}
+
+.dashboard-row.two-up .activity-list {
+  flex: 1 1 auto;          /* fill available height within the card */
+}
+
+.activity-section .activity-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.activity-section .activity-list::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 12px;
+}
+
+.activity-section .activity-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #a04547 0%, #89393a 100%);
+  border-radius: 12px;
+  border: 2px solid #f0f0f0;
+}
+
+.activity-section .activity-list::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #8f3e40 0%, #7a3334 100%);
+}
+
+.activity-section .activity-list {
+  scrollbar-width: thin;
+  scrollbar-color: #a04547 #f0f0f0;
+}
+
 .dashboard-row.two-up .requests-table th:nth-child(1),
 .dashboard-row.two-up .requests-table td:nth-child(1),
 .dashboard-row.two-up .requests-table th:nth-child(3),
@@ -679,7 +712,7 @@ main {
   }
 
   .dashboard-row.two-up {
-    grid-template-columns: 1fr; /* stack on small screens */
+    grid-template-columns: 1fr;
   }
 }
 

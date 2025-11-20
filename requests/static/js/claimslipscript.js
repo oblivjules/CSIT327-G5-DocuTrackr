@@ -1,4 +1,3 @@
-
 const claimSlipData = {
   claim_number: "CLAIM-3-1760509983425",
   date_ready: "10/15/2025",

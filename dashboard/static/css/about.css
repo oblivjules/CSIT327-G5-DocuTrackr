@@ -207,14 +207,12 @@ body {
   height: 100%;
 }
 
-/* ===== MAIN CONTENT ===== */
 .about-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0;
 }
 
-/* ===== HERO SECTION ===== */
 .hero {
   background: linear-gradient(135deg, #89393a 0%, #6d2d2e 100%);
   color: white;
@@ -314,7 +312,6 @@ body {
   line-height: 1.6;
 }
 
-/* ===== SOLUTION SECTION ===== */
 .features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -357,7 +354,6 @@ body {
   line-height: 1.6;
 }
 
-/* ===== IMPACT SECTION ===== */
 .impact-section {
   background: linear-gradient(135deg, #89393a 0%, #6d2d2e 100%);
   color: white;
@@ -406,7 +402,6 @@ body {
   line-height: 1.6;
 }
 
-/* ===== OBJECTIVES SECTION ===== */
 .objectives-list {
   display: flex;
   flex-direction: column;
@@ -549,7 +544,6 @@ body {
   box-shadow: 0 6px 16px rgba(137, 57, 58, 0.3);
 }
 
-/* ===== FOOTER ===== */
 .footer {
   background-color: #1a1a1a;
   color: #fff;
