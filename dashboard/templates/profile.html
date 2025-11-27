@@ -47,13 +47,6 @@
 
   <div class="profile-container">
     <div class="profile-header">
-      <div class="profile-avatar-section">
-        <div class="profile-avatar">
-          <img src="{% static 'images/profile-default.png' %}" alt="Profile Picture" class="avatar-img" />
-        </div>
-        <button class="edit-profile-btn">📷 Change Photo</button>
-      </div>
-      
       <div class="profile-info">
         <h1>{{ student_name|default:"Alex Martinez" }}</h1>
         <p class="profile-subtitle">Update your personal information</p>
@@ -64,7 +57,6 @@
       <div class="profile-card">
         <div class="card-header">
           <h2 class="card-title">Full Name</h2>
-          <button class="edit-btn" data-section="name">Edit</button>
         </div>
         <div class="card-content">
           <p class="info-value">{{ student_name|default:"Alex Martinez" }}</p>
@@ -73,30 +65,7 @@
 
       <div class="profile-card">
         <div class="card-header">
-          <h2 class="card-title">About Me</h2>
-          <button class="edit-btn" data-section="about">Edit</button>
-        </div>
-        <div class="card-content">
-          <p class="info-value about-value">
-            {{ about_text|default:"Passionate computer science student with a keen interest in web development and system design." }}
-          </p>
-        </div>
-      </div>
-
-      <div class="profile-card">
-        <div class="card-header">
-          <h2 class="card-title">Contact Number</h2>
-          <button class="edit-btn" data-section="contact">Edit</button>
-        </div>
-        <div class="card-content">
-          <p class="info-value">{{ phone|default:"+63 912 345 6789" }}</p>
-        </div>
-      </div>
-
-      <div class="profile-card">
-        <div class="card-header">
           <h2 class="card-title">Email Address</h2>
-          <button class="edit-btn" data-section="email">Edit</button>
         </div>
         <div class="card-content">
           <p class="info-value">{{ email|default:"alex.martinez@citu.edu" }}</p>
