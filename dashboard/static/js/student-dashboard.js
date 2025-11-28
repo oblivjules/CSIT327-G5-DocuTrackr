@@ -143,4 +143,39 @@ document.addEventListener('DOMContentLoaded', function() {
             closeModal();
         }
     });
+
+    const searchInput = document.querySelector('input[name="search"]');
+    const searchForm = document.querySelector('.search-form');
+
+    if (searchInput) {
+
+        // Submit on ENTER
+        searchInput.addEventListener('keypress', function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                searchForm.submit();
+            }
+        });
+
+        // Auto-submit after typing (500ms delay)
+        let typingTimer;
+        searchInput.addEventListener('input', function () {
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => {
+                if (this.value.length >= 2 || this.value.length === 0) {
+                    searchForm.submit();
+                }
+            }, 500);
+        });
+
+        // Ctrl+F focuses search
+        document.addEventListener('keydown', function (e) {
+            if (e.ctrlKey && e.key === 'f') {
+                e.preventDefault();
+                searchInput.focus();
+                searchInput.select();
+            }
+        });
+    }
+    
 });

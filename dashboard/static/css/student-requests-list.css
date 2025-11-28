@@ -114,3 +114,33 @@ table.requests-table thead th { font-weight: 600; }
 .requests-list-page .requests-table td.action-cell .claim-slip-btn {
   margin-left: 8px;
 }
+
+/* ===================== */
+/* 🔍 Search Bar Styling */
+/* ===================== */
+.search-box {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 4px 8px;
+    max-width: 300px;
+    background-color: #fff;
+}
+
+.search-box svg {
+    margin-right: 6px;
+    color: #888;
+}
+
+.search-box input {
+    border: none;
+    outline: none;
+    flex: 1;
+    font-size: 14px;
+    padding: 4px;
+}
+
+.search-box button {
+    display: none;
+}
