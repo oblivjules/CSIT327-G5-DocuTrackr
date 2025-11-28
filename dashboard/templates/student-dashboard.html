@@ -117,7 +117,7 @@
               <td>{{ req.created_at|date:"M d, Y" }}</td>
               <td>
                 <span class="status-badge
-                  {% if req.status == 'approved' %}status-ready
+                  {% if req.status == 'approved' %}status-approved
                   {% elif req.status == 'processing' %}status-processing
                   {% elif req.status == 'pending' %}status-pending
                   {% elif req.status == 'completed' %}status-completed

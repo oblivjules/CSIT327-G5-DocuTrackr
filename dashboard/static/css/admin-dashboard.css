@@ -588,23 +588,21 @@ input[type="checkbox"]:indeterminate {
 }
 
 .action-btn {
-  border: none;
-  background-color: #89393a;
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
   color: #fff;
+  border: none;
   box-shadow: 0 2px 4px rgba(137, 57, 58, 0.2);
 }
 
 .action-btn:hover {
-  background-color: #6d2d2e;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(137, 57, 58, 0.3);
 }
 
-.action-btn.claim-slip-btn {
+.claim-slip-btn {
   text-decoration: none;
-  background-color: #89393a;
+  background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%) !important; 
   color: #ffffff;
-  border: 2px solid #89393a;
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 13px;
@@ -612,11 +610,9 @@ input[type="checkbox"]:indeterminate {
   cursor: pointer;
 }
 
-.action-btn.claim-slip-btn:hover {
-  background-color: #89393a;
-  color: #ffffff;
-  transform: none;
-  box-shadow: none;
+.claim-slip-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(137, 57, 58, 0.3);
 }
 
 .view-link {
@@ -681,12 +677,7 @@ input[type="checkbox"]:indeterminate {
   text-transform: uppercase;
 }
 
-.badge.pending { background-color: #f8d7da; color: #721c24; }
-.badge.processing { background-color: #fff3cd; color: #856404; }
-.badge.ready { background-color: #d4edda; color: #155724; }
-.badge.approved { background-color: #d4edda; color: #155724; }
-.badge.completed { background-color: #d1ecf1; color: #0c5460; }
-.badge.rejected { background-color: #f8d7da; color: #721c24; }
+.badge.none {opacity: 0.5;}
 
 .status-cell { text-align: center; }
 
@@ -1320,9 +1311,10 @@ input[type="checkbox"]:indeterminate {
 }
 
 .badge.processing {
-  background-color: #dbeafe;
-  color: #1e40af;
+  background-color: #fcd34d;
+  color: #78350f;
 }
+
 
 .badge.approved {
   background-color: #d1fae5;
@@ -1339,22 +1331,27 @@ input[type="checkbox"]:indeterminate {
   color: #3730a3;
 }
 
-.badge.cancelled {
-  background-color: #f3f4f6;
-  color: #374151;
-}
-
-.badge.done {
+.done {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
   background-color: transparent;
-  color: #065f46;
+  color: #29BF12;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
 }
 
-.badge.done .done-icon {
-  width: 16px;
-  height: 16px;
-  display: inline-block;
+.rejected {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  background-color: transparent;
+  color: #991b1b;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
 }
+

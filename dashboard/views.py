@@ -62,9 +62,6 @@ def student_dashboard(request):
 def profile(request):
     """Render the student profile page."""
     role = request.session.get('role')
-    if role != 'student':
-        return redirect('index')
-
     return render(request, 'profile.html')
 
 @login_required
@@ -86,7 +83,7 @@ def admin_dashboard(request):
 
     pending_count = Request.objects.filter(status='pending').count()
     processing_count = Request.objects.filter(status='processing').count()
-    ready_count = Request.objects.filter(status__in=['approved', 'completed']).count()
+    ready_count = Request.objects.filter(status__in=['approved']).count()
     completed_count = Request.objects.filter(status='completed').count()
 
     requests_queryset = Request.objects.select_related('user', 'document','payment')
@@ -108,7 +105,7 @@ def admin_dashboard(request):
 
     pending_count = Request.objects.filter(status='pending').count()
     processing_count = Request.objects.filter(status='processing').count()
-    ready_count = Request.objects.filter(status__in=['approved', 'completed']).count()
+    ready_count = Request.objects.filter(status__in=['approved']).count()
     total_requests = Request.objects.count()
 
     filtered_count = len(recent_requests)
