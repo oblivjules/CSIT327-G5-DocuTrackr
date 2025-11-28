@@ -32,9 +32,11 @@
         <div class="icon-item notification-icon">
           <img src="{% static 'images/bell.png' %}" alt="Notifications" />
         </div>
-        <div class="icon-item profile-icon">
-          <img src="{% static 'images/Profile.png' %}" alt="Profile" />
-        </div>
+        
+        <a href="{% url 'profile' %}" class="icon-item profile-icon">
+          <img src="{% static 'images/Profile.png' %}" alt="User Profile" />
+        </a>
+
         <a href="{% url 'admin_logout' %}" class="icon-item logout-icon">
           <img src="{% static 'images/logout.png' %}" alt="Logout" />
         </a>
@@ -66,8 +68,8 @@
         <div class="stat-icon"><img src="{% static 'images/pickup.png' %}" alt="Ready" /></div>
         <div class="stat-content">
           <h3>{{ ready_count }}</h3>
-          <p>Ready Today</p>
-          <span class="subtext">For Pickup</span>
+          <p>Approved</p>
+          <span class="subtext">Ready for Pickup</span>
         </div>
       </div>
 
@@ -76,7 +78,7 @@
         <div class="stat-content">
           <h3>{{ completed_count }}</h3>
           <p>Completed</p>
-          <span class="subtext">Overall</span>
+          <span class="subtext">Picked up by Students</span>
         </div>
       </div>
     </section>
@@ -125,7 +127,7 @@
             <col style="width:160px;" />
             <col style="width:120px;" />
             <col style="width:120px;" />
-            <col style="width:160px;" />
+            <col style="width:120px;" />
             <col style="width:120px;" />
           </colgroup>
           <thead>
@@ -136,8 +138,8 @@
               <th>Document</th>
               <th>Payment Proof</th>
               <th>Status</th>
-              <th>Claim Slip</th>
               <th>Action</th>
+              <th>Claim Slip</th>
             </tr>
           </thead>
           <tbody>
@@ -158,23 +160,25 @@
                 <span class="badge {{ req.status }}">{{ req.status|upper }}</span>
               </td>
               <td>
-                {% if req.claim_slips.exists %}
-                  {% if req.status == 'approved' or req.status == 'completed' %}
-                    {% with slip=req.claim_slips.first %}
-                    <a href="{% url 'claim-slip' slip.claim_id %}" class="action-btn claim-slip-btn">Claim Slip</a>
-                    {% endwith %}
+                {% if req.status != 'completed' and req.status != 'rejected' %}
+                  <button class="action-btn process-btn" data-request-id="{{ req.request_id }}">Update</button>
+                {% elif req.status == 'completed' %}
+                  <span class="done">Completed</span>
                   {% else %}
-                    <span class="badge none">—</span>
-                  {% endif %}
-                {% else %}
-                  <span class="badge none">—</span>
+                  <span class="rejected">Rejected</span>
                 {% endif %}
               </td>
               <td>
-                {% if req.status != 'completed' %}
-                  <button class="action-btn process-btn" data-request-id="{{ req.request_id }}">Update</button>
+                {% if req.claim_slips.exists %}
+                  {% if req.status == 'approved' or req.status == 'completed' %}
+                    {% with slip=req.claim_slips.first %}
+                    <a href="{% url 'claim-slip' slip.claim_id %}" class="claim-slip-btn">Claim Slip</a>
+                    {% endwith %}
+                  {% else %}
+                    <span class="badge none"></span>
+                  {% endif %}
                 {% else %}
-                  <span class="badge done"><img src="{% static 'images/done.png' %}" alt="Done" class="done-icon" /> Done</span>
+                  <span class="badge none"></span>
                 {% endif %}
               </td>
             </tr>

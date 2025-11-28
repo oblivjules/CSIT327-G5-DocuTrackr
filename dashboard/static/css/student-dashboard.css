@@ -429,30 +429,32 @@ main {
   letter-spacing: 0.3px;
 }
 
-.status-ready {
-  background-color: #d4edda;
-  color: #155724;
+.status-pending {
+  background-color: #fef3c7;
+  color: #92400e;
 }
 
 .status-processing {
-  background-color: #fff3cd;
-  color: #856404;
+  background-color: #fcd34d;
+  color: #78350f;
 }
 
-.status-pending {
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-.status-completed {
-  background-color: #d1ecf1;
-  color: #0c5460;
+.status-ready,
+.status-approved {
+  background-color: #d1fae5;
+  color: #065f46;
 }
 
 .status-rejected {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: #fee2e2;
+  color: #991b1b;
 }
+
+.status-completed {
+  background-color: #e0e7ff;
+  color: #3730a3;
+}
+
 
 .action-btn {
   background-color: transparent;
@@ -894,8 +896,8 @@ main {
 }
 
 .dt-status-badge.processing {
-  background-color: #dbeafe;
-  color: #1e40af;
+  background-color: #fcd34d;
+  color: #78350f;
 }
 
 .dt-status-badge.ready {
@@ -904,8 +906,8 @@ main {
 }
 
 .dt-status-badge.completed {
-  background-color: #f0fdf4;
-  color: #166534;
+  background-color: #e0e7ff;
+  color: #3730a3;
 }
 
 .dt-status-badge.rejected {
