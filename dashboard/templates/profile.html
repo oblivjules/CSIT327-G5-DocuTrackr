@@ -1,5 +1,4 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,123 +7,152 @@
   <title>User Profile - DocuTrackr</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="{% static 'images/docutrackr-logo.png' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="{% static 'css/profile.css' %}">
 </head>
 <body>
   <header class="navbar">
-  <div class="navbar-left">
-    <a href="{{ home_url }}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" /></a>
-    <nav>
-      <ul>
-        <li><a href="{{ home_url }}" class="active">Home</a></li>
-        <li><a href="{% url 'about' %}">About</a></li>
-        <li><a href="{% url 'create_request' %}">Create Request</a></li>
-        <li><a href="{% url 'student-requests' %}">Requests</a></li>
-      </ul>
-    </nav>
-  </div>
-
-  <div class="navbar-right">
+    <div class="navbar-left">
+      <a href="{{ home_url }}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" /></a>
+      <nav>
+        <ul>
+          <li><a href="{{ home_url }}" class="active">Home</a></li>
+          <li><a href="{% url 'about' %}">About</a></li>
+          <li><a href="{% url 'create_request' %}">Create Request</a></li>
+          <li><a href="{% url 'student-requests' %}">Requests</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="navbar-right">
       {% if full_name %}
         <a href="{{ home_url }}" class="user-name">{{ full_name }}</a>
       {% else %}
         <span class="user-name"></span>
       {% endif %}
-
       <div class="navbar-icons">
         <div class="icon-item notification-icon">
           <img src="{% static 'images/bell.png' %}" alt="Notification Bell" />
         </div>
-
         <a href="{% url 'profile' %}" class="icon-item profile-icon">
           <img src="{% static 'images/Profile.png' %}" alt="User Profile" />
         </a>
-
         <a href="{% url 'student_logout' %}" class="icon-item logout-icon">
           <img src="{% static 'images/logout.png' %}" alt="Logout" />
         </a>
       </div>
     </div>
-</header>
+  </header>
 
   <div class="profile-container">
     <div class="profile-header">
-      <div class="profile-info">
+      <div class="profile-header-content">
+        <div class="profile-avatar-wrapper">
+          <div class="profile-avatar">
+            <i class="fas fa-user"></i>
+          </div>
+        </div>
         <h1>Personal Information</h1>
-        <p class="profile-subtitle">Update your personal information</p>
+        <p class="profile-subtitle">Manage and update your account details</p>
       </div>
     </div>
 
     <div class="profile-sections">
+      <!-- Full Name Card -->
       <div class="profile-card">
-        <div class="card-header">
-          <h2 class="card-title">Full Name</h2>
-        </div>
-        <div class="card-content">
-          <p class="info-value">{{ student_name|default:"Alex Martinez" }}</p>
-        </div>
-      </div>
-
-      <div class="profile-card">
-        <div class="card-header">
-          <h2 class="card-title">Email Address</h2>
-        </div>
-        <div class="card-content">
-          <p class="info-value">{{ email|default:"alex.martinez@citu.edu" }}</p>
-        </div>
-      </div>
-
-      <div class="profile-card">
-        <div class="card-header">
-          <h2 class="card-title">Password</h2>
-          <div class="header-actions">
-            <button class="edit-btn" id="changePasswordHeader" data-section="password">Change</button>
-            <div id="saveCancelHeader" class="header-save-cancel" style="display:none;">
-              <button type="button" class="edit-btn" id="savePasswordHeader">Save</button>
-              <button type="button" class="edit-btn outline" id="cancelPasswordHeader">Cancel</button>
-            </div>
+        <div class="card-icon-wrapper">
+          <div class="card-icon name-icon">
+            <i class="fas fa-user-circle"></i>
           </div>
         </div>
-        <div class="card-content">
-          <p class="info-value password-value">••••••••••</p>
-          <form id="passwordForm" class="password-form" style="display:none;">
-            <div class="password-grid">
-              <div>
-                <div class="form-row">
-                  <label class="info-label" for="oldPassword">Current Password <span class="required-star">*</span></label>
-                  <div class="input-with-toggle">
-                    <input type="password" id="oldPassword" class="input-field" placeholder="Enter current password" />
-                    <button type="button" class="toggle-password" data-target="oldPassword">Show</button>
-                  </div>
-                </div>
-                <div class="form-row">
-                  <label class="info-label" for="newPassword">New Password <span class="required-star">*</span></label>
-                  <div class="input-with-toggle">
-                    <input type="password" id="newPassword" class="input-field" placeholder="Enter new password" />
-                    <button type="button" class="toggle-password" data-target="newPassword">Show</button>
-                  </div>
-                </div>
-                <div class="form-row">
-                  <label class="info-label" for="confirmPassword">Confirm New Password <span class="required-star">*</span></label>
-                  <div class="input-with-toggle">
-                    <input type="password" id="confirmPassword" class="input-field" placeholder="Confirm new password" />
-                    <button type="button" class="toggle-password" data-target="confirmPassword">Show</button>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <div class="requirements-card">
-                  <div class="requirements-title">Password must contain</div>
-                  <ul class="req-list">
-                    <li id="req-length" class="req-item invalid"><span class="req-dot"></span>At least 8 characters</li>
-                    <li id="req-uppercase" class="req-item invalid"><span class="req-dot"></span>At least 1 uppercase letter (A–Z)</li>
-                    <li id="req-number" class="req-item invalid"><span class="req-dot"></span>At least 1 number (0–9)</li>
-                    <li id="req-special" class="req-item invalid"><span class="req-dot"></span>At least 1 special character (like ! @ # $ %)</li>
-                  </ul>
-                </div>
+        <div class="card-inner">
+          <div class="card-header">
+            <h2 class="card-title">Full Name</h2>
+          </div>
+          <div class="card-content">
+            <p class="info-value">{{ student_name|default:"Alex Martinez" }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email Card -->
+      <div class="profile-card">
+        <div class="card-icon-wrapper">
+          <div class="card-icon email-icon">
+            <i class="fas fa-envelope"></i>
+          </div>
+        </div>
+        <div class="card-inner">
+          <div class="card-header">
+            <h2 class="card-title">Email Address</h2>
+          </div>
+          <div class="card-content">
+            <p class="info-value">{{ email|default:"alex.martinez@citu.edu" }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Password Card -->
+      <div class="profile-card">
+        <div class="card-icon-wrapper">
+          <div class="card-icon password-icon">
+            <i class="fas fa-lock"></i>
+          </div>
+        </div>
+        <div class="card-inner">
+          <div class="card-header">
+            <h2 class="card-title">Password</h2>
+            <div class="header-actions">
+              <button class="edit-btn" id="changePasswordHeader" data-section="password">Change</button>
+              <div id="saveCancelHeader" class="header-save-cancel" style="display:none;">
+                <button type="button" class="edit-btn primary" id="savePasswordHeader">Save</button>
+                <button type="button" class="edit-btn outline" id="cancelPasswordHeader">Cancel</button>
               </div>
             </div>
-          </form>
+          </div>
+          <div class="card-content">
+            <p class="info-value password-value">••••••••••</p>
+            <form id="passwordForm" class="password-form" style="display:none;">
+              <div class="password-grid">
+                <div>
+                  <div class="form-row">
+                    <label class="info-label" for="oldPassword">Current Password <span class="required-star">*</span></label>
+                    <div class="input-with-toggle">
+                      <input type="password" id="oldPassword" class="input-field" placeholder="Enter current password" />
+                      <button type="button" class="toggle-password" data-target="oldPassword">Show</button>
+                    </div>
+                    <div class="error-msg" id="err-oldPassword"></div>
+                  </div>
+                  <div class="form-row">
+                    <label class="info-label" for="newPassword">New Password <span class="required-star">*</span></label>
+                    <div class="input-with-toggle">
+                      <input type="password" id="newPassword" class="input-field" placeholder="Enter new password" />
+                      <button type="button" class="toggle-password" data-target="newPassword">Show</button>
+                    </div>
+                    <div class="error-msg" id="err-newPassword"></div>
+                  </div>
+                  <div class="form-row">
+                    <label class="info-label" for="confirmPassword">Confirm New Password <span class="required-star">*</span></label>
+                    <div class="input-with-toggle">
+                      <input type="password" id="confirmPassword" class="input-field" placeholder="Confirm new password" />
+                      <button type="button" class="toggle-password" data-target="confirmPassword">Show</button>
+                    </div>
+                    <div class="error-msg" id="err-confirmPassword"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="requirements-card">
+                    <div class="requirements-title">Password Requirements</div>
+                    <ul class="req-list">
+                      <li id="req-length" class="req-item invalid"><span class="req-dot"></span>At least 8 characters</li>
+                      <li id="req-uppercase" class="req-item invalid"><span class="req-dot"></span>At least 1 uppercase letter (A–Z)</li>
+                      <li id="req-number" class="req-item invalid"><span class="req-dot"></span>At least 1 number (0–9)</li>
+                      <li id="req-special" class="req-item invalid"><span class="req-dot"></span>At least 1 special character (! @ # $ %)</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
@@ -159,6 +187,9 @@
       <p>&copy; 2025 DocuTrackr. All rights reserved. | CIT-U Document Management System</p>
     </div>
   </footer>
+
+  <div id="successToast" class="success-toast">Password changed successfully!</div>
+
   <script src="{% static 'js/profile.js' %}"></script>
 </body>
 </html>

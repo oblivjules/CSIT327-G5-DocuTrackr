@@ -4,6 +4,129 @@ document.addEventListener('DOMContentLoaded', function() {
   const selectAllCheckbox = document.getElementById('selectAll');
   const rowCheckboxes = document.querySelectorAll('.row-checkbox');
 
+  if (requestModal) {
+    const requestCloseBtn = requestModal.querySelector(".dt-close");
+
+    // modal elements (IDs expected in template)
+    const mRequestId = document.getElementById("mRequestId");
+    const mStatus = document.getElementById("mStatus");
+    const mDocument = document.getElementById("mDocument");
+    const mCopies = document.getElementById("mCopies");
+    const mDateNeeded = document.getElementById("mDateNeeded");
+    const mCreated = document.getElementById("mCreated");
+    const mUpdated = document.getElementById("mUpdated");
+    const mProofSection = document.getElementById("mProofSection");
+    const mProofImage = document.getElementById("mProofImage");
+
+    function showPlaceholder() {
+      if (!mProofSection) return;
+      if (mProofImage) mProofImage.removeAttribute('src');
+      let placeholder = mProofSection.querySelector('.proof-not-available');
+      if (!placeholder) {
+        placeholder = document.createElement('div');
+        placeholder.className = 'proof-not-available';
+        placeholder.style.color = '#666';
+        placeholder.style.fontStyle = 'italic';
+        placeholder.style.padding = '8px 0';
+        mProofSection.appendChild(placeholder);
+      }
+      placeholder.textContent = 'Not available';
+      placeholder.style.display = 'block';
+      if (mProofImage) mProofImage.style.display = 'none';
+    }
+
+    function hidePlaceholder() {
+      if (!mProofSection) return;
+      const placeholder = mProofSection.querySelector('.proof-not-available');
+      if (placeholder) placeholder.style.display = 'none';
+    }
+
+    function openRequestModal() {
+      requestModal.style.display = "flex";
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeRequestModal() {
+      requestModal.style.display = "none";
+      document.body.style.overflow = "auto";
+      if (mProofImage) mProofImage.removeAttribute('src');
+    }
+
+    const detailsButtons = document.querySelectorAll('.view-details-btn');
+    detailsButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // read values from data attributes on the button
+        const requestId = button.dataset.requestId || '';
+        const status = button.dataset.status || '';
+        const docName = button.dataset.document || '';
+        const copies = button.dataset.copies || '—';
+        const dateNeeded = button.dataset.dateNeeded || '—';
+        const created = button.dataset.created || '—';
+        const updated = button.dataset.updated || '—';
+        let proofUrl = button.dataset.proofUrl || '';
+
+        if (mRequestId) mRequestId.textContent = `REQ-${requestId}`;
+        if (mStatus) {
+          mStatus.textContent = status;
+          mStatus.className = 'dt-status-badge ' + status.toLowerCase();
+        }
+        if (mDocument) mDocument.textContent = docName;
+        if (mCopies) mCopies.textContent = copies;
+        if (mDateNeeded) mDateNeeded.textContent = dateNeeded;
+        if (mCreated) mCreated.textContent = created;
+        if (mUpdated) mUpdated.textContent = updated;
+
+        // normalize proof URL (handles encoded slashes and django media prefix)
+        let imgUrl = proofUrl ? proofUrl.replace(/\\u002D/g, "-").trim() : '';
+        if (imgUrl) {
+          try { imgUrl = decodeURIComponent(imgUrl); } catch (e) { /* ignore decode errors */ }
+        }
+
+        // show proof section (we keep it visible even if no proof so placeholder shows)
+        if (mProofSection) mProofSection.style.display = 'block';
+
+        if (imgUrl) {
+          // fix common path problems
+          if (imgUrl.startsWith('/media/http')) {
+            imgUrl = imgUrl.replace(/^\/media\//, '');
+          } else if (!imgUrl.startsWith('http') && !imgUrl.startsWith('/')) {
+            imgUrl = '/media/' + imgUrl;
+          }
+
+          // hide image until loaded
+          if (mProofImage) mProofImage.style.display = 'none';
+          if (mProofImage) {
+            mProofImage.onload = function() {
+              hidePlaceholder();
+              mProofImage.style.display = 'block';
+            };
+            mProofImage.onerror = function() {
+              console.error('Failed to load proof image (details modal):', imgUrl);
+              showPlaceholder();
+            };
+            mProofImage.src = imgUrl;
+          } else {
+            showPlaceholder();
+          }
+        } else {
+          showPlaceholder();
+        }
+
+        openRequestModal();
+      });
+    });
+
+    requestCloseBtn?.addEventListener('click', closeRequestModal);
+
+    requestModal.addEventListener('click', (e) => {
+      if (e.target === requestModal) closeRequestModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && requestModal.style.display === 'flex') closeRequestModal();
+    });
+  } // end requestModal logic
+  
   if (searchForm && searchInput) {
     // Submit on Enter
     searchInput.addEventListener('keypress', function(e) {
@@ -79,4 +202,5 @@ document.addEventListener('DOMContentLoaded', function() {
         .filter(Boolean);
     };
   }
+
 });
