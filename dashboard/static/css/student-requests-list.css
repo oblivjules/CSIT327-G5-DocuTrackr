@@ -177,3 +177,26 @@ table.requests-table thead th { font-weight: 600; }
   font-weight: 600;
   cursor: pointer;
 }
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 6px 10px;
+    border-radius: 6px;
+    width: 380px;
+}
+
+.search-box svg {
+    margin-right: 6px;
+    opacity: .6;
+}
+
+.search-box input {
+    border: none;
+    width: 100%;
+    outline: none;
+    font-size: 14px;
+}
