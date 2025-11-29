@@ -60,9 +60,53 @@ def student_dashboard(request):
 @login_required
 @no_cache
 def profile(request):
-    """Render the student profile page."""
     role = request.session.get('role')
-    return render(request, 'profile.html')
+    if role == 'registrar':
+        return redirect('admin-profile')
+    if role not in ('student',):
+        return redirect('index')
+    user_id = request.session.get('user_id')
+    user = None
+    if user_id:
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            request.session.flush()
+            return redirect('index')
+
+    home_url = None
+    if role == 'student':
+        home_url = reverse('student-dashboard')
+    else:
+        home_url = reverse('index')
+
+    context = {
+        'home_url': home_url,
+        'full_name': user.name if user else None,
+        'student_name': user.name if user else None,
+        'email': user.email if user else None,
+    }
+
+    return render(request, 'profile.html', context)
+
+@login_required
+@no_cache
+def admin_profile(request):
+    if request.session.get('role') != 'registrar':
+        return redirect('adminlogin')
+
+    user_id = request.session.get('user_id')
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        request.session.flush()
+        return redirect('adminlogin')
+
+    context = {
+        'full_name': user.name,
+        'email': user.email,
+    }
+    return render(request, 'admin-profile.html', context)
 
 @login_required
 @no_cache
@@ -116,7 +160,7 @@ def admin_dashboard(request):
         'request', 'request__user', 'request__document', 'changed_by'
     ).filter(
         changed_by__role='registrar'
-    ).order_by('-changed_at')[:5]
+    ).order_by('-changed_at')
 
     context = {
         'full_name': user_name,
@@ -132,10 +176,7 @@ def admin_dashboard(request):
         'status_choices': status_choices,
         'is_searching': bool(search_query),
         'is_filtering': bool(status_filter),
-        'recent_activities': Request_Status_Log.objects.select_related(
-            'request', 'request__user', 'changed_by'
-        ).filter(
-            changed_by__role='registrar').order_by('-changed_at')[:5],
+        'recent_activities': recent_activities,
     }
 
     return render(request, 'admin-dashboard.html', context)   

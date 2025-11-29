@@ -957,6 +957,68 @@ input[type="checkbox"]:indeterminate {
   box-shadow: 0 0 0 4px rgba(160, 69, 71, 0.1);
 }
 
+.native-select-hidden {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+select.input-control {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2389393a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  cursor: pointer;
+}
+
+select.input-control option[disabled] {
+  color: #9c9c9c;
+  background-color: #f4f4f4;
+  cursor: not-allowed;
+}
+
+.clean-select { position: relative; }
+.clean-select .cs-display {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 10px;
+  font-size: 14px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.clean-select .cs-display:focus {
+  outline: none;
+  border-color: #a04547;
+  box-shadow: 0 0 0 4px rgba(160, 69, 71, 0.1);
+}
+.clean-select .cs-list {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+}
+.clean-select.open .cs-list { display: block; }
+.clean-select .cs-item { padding: 10px 12px; font-size: 14px; color: #333; }
+.clean-select .cs-item:hover { background: #f0f0f0; }
+.clean-select .cs-item.disabled { color: #9c9c9c; background: #f7f7f7; pointer-events: none; }
+
 .helper-text {
   color: #8a8a8a;
   font-size: 12px;

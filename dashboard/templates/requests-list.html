@@ -31,9 +31,9 @@
         <div class="icon-item notification-icon">
           <img src="{% static 'images/bell.png' %}" alt="Notifications" />
         </div>
-        <div class="icon-item profile-icon">
+        <a href="{% url 'admin-profile' %}" class="icon-item profile-icon">
           <img src="{% static 'images/Profile.png' %}" alt="Profile" />
-        </div>
+        </a>
         <a href="{% url 'admin_logout' %}" class="icon-item logout-icon"><img src="{% static 'images/logout.png' %}" alt="Logout"></a>
       </div>
     </div>

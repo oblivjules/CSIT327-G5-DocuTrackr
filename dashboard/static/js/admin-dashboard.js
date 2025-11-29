@@ -17,6 +17,120 @@ document.addEventListener('DOMContentLoaded', function() {
   let selectedRequestId = null;
   let confirmBound = false;
 
+  const isValidTransition = (current, next) => {
+    if (current === next) return true;
+    if (current === "pending") return next === "processing" || next === "rejected";
+    if (current === "processing") return next === "approved" || next === "rejected";
+    if (current === "approved") return next === "completed";
+    if (current === "completed") return next === "completed";
+    return false;
+  };
+
+  const applyDisabledForCurrentStatus = (status) => {
+    const optProcessing = statusDropdown.querySelector("option[value='processing']");
+    const optApproved = statusDropdown.querySelector("option[value='approved']");
+    const optRejected = statusDropdown.querySelector("option[value='rejected']");
+    const optCompleted = statusDropdown.querySelector("option[value='completed']");
+
+    [optProcessing, optApproved, optRejected, optCompleted].forEach((opt) => {
+      if (opt) opt.disabled = false;
+    });
+
+    if (status === "approved") {
+      if (optProcessing) optProcessing.disabled = true;
+      if (optRejected) optRejected.disabled = true;
+      if (optApproved) optApproved.disabled = true;
+      if (optCompleted) optCompleted.disabled = false;
+    } else if (status === "pending") {
+      if (optRejected) optRejected.disabled = false;
+      if (optApproved) optApproved.disabled = true;
+      if (optCompleted) optCompleted.disabled = true;
+    } else if (status === "processing") {
+      if (optProcessing) optProcessing.disabled = true;
+      if (optRejected) optRejected.disabled = false;
+      if (optCompleted) optCompleted.disabled = true;
+    } else if (status === "completed") {
+      [optProcessing, optApproved, optRejected].forEach((opt) => {
+        if (opt) opt.disabled = true;
+      });
+      if (optCompleted) optCompleted.disabled = false;
+    } else {
+      if (optCompleted) optCompleted.disabled = true;
+    }
+  };
+
+  const validNextStatuses = (status) => {
+    if (status === 'pending') return ['processing', 'rejected'];
+    if (status === 'processing') return ['approved', 'rejected'];
+    if (status === 'approved') return ['completed'];
+    if (status === 'completed') return ['completed'];
+    return [];
+  };
+
+  function getRowCurrentStatus(id) {
+    const row = document.querySelector(`tr[data-request-id="${id}"]`);
+    return row?.querySelector('.status-cell .badge')?.textContent?.trim().toLowerCase() || '';
+  }
+
+  const applyDisabledForSelection = (validSet) => {
+    const opts = ['processing','approved','rejected','completed'];
+    opts.forEach(v => {
+      const o = statusDropdown.querySelector(`option[value='${v}']`);
+      if (o) o.disabled = !validSet.has(v);
+    });
+    rebuildCleanSelect();
+  };
+
+  let csContainer = null;
+  let csDisplay = null;
+  let csList = null;
+
+  function mountCleanSelect() {
+    if (csContainer) return;
+    const field = statusDropdown.closest('.form-field');
+    csContainer = document.createElement('div');
+    csContainer.className = 'clean-select';
+    csDisplay = document.createElement('button');
+    csDisplay.type = 'button';
+    csDisplay.className = 'cs-display';
+    csList = document.createElement('div');
+    csList.className = 'cs-list';
+    csContainer.appendChild(csDisplay);
+    csContainer.appendChild(csList);
+    field.appendChild(csContainer);
+    statusDropdown.classList.add('native-select-hidden');
+    statusDropdown.tabIndex = -1;
+    csDisplay.addEventListener('click', () => {
+      csContainer.classList.toggle('open');
+    });
+    document.addEventListener('click', (e) => {
+      if (!csContainer) return;
+      if (!csContainer.contains(e.target) && csContainer.classList.contains('open')) {
+        csContainer.classList.remove('open');
+      }
+    });
+  }
+
+  function rebuildCleanSelect() {
+    if (!csContainer) return;
+    csList.innerHTML = '';
+    const opts = Array.from(statusDropdown.querySelectorAll('option'));
+    const selectedOpt = opts.find(o => o.value === statusDropdown.value);
+    csDisplay.textContent = selectedOpt ? selectedOpt.textContent : 'Select status';
+    opts.forEach(opt => {
+      const item = document.createElement('div');
+      item.className = 'cs-item' + (opt.disabled ? ' disabled' : '');
+      item.textContent = opt.textContent;
+      item.addEventListener('click', () => {
+        if (opt.disabled) return;
+        statusDropdown.value = opt.value;
+        csDisplay.textContent = opt.textContent;
+        csContainer.classList.remove('open');
+      });
+      csList.appendChild(item);
+    });
+  }
+
   // --- VIEW PROOF ---
   proofButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -63,24 +177,43 @@ document.addEventListener('DOMContentLoaded', function() {
   processButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       selectedRequestId = btn.dataset.requestId;
-      requestIdField.textContent = `REQ-${selectedRequestId}`;
+      const checked = getSelectedRequestIds();
+      const idSet = new Set(checked);
+      idSet.add(String(selectedRequestId));
+      const ids = Array.from(idSet).filter(Boolean);
+      const labelIds = ids.map(id => `REQ-${id}`);
+      const maxShow = 6;
+      let label = '';
+      if (labelIds.length <= maxShow) {
+        label = labelIds.join(', ');
+      } else {
+        const head = labelIds.slice(0, maxShow).join(', ');
+        label = `${head} +${labelIds.length - maxShow} more`;
+      }
+      requestIdField.textContent = label;
       remarksField.value = "";
 
-      // ===== NEW LOGIC (status detection + completed disable) =====
       const row = btn.closest("tr");
       const currentStatus = row.querySelector(".badge").textContent.trim().toLowerCase();
-
-      // Set dropdown to current status
-      statusDropdown.value = currentStatus;
-
-      // Disable COMPLETED unless approved
-      const completedOption = statusDropdown.querySelector("option[value='completed']");
-      completedOption.disabled = currentStatus !== "approved";
-      // ============================================================
-
-      // Disable REJECTED once approved
-      const rejectedOption = statusDropdown.querySelector("option[value='rejected']");
-      rejectedOption.disabled = currentStatus === "approved";
+      statusDropdown.value = currentStatus === 'pending' ? '' : currentStatus;
+      mountCleanSelect();
+      rebuildCleanSelect();
+      const selectedIds = getSelectedRequestIds();
+      const idsForContext = new Set(selectedIds);
+      idsForContext.add(String(selectedRequestId));
+      const idsArr = Array.from(idsForContext).filter(Boolean);
+      if (idsArr.length <= 1) {
+        applyDisabledForCurrentStatus(currentStatus);
+        rebuildCleanSelect();
+      } else {
+        let intersection = new Set(['processing','approved','rejected','completed']);
+        idsArr.forEach(id => {
+          const s = getRowCurrentStatus(id);
+          const next = new Set(validNextStatuses(s));
+          intersection = new Set([...intersection].filter(x => next.has(x)));
+        });
+        applyDisabledForSelection(intersection);
+      }
 
 
       processModal.style.display = "flex";
@@ -125,18 +258,49 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
 
-      const newStatus = statusDropdown.value;
-      const remarks = remarksField.value.trim();
+          const newStatus = statusDropdown.value;
+          const remarks = remarksField.value.trim();
 
       if (!newStatus) {
         alert("Please select a status.");
         return;
       }
 
-      if (newStatus === 'rejected') {
-        if (!confirm(`Are you sure you want to reject this request?`)) {
-          return;
-        }
+      const checkedIds = getSelectedRequestIds();
+      const idSet = new Set(checkedIds);
+      if (selectedRequestId) idSet.add(String(selectedRequestId));
+      const idsToUpdate = Array.from(idSet).filter(Boolean);
+      if (idsToUpdate.length === 0) {
+        alert("Please select at least one request to update.");
+        return;
+      }
+
+      const validIds = [];
+      const invalid = [];
+      idsToUpdate.forEach(id => {
+        const cs = getRowCurrentStatus(id);
+        if (isValidTransition(cs, newStatus)) validIds.push(id); else invalid.push({id, cs});
+      });
+      if (!validIds.length) {
+        alert(`None of the selected requests can transition to ${newStatus.toUpperCase()}.`);
+        return;
+      }
+
+      let confirmMsg;
+      if (validIds.length === 1) {
+        confirmMsg = `Are you sure you want to set REQ-${validIds[0]} to ${newStatus.toUpperCase()}?`;
+      } else {
+        confirmMsg = `Are you sure you want to set ${validIds.length} requests to ${newStatus.toUpperCase()}?`;
+      }
+      if (newStatus === 'approved') {
+        confirmMsg += `\nThis will generate a claim slip.`;
+      }
+      if (invalid.length) {
+        const list = invalid.slice(0,5).map(x => `REQ-${x.id} (${x.cs.toUpperCase()})`).join(', ');
+        confirmMsg += `\n\n${invalid.length} selected request(s) cannot move to ${newStatus.toUpperCase()} and will be skipped` + (invalid.length>5?` (showing first 5): ${list}`:`: ${list}`);
+      }
+      if (!confirm(confirmMsg)) {
+        return;
       }
 
       confirmProcess.disabled = true;
@@ -164,27 +328,32 @@ document.addEventListener('DOMContentLoaded', function() {
         const data = await res.json();
 
         if (data.success) {
+          const results = [];
+          results.push({ id: selectedRequestId, success: true, claim_slip: data.claim_slip });
+          for (const id of validIds.filter(x => String(x) !== String(selectedRequestId))) {
+            const r = await fetch(`/dashboard/update-status/${id}/`, {
+              method: "POST",
+              headers: { "X-CSRFToken": getCSRFToken(), "Content-Type": "application/json" },
+              body: JSON.stringify({ status: newStatus, remarks })
+            });
+            let d = {};
+            try { d = await r.json(); } catch {}
+            if (!r.ok || !d.success) results.push({ id, success: false, error: (d && d.error) || `Server ${r.status}` });
+            else results.push({ id, success: true, claim_slip: d.claim_slip });
+          }
+
           processModal.style.display = "none";
           document.body.style.overflow = "auto";
 
-          const row = document.querySelector(`tr[data-request-id="${selectedRequestId}"]`);
-          if (row) {
-            const statusCell = row.querySelector('.status-cell .badge');
-            if (statusCell) {
-              statusCell.textContent = newStatus.toUpperCase();
-              statusCell.className = 'badge';
-              statusCell.classList.add(newStatus);
-            }
-
-            let successMessage = `Request updated to ${newStatus.toUpperCase()} successfully!`;
-            if (data.claim_slip) {
-              successMessage += `\n\nClaim slip generated: ${data.claim_slip}`;
-            }
-
-            alert(successMessage);
-            selectedRequestId = null;
-            window.location.reload();
-          }
+          const successIds = results.filter(r => r.success).map(r => `REQ-${r.id}`);
+          const errorItems = results.filter(r => !r.success).map(r => `REQ-${r.id}: ${r.error}`);
+          let msg = `Updated ${successIds.length} request(s) to ${newStatus.toUpperCase()} successfully.`;
+          const anyClaim = results.some(r => r.success && r.claim_slip);
+          if (anyClaim) msg += `\nClaim slip generated for approved requests.`;
+          if (errorItems.length) msg += `\n\nFailed:\n` + errorItems.join("\n");
+          alert(msg);
+          selectedRequestId = null;
+          window.location.reload();
         } else {
           throw new Error(data.error || "Unknown error occurred");
         }
@@ -193,6 +362,9 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error("Update failed:", err);
         confirmProcess.disabled = false;
         confirmProcess.textContent = "Confirm";
+        const row = document.querySelector(`tr[data-request-id="${selectedRequestId}"]`);
+        const currentStatusAfterFail = row?.querySelector('.status-cell .badge')?.textContent?.trim().toLowerCase() || newStatus;
+        applyDisabledForCurrentStatus(currentStatusAfterFail);
         alert(`Failed to update: ${err.message}\n\nPlease try again.`);
       }
     });
@@ -319,7 +491,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function getSelectedRequestIds() {
     const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
-    return Array.from(selectedCheckboxes).map(checkbox => checkbox.dataset.requestId);
+    return Array.from(selectedCheckboxes)
+      .map(cb => cb.closest('.request-row')?.dataset.requestId)
+      .filter(Boolean);
   }
 
   if (filterSelect) {
