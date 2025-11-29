@@ -71,10 +71,12 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
 
-    // Expose helper like Admin Dashboard
+    // Expose helper like Admin Dashboard (return row data-request-id)
     window.getSelectedRequestIds = function() {
       const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
-      return Array.from(selectedCheckboxes).map(cb => cb.dataset.requestId);
+      return Array.from(selectedCheckboxes)
+        .map(cb => cb.closest('.request-row')?.dataset.requestId)
+        .filter(Boolean);
     };
   }
 });

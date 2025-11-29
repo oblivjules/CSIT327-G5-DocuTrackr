@@ -33,7 +33,7 @@
           <img src="{% static 'images/bell.png' %}" alt="Notifications" />
         </div>
         
-        <a href="{% url 'profile' %}" class="icon-item profile-icon">
+        <a href="{% url 'admin-profile' %}" class="icon-item profile-icon">
           <img src="{% static 'images/Profile.png' %}" alt="User Profile" />
         </a>
 
@@ -213,7 +213,7 @@
           <div class="activity-content">
             <p class="activity-title">
               {% if activity.new_status == 'processing' %}
-                Request Marked as Processing
+                Request Processing
               {% elif activity.new_status == 'approved' %}
                 Request Approved
               {% elif activity.new_status == 'rejected' %}

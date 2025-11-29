@@ -5,26 +5,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Profile - DocuTrackr</title>
+  <title>Admin Profile - DocuTrackr</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="{% static 'images/docutrackr-logo.png' %}">
   <link rel="stylesheet" href="{% static 'css/profile.css' %}">
 </head>
 <body>
-  <header class="navbar">
-  <div class="navbar-left">
-    <a href="{{ home_url }}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" /></a>
-    <nav>
-      <ul>
-        <li><a href="{{ home_url }}" class="active">Home</a></li>
-        <li><a href="{% url 'about' %}">About</a></li>
-        <li><a href="{% url 'create_request' %}">Create Request</a></li>
-        <li><a href="{% url 'student-requests' %}">Requests</a></li>
-      </ul>
-    </nav>
-  </div>
 
-  <div class="navbar-right">
+  <header class="navbar">
+    <div class="navbar-left">
+      <a href="{{ home_url }}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" /></a>
+      <nav>
+        <ul>
+          <li><a href="{{ home_url }}">Home</a></li>
+          <li><a href="{% url 'admin-requests' %}">Requests</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="navbar-right">
       {% if full_name %}
         <a href="{{ home_url }}" class="user-name">{{ full_name }}</a>
       {% else %}
@@ -33,19 +32,19 @@
 
       <div class="navbar-icons">
         <div class="icon-item notification-icon">
-          <img src="{% static 'images/bell.png' %}" alt="Notification Bell" />
+          <img src="{% static 'images/bell.png' %}" alt="Notifications" />
         </div>
-
-        <a href="{% url 'profile' %}" class="icon-item profile-icon">
+        
+        <a href="{% url 'admin-profile' %}" class="icon-item profile-icon">
           <img src="{% static 'images/Profile.png' %}" alt="User Profile" />
         </a>
 
-        <a href="{% url 'student_logout' %}" class="icon-item logout-icon">
+        <a href="{% url 'admin_logout' %}" class="icon-item logout-icon">
           <img src="{% static 'images/logout.png' %}" alt="Logout" />
         </a>
       </div>
     </div>
-</header>
+  </header>
 
   <div class="profile-container">
     <div class="profile-header">
@@ -61,7 +60,7 @@
           <h2 class="card-title">Full Name</h2>
         </div>
         <div class="card-content">
-          <p class="info-value">{{ student_name|default:"Alex Martinez" }}</p>
+          <p class="info-value">{{ full_name|default:"Registrar User" }}</p>
         </div>
       </div>
 
@@ -70,7 +69,7 @@
           <h2 class="card-title">Email Address</h2>
         </div>
         <div class="card-content">
-          <p class="info-value">{{ email|default:"alex.martinez@citu.edu" }}</p>
+          <p class="info-value">{{ email|default:"registrar@citu.edu" }}</p>
         </div>
       </div>
 
@@ -122,6 +121,7 @@
                     <li id="req-special" class="req-item invalid"><span class="req-dot"></span>At least 1 special character (like ! @ # $ %)</li>
                   </ul>
                 </div>
+                
               </div>
             </div>
           </form>
@@ -130,19 +130,19 @@
     </div>
   </div>
 
+  <script src="{% static 'js/profile.js' %}"></script>
   <footer class="footer">
     <div class="footer-content">
       <div class="footer-section">
         <h4>DocuTrackr</h4>
-        <p>Simplifying document requests for CIT-U students.</p>
+        <p>Streamlining document management for CIT-U.</p>
       </div>
       <div class="footer-section">
         <h4>Quick Links</h4>
         <ul>
-          <li><a href="{% url 'student-dashboard' %}">Home</a></li>
+          <li><a href="{% url 'admin-dashboard' %}">Home</a></li>
+          <li><a href="{% url 'admin-requests' %}">Requests</a></li>
           <li><a href="{% url 'about' %}">About</a></li>
-          <li><a href="#">Privacy Policy</a></li>
-          <li><a href="#">Contact</a></li>
         </ul>
       </div>
       <div class="footer-section">
@@ -159,6 +159,7 @@
       <p>&copy; 2025 DocuTrackr. All rights reserved. | CIT-U Document Management System</p>
     </div>
   </footer>
-  <script src="{% static 'js/profile.js' %}"></script>
+
+  
 </body>
 </html>
