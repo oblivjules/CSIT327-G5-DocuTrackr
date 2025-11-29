@@ -32,8 +32,32 @@
       {% endif %}
 
       <div class="navbar-icons">
-        <div class="icon-item notification-icon">
-          <img src="{% static 'images/bell.png' %}" alt="Notification Bell" />
+        <!-- 🔔 Notification Dropdown Wrapper -->
+        <div class="notification-wrapper">
+            <div class="icon-item notification-icon" id="notifBtn">
+              <img src="{% static 'images/bell.png' %}" alt="Notification Bell">
+            </div>
+            <!-- 🔽 DROPDOWN -->
+            <div class="notification-dropdown" id="notifDropdown">
+              <h4>Notifications</h4>
+
+              <div class="notif-item">
+                <p><strong>REQ-2025-007</strong> was successfully approved</p>
+                <span class="time">1 hour ago</span>
+              </div>
+
+              <div class="notif-item unread">
+                <p>New document request submitted by Student A</p>
+                <span class="time">3 hours ago</span>
+              </div>
+
+              <div class="notif-item">
+                <p>Payment confirmation for REQ-2025-006 received</p>
+                <span class="time">1 day ago</span>
+              </div>
+
+              <button class="mark-read-btn">Mark all as read</button>
+            </div>
         </div>
 
         <a href="{% url 'profile' %}" class="icon-item profile-icon">
