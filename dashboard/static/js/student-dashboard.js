@@ -1,31 +1,34 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Sync Recent Activity card height to Recent Document Requests card
+
+    /* -------------------------------------------------------------
+     *   HEIGHT SYNC (Recent Activity card)
+     * ----------------------------------------------------------- */
     function syncActivityHeight() {
         const recent = document.querySelector('.dashboard-row.two-up .recent-requests');
         const activity = document.querySelector('.dashboard-row.two-up .activity-section');
         if (!recent || !activity) return;
-        // Measure the actual card height including header and footer
+
         const height = recent.offsetHeight;
         if (height && Math.abs(activity.offsetHeight - height) > 2) {
             activity.style.height = height + 'px';
         }
     }
 
-    // Initial sync after layout
     requestAnimationFrame(syncActivityHeight);
-    // Re-sync on window resize (debounced)
+
     let resizeTimer;
     window.addEventListener('resize', () => {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(syncActivityHeight, 100);
     });
-  
+
+
+    /* -------------------------------------------------------------
+     *   REQUEST DETAILS MODAL
+     * ----------------------------------------------------------- */
     const modal = document.getElementById('requestModal');
-    
-    if (!modal) {
-        return;
-    }
-    const closeButton = modal.querySelector('.dt-close');
+
+    const closeButton = modal?.querySelector('.dt-close');
     const requestIdElement = document.getElementById('mRequestId');
     const statusElement = document.getElementById('mStatus');
     const documentElement = document.getElementById('mDocument');
@@ -37,18 +40,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const proofImage = document.getElementById('mProofImage');
 
     function openModal() {
+        if (!modal) return;
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
     }
 
     function closeModal() {
+        if (!modal) return;
         modal.style.display = 'none';
         document.body.style.overflow = 'auto';
     }
 
     const viewDetailsButtons = document.querySelectorAll('.view-details-btn');
-    
-    viewDetailsButtons.forEach(function(button) {
+
+    viewDetailsButtons.forEach(button => {
         button.addEventListener('click', function() {
 
             const requestId = button.dataset.requestId || '';
@@ -60,23 +65,21 @@ document.addEventListener('DOMContentLoaded', function() {
             const updated = button.dataset.updated || '—';
             const proofUrl = button.dataset.proofUrl;
 
-            requestIdElement.textContent = `REQ-${requestId}`;
-            statusElement.textContent = status;
-            statusElement.className = 'dt-status-badge ' + status.toLowerCase();
-            documentElement.textContent = docName;
-            copiesElement.textContent = copies;
-            dateNeededElement.textContent = dateNeeded;
-            createdElement.textContent = created;
-            updatedElement.textContent = updated;
+            if (requestIdElement) requestIdElement.textContent = `REQ-${requestId}`;
+            if (statusElement) {
+                statusElement.textContent = status;
+                statusElement.className = 'dt-status-badge ' + status.toLowerCase();
+            }
+            if (documentElement) documentElement.textContent = docName;
+            if (copiesElement) copiesElement.textContent = copies;
+            if (dateNeededElement) dateNeededElement.textContent = dateNeeded;
+            if (createdElement) createdElement.textContent = created;
+            if (updatedElement) updatedElement.textContent = updated;
 
-            let imgUrl = proofUrl ? proofUrl.replace(/\\u002D/g, "-").trim() : '';
-            
+            let imgUrl = proofUrl ? proofUrl.replace(/\\u002D/g, "-").trim() : "";
+
             if (imgUrl) {
-                try {
-                    imgUrl = decodeURIComponent(imgUrl);
-                } catch (e) {
-                    console.error("Failed to decode URL:", e);
-                }
+                try { imgUrl = decodeURIComponent(imgUrl); } catch (e) {}
             }
 
             proofSection.style.display = 'block';
@@ -84,6 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
             function showPlaceholder() {
                 proofImage.removeAttribute('src');
                 proofImage.style.display = 'none';
+
                 let placeholder = proofSection.querySelector('.proof-not-available');
                 if (!placeholder) {
                     placeholder = document.createElement('div');
@@ -105,23 +109,18 @@ document.addEventListener('DOMContentLoaded', function() {
             if (imgUrl) {
                 if (imgUrl.startsWith('/media/http')) {
                     imgUrl = imgUrl.replace(/^\/media\//, '');
-                } else if (imgUrl.startsWith('http')) {
-                } else if (imgUrl.startsWith('/')) {
-                } else {
+                } else if (!imgUrl.startsWith('http') && !imgUrl.startsWith('/')) {
                     imgUrl = '/media/' + imgUrl;
                 }
-            }
 
-            if (imgUrl) {
                 proofImage.style.display = 'none';
-                
+
                 proofImage.onload = function() {
                     hidePlaceholder();
                     proofImage.style.display = 'block';
                 };
-                
+
                 proofImage.onerror = function() {
-                    console.error('Failed to load proof image:', imgUrl);
                     showPlaceholder();
                 };
 
@@ -134,32 +133,158 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    if (closeButton) {
-        closeButton.addEventListener('click', closeModal);
-    }
+    closeButton?.addEventListener('click', closeModal);
 
-    modal.addEventListener('click', function(event) {
+    modal?.addEventListener('click', function(event) {
         if (event.target === modal) {
             closeModal();
         }
     });
 
+
+    /* -------------------------------------------------------------
+     *   NOTIFICATION DROPDOWN
+     * ----------------------------------------------------------- */
     const notifBtn = document.getElementById("notifBtn");
     const notifDropdown = document.getElementById("notifDropdown");
 
-    notifBtn.addEventListener("click", () => {
-    notifDropdown.style.display =
-        notifDropdown.style.display === "block" ? "none" : "block";
-    });
-
-    document.addEventListener("click", (e) => {
-    if (!notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
-        notifDropdown.style.display = "none";
+    function getCSRFToken() {
+        const cookies = document.cookie ? document.cookie.split(';') : [];
+        for (let cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'csrftoken') return value;
+        }
+        return '';
     }
-    });
 
-    // Auto-submit after typing (500ms delay)
+    if (notifBtn && notifDropdown) {
+        notifBtn.addEventListener("click", () => {
+            const isOpen = notifDropdown.style.display === "block";
+            notifDropdown.style.display = isOpen ? "none" : "block";
+
+            if (!isOpen) {
+                fetch("/notifications/api/fetch/", { credentials: "include" })
+                    .then(res => {
+                        if (!res.ok) {
+                            throw new Error(`HTTP error! status: ${res.status}`);
+                        }
+                        // Check if response is JSON
+                        const contentType = res.headers.get("content-type");
+                        if (!contentType || !contentType.includes("application/json")) {
+                            throw new Error("Response is not JSON");
+                        }
+                        return res.json();
+                    })
+                    .then(data => {
+                        let notifList = notifDropdown.querySelector(".notif-list");
+
+                        if (!notifList) {
+                            notifList = document.createElement('div');
+                            notifList.className = 'notif-list';
+
+                            const markBtn = notifDropdown.querySelector('.mark-read-btn');
+                            if (markBtn) notifDropdown.insertBefore(notifList, markBtn);
+                            else notifDropdown.appendChild(notifList);
+                        }
+
+                        notifList.innerHTML = "";
+
+                        if (!data || !Array.isArray(data.notifications) || data.notifications.length === 0) {
+                            notifList.innerHTML = `<div class="notif-item">No notifications yet</div>`;
+                            // Remove show all button if it exists
+                            const showAllBtn = notifDropdown.querySelector(".show-all-btn");
+                            if (showAllBtn) showAllBtn.remove();
+                            return;
+                        }
+
+                        data.notifications.forEach(n => {
+                            const readClass = n.is_read ? "" : "unread";
+                            notifList.innerHTML += `
+                                <div class="notif-item ${readClass}">
+                                    <p>${n.message}</p>
+                                    <span class="time">${n.time}</span>
+                                </div>
+                            `;
+                        });
+
+                        // Add "Show all" button if notifications exist
+                        let showAllBtn = notifDropdown.querySelector(".show-all-btn");
+                        if (!showAllBtn) {
+                            showAllBtn = document.createElement('a');
+                            showAllBtn.className = 'show-all-btn';
+                            showAllBtn.href = '/notifications/all/';
+                            showAllBtn.textContent = 'Show all';
+                            const markBtn = notifDropdown.querySelector('.mark-read-btn');
+                            if (markBtn) {
+                                notifDropdown.insertBefore(showAllBtn, markBtn);
+                            } else {
+                                notifDropdown.appendChild(showAllBtn);
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Failed to fetch notifications:', err);
+                        let notifList = notifDropdown.querySelector(".notif-list");
+                        if (!notifList) {
+                            notifList = document.createElement('div');
+                            notifList.className = 'notif-list';
+                            const markBtn = notifDropdown.querySelector('.mark-read-btn');
+                            if (markBtn) notifDropdown.insertBefore(notifList, markBtn);
+                            else notifDropdown.appendChild(notifList);
+                        }
+                        notifList.innerHTML = `<div class="notif-item">Error loading notifications. Please refresh.</div>`;
+                    });
+            }
+        });
+
+        const markReadBtn = notifDropdown.querySelector(".mark-read-btn");
+        if (markReadBtn) {
+            markReadBtn.addEventListener("click", () => {
+                fetch("/notifications/api/mark-read/", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "X-CSRFToken": getCSRFToken(),
+                        "Content-Type": "application/json"
+                    }
+                })
+                    .then(res => {
+                        if (!res.ok) {
+                            throw new Error(`HTTP error! status: ${res.status}`);
+                        }
+                        const contentType = res.headers.get("content-type");
+                        if (!contentType || !contentType.includes("application/json")) {
+                            throw new Error("Response is not JSON");
+                        }
+                        return res.json();
+                    })
+                    .then(() => {
+                        document.querySelectorAll(".notif-item.unread")
+                            .forEach(i => i.classList.remove("unread"));
+                    })
+                    .catch(err => {
+                        console.error('Failed to mark notifications read:', err);
+                    });
+            });
+        }
+
+        document.addEventListener("click", (e) => {
+            if (!notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
+                notifDropdown.style.display = "none";
+            }
+        });
+    }
+
+
+    /* -------------------------------------------------------------
+     *   SEARCH INPUT (FIXED — NOW OPTIONAL)
+     * ----------------------------------------------------------- */
+    const searchInput = document.querySelector('input[name="search"]');
+    const searchForm = document.querySelector('.search-form');
+
+    if (searchInput && searchForm) {
         let typingTimer;
+
         searchInput.addEventListener('input', function () {
             clearTimeout(typingTimer);
             typingTimer = setTimeout(() => {
@@ -169,7 +294,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 500);
         });
 
-        // Ctrl+F focuses search
         document.addEventListener('keydown', function (e) {
             if (e.ctrlKey && e.key === 'f') {
                 e.preventDefault();
@@ -177,4 +301,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 searchInput.select();
             }
         });
+    }
+
 });

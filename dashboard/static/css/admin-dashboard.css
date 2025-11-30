@@ -1627,6 +1627,13 @@ select.input-control option[disabled] {
   color: #333;
 }
 
+/* Notification list container with max height */
+.notif-list {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
 .notif-item {
   padding: 10px;
   border-bottom: 1px solid #eee;
@@ -1646,6 +1653,27 @@ select.input-control option[disabled] {
   font-size: 12px;
   margin-top: 3px;
   color: #888;
+}
+
+/* Show all button */
+.show-all-btn {
+  margin-top: 8px;
+  width: 100%;
+  padding: 8px;
+  background: transparent;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  color: #333;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+  transition: background-color 0.2s;
+}
+
+.show-all-btn:hover {
+  background-color: #f5f5f5;
 }
 
 .mark-read-btn {

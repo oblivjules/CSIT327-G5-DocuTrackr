@@ -38,19 +38,21 @@
             <div class="notification-dropdown" id="notifDropdown">
               <h4>Notifications</h4>
 
-              <div class="notif-item">
-                <p><strong>REQ-2025-007</strong> was successfully approved</p>
-                <span class="time">1 hour ago</span>
-              </div>
+              <div class="notif-list">
+                <div class="notif-item">
+                  <p><strong>REQ-2025-007</strong> was successfully approved</p>
+                  <span class="time">1 hour ago</span>
+                </div>
 
-              <div class="notif-item unread">
-                <p>New document request submitted by Student A</p>
-                <span class="time">3 hours ago</span>
-              </div>
+                <div class="notif-item unread">
+                  <p>New document request submitted by Student A</p>
+                  <span class="time">3 hours ago</span>
+                </div>
 
-              <div class="notif-item">
-                <p>Payment confirmation for REQ-2025-006 received</p>
-                <span class="time">1 day ago</span>
+                <div class="notif-item">
+                  <p>Payment confirmation for REQ-2025-006 received</p>
+                  <span class="time">1 day ago</span>
+                </div>
               </div>
 
               <button class="mark-read-btn">Mark all as read</button>
@@ -267,7 +269,7 @@
   </div>
 
   <!-- Request Details Modal -->
-  <div id="requestModal" class="dt-modal" style="display:none;">
+  <div id="requestModal" class="dt-modal">
     <div class="dt-modal-content">
       <button class="dt-close" aria-label="Close">&times;</button>
       <div class="dt-modal-header">
@@ -330,7 +332,6 @@
     </div>
   </div>
 
-  <script src="{% static 'js/requests-list.js' %}"></script>
   <script src="{% static 'js/admin-dashboard.js' %}"></script>
 </body>
 </html>

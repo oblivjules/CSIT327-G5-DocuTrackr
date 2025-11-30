@@ -52,6 +52,8 @@ DATABASES = {
 # -------------------------------------------------------------------
 # Application Definition
 # -------------------------------------------------------------------
+LOGIN_URL = '/'
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
