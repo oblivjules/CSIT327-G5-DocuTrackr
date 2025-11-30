@@ -1,83 +1,150 @@
-{% load static %}
-
+{% load static i18n %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Notifications - DocuTrackr</title>
-
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="{% static 'images/docutrackr-logo.png' %}">
   <link rel="stylesheet" href="{% static 'css/notification.css' %}">
 </head>
-
 <body>
-
   <main class="notif-container">
-    
     <div class="notif-header">
       <div>
-        <h1>All Notifications</h1>
+        <h1>Notifications</h1>
         <p class="notif-subtext">
           {% if unread_count == 0 %}
+            All caught up! 🎉
           {% else %}
-            You have {{ unread_count }} unread notification{{ unread_count|pluralize }}
+            {% blocktrans count counter=unread_count %}
+              You have {{ counter }} unread notification
+            {% plural %}
+              You have {{ counter }} unread notifications
+            {% endblocktrans %}
           {% endif %}
         </p>
       </div>
-
-      <button id="markAllReadBtn" class="mark-all-btn">
-        ✓ Mark all read
-      </button>
     </div>
 
-    <div class="notif-card">
-      {% if notifications %}
-        {% for notif in notifications %}
-          <div class="notif-item {% if not notif.is_read %}unread{% endif %}">
-            <p class="notif-message">{{ notif.message }}</p>
-            <span class="notif-time">
-              {{ notif.created_at|timesince }} ago
-            </span>
-          </div>
-        {% endfor %}
-      {% else %}
-        <p class="notif-empty">No notifications available.</p>
-      {% endif %}
-    </div>
-
-    {% if page_obj %}
-      <div class="notif-pagination">
-        <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-
-        <div class="pagination-buttons">
-          {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}" class="pagination-btn">&lsaquo; Previous</a>
-          {% else %}
-            <span class="pagination-btn disabled">&lsaquo; Previous</span>
-          {% endif %}
-
-          {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}" class="pagination-btn">Next &rsaquo;</a>
-          {% else %}
-            <span class="pagination-btn disabled">Next &rsaquo;</span>
-          {% endif %}
-        </div>
+    <div class="notif-content">
+      <div class="notif-card">
+        {% if notifications %}
+          {% for notif in notifications %}
+            <div class="notif-item {% if not notif.is_read %}unread{% endif %}">
+              <p class="notif-message">{{ notif.message }}</p>
+              <span class="notif-time">{{ notif.created_at|timesince }} ago</span>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="notif-empty">No notifications available.</p>
+        {% endif %}
       </div>
-    {% endif %}
-
+      <div class="notif-actions">
+        <button id="markAllReadBtn" class="mark-all-btn">✓ Mark all as read</button>
+      </div>
+      <div class="notif-controls">
+        <button id="prevPage" class="pagination-btn">&lsaquo; Previous</button>
+        <span id="pageInfo"></span>
+        <button id="nextPage" class="pagination-btn">Next &rsaquo;</button>
+      </div>
+    </div>
   </main>
 
   <script>
-    document.getElementById("markAllReadBtn").addEventListener("click", () => {
-      fetch("/notifications/api/mark-read/")
-        .then(res => res.json())
+    function getCSRFToken() {
+      const name = 'csrftoken=';
+      const cookies = document.cookie.split(';');
+      for (let c of cookies) {
+        c = c.trim();
+        if (c.startsWith(name)) return c.substring(name.length);
+      }
+      return '';
+    }
+
+    document.getElementById("markAllReadBtn").addEventListener("click", function() {
+      const btn = this;
+      btn.disabled = true;
+      
+      fetch("/notifications/api/mark-read/", {
+        method: "POST",
+        headers: { "X-CSRFToken": getCSRFToken() }
+      })
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to mark as read');
+          return res.json();
+        })
         .then(() => {
-          document.querySelectorAll(".notif-item.unread")
-            .forEach(item => item.classList.remove("unread"));
+          document.querySelectorAll(".notif-item.unread").forEach(item => {
+            item.classList.remove("unread");
+          });
+          btn.textContent = "✓ All marked as read";
+          setTimeout(() => { btn.disabled = false; }, 2000);
+        })
+        .catch(err => {
+          console.error("Error marking notifications as read:", err);
+          btn.disabled = false;
         });
     });
-  </script>
 
+    document.querySelectorAll('.notif-item').forEach(item => {
+      const messageEl = item.querySelector('.notif-message');
+      const messageText = (messageEl?.textContent || '').toLowerCase();
+      item.removeAttribute('title');
+      
+      let statusClass = '';
+      if (messageText.includes('approved')) {
+        statusClass = 'approved';
+      } else if (messageText.includes('processing') || messageText.includes('in progress')) {
+        statusClass = 'processing';
+      } else if (messageText.includes('completed') || messageText.includes('complete')) {
+        statusClass = 'completed';
+      } else if (messageText.includes('rejected') || messageText.includes('denied')) {
+        statusClass = 'rejected';
+      } else if (messageText.includes('pending') || messageText.includes('waiting')) {
+        statusClass = 'pending';
+      }
+      
+      if (statusClass) {
+        item.classList.add(statusClass);
+      }
+    });
+
+    const card = document.querySelector('.notif-card');
+    const controls = document.querySelector('.notif-controls');
+    const items = Array.from(card.querySelectorAll('.notif-item'));
+    const prev = document.getElementById('prevPage');
+    const next = document.getElementById('nextPage');
+    const pageInfo = document.getElementById('pageInfo');
+    let perPage = 1;
+    let page = 1;
+
+    function computePerPage() {
+      const cardH = card.clientHeight;
+      const itemH = items[0]?.offsetHeight || 84;
+      const gap = 16;
+      perPage = Math.max(1, Math.floor((cardH + gap) / (itemH + gap)));
+    }
+    function renderPage() {
+      const total = items.length;
+      const totalPages = Math.max(1, Math.ceil(total / perPage));
+      if (page > totalPages) page = totalPages;
+      const start = (page - 1) * perPage;
+      const end = Math.min(start + perPage, total);
+      items.forEach((el, i) => { el.style.display = (i >= start && i < end) ? 'flex' : 'none'; });
+      pageInfo.textContent = `Page ${page} of ${totalPages}`;
+      prev.disabled = page <= 1;
+      next.disabled = end >= total;
+      prev.classList.toggle('disabled', prev.disabled);
+      next.classList.toggle('disabled', next.disabled);
+    }
+    // Hover lift handled via CSS on .notif-item:hover
+    prev.addEventListener('click', function() { if (page > 1) { page--; renderPage(); } });
+    next.addEventListener('click', function() { const totalPages = Math.ceil(items.length / perPage); if (page < totalPages) { page++; renderPage(); } });
+    computePerPage();
+    renderPage();
+    window.addEventListener('resize', function() { const old = perPage; computePerPage(); if (perPage !== old) { page = 1; renderPage(); } });
+  </script>
 </body>
 </html>

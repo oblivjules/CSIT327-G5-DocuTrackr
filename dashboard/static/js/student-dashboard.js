@@ -22,10 +22,6 @@ document.addEventListener('DOMContentLoaded', function() {
         resizeTimer = setTimeout(syncActivityHeight, 100);
     });
 
-
-    /* -------------------------------------------------------------
-     *   REQUEST DETAILS MODAL
-     * ----------------------------------------------------------- */
     const modal = document.getElementById('requestModal');
 
     const closeButton = modal?.querySelector('.dt-close');
@@ -39,16 +35,31 @@ document.addEventListener('DOMContentLoaded', function() {
     const proofSection = document.getElementById('mProofSection');
     const proofImage = document.getElementById('mProofImage');
 
+    function getScrollbarWidth() {
+        return window.innerWidth - document.documentElement.clientWidth;
+    }
+
+    function lockBodyScroll() {
+        const w = getScrollbarWidth();
+        document.body.style.overflow = 'hidden';
+        if (w > 0) document.body.style.paddingRight = w + 'px';
+    }
+
+    function unlockBodyScroll() {
+        document.body.style.overflow = 'auto';
+        document.body.style.paddingRight = '';
+    }
+
     function openModal() {
         if (!modal) return;
         modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
+        lockBodyScroll();
     }
 
     function closeModal() {
         if (!modal) return;
         modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
+        unlockBodyScroll();
     }
 
     const viewDetailsButtons = document.querySelectorAll('.view-details-btn');
@@ -141,10 +152,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-
-    /* -------------------------------------------------------------
-     *   NOTIFICATION DROPDOWN
-     * ----------------------------------------------------------- */
     const notifBtn = document.getElementById("notifBtn");
     const notifDropdown = document.getElementById("notifDropdown");
 
@@ -275,10 +282,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-
-    /* -------------------------------------------------------------
-     *   SEARCH INPUT (FIXED — NOW OPTIONAL)
-     * ----------------------------------------------------------- */
     const searchInput = document.querySelector('input[name="search"]');
     const searchForm = document.querySelector('.search-form');
 

@@ -1,7 +1,6 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.shortcuts import render, redirect
-from django.core.paginator import Paginator
 from .models import Notification
 from authentication.models import User
 import traceback
@@ -91,19 +90,14 @@ def notifications_page(request):
         user=user
     ).order_by("-created_at")
 
-    # Pagination: 5–10 items per page is ideal
-    paginator = Paginator(notif_list, 5)  # Show 5 notifications per page
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-
     # Count unread notifications
     unread_count = Notification.objects.filter(
         user=user, is_read=False
     ).count()
 
     context = {
-        "notifications": page_obj.object_list,
-        "page_obj": page_obj,
+        "notifications": notif_list,
+        "page_obj": None,
         "unread_count": unread_count,
     }
 

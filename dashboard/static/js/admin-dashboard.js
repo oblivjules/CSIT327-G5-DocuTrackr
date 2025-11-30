@@ -1,16 +1,16 @@
-// admin-dashboard.js (merged, multi-select intact, request details modal = combined UX)
 document.addEventListener('DOMContentLoaded', function() {
 
-  /* ---------------------------------------------------------------------
-   *  ELEMENT REFERENCES (shared)
-   * ------------------------------------------------------------------- */
   const proofModal = document.getElementById("proofModal");
   const proofImage = document.getElementById("proofImage");
   const proofClose = proofModal?.querySelector(".close-btn");
 
-  const proofButtons = document.querySelectorAll(".view-proof-btn"); // opens proof-only modal
+  const proofButtons = document.querySelectorAll(".view-proof-btn");
 
-  const requestModal = document.getElementById("requestModal"); // detailed request modal (combined UX)
+  const requestModal = document.getElementById("requestModal");
+  if (requestModal) {
+    requestModal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
 
   const dateReady = document.getElementById("dateReady");
   if (dateReady) {
@@ -26,14 +26,10 @@ document.addEventListener('DOMContentLoaded', function() {
   const closeProcessBtn = document.getElementById("closeModal");
   const requestIdField = document.getElementById("requestId");
 
-  // table controls
-  const selectAllCheckbox = document.getElementById('selectAll');
-  const rowCheckboxes = document.querySelectorAll('.row-checkbox');
   const searchInput = document.querySelector('input[name="search"]');
   const searchForm = document.querySelector('.search-form');
   const filterSelect = document.querySelector('.filter-select');
 
-  // guard required elements (we will still continue if some are missing)
   if (!statusDropdown) console.warn("statusDropdown not found — some status UI will be degraded.");
   if (!confirmProcess) console.warn("confirmProcess button not found.");
   if (!processModal) console.warn("processModal not found — cannot update statuses.");
@@ -44,7 +40,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (status === "approved") {
         dateReady.disabled = false;
 
-        // auto-fill today's date if empty
         if (!dateReady.value) {
             const today = new Date().toISOString().split("T")[0];
             dateReady.value = today;
@@ -52,16 +47,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     } else {
         dateReady.disabled = true;
-        dateReady.value = ""; // clear when invalid
+        dateReady.value = "";
     }
 }
 
 statusDropdown.addEventListener("change", updateDateReadyState);
 updateDateReadyState();
 
-  /* ---------------------------------------------------------------------
-   *  UTILS
-   * ------------------------------------------------------------------- */
   function getCSRFToken() {
     let csrfToken = null;
     const cookies = document.cookie ? document.cookie.split(';') : [];
@@ -105,9 +97,6 @@ updateDateReadyState();
     return row?.querySelector('.status-cell .badge')?.textContent?.trim().toLowerCase() || '';
   }
 
-  /* ---------------------------------------------------------------------
-   *  CLEAN SELECT (custom dropdown for status) - main-stream implementation
-   * ------------------------------------------------------------------- */
   let csContainer = null;
   let csDisplay = null;
   let csList = null;
@@ -197,7 +186,7 @@ updateDateReadyState();
     } else {
       if (optCompleted) optCompleted.disabled = true;
     }
-    // reflect in clean select
+
     rebuildCleanSelect();
   };
 
@@ -211,9 +200,6 @@ updateDateReadyState();
     rebuildCleanSelect();
   };
 
-  /* ---------------------------------------------------------------------
-   *  PROOF-ONLY MODAL (view-proof-btn using data-img-url)
-   * ------------------------------------------------------------------- */
   proofButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       let imgUrl = btn.getAttribute("data-img-url") || "";
@@ -224,7 +210,6 @@ updateDateReadyState();
         return;
       }
 
-      // Handle common cases - if relative path was stored without /media prefix
       if (!imgUrl.startsWith('http') && !imgUrl.startsWith('/')) {
         imgUrl = '/media/' + imgUrl;
       }
@@ -259,15 +244,10 @@ updateDateReadyState();
     }
   });
 
-  /* ---------------------------------------------------------------------
-   *  REQUEST DETAILS MODAL (combined UX)
-   *    - uses your UX for placeholders and proof path fixes
-   *    - works with data attributes on .view-details-btn
-   * ------------------------------------------------------------------- */
+
   if (requestModal) {
     const requestCloseBtn = requestModal.querySelector(".dt-close");
 
-    // modal elements (IDs expected in template)
     const mRequestId = document.getElementById("mRequestId");
     const mStatus = document.getElementById("mStatus");
     const mDocument = document.getElementById("mDocument");
@@ -303,25 +283,24 @@ updateDateReadyState();
 
     function openRequestModal() {
       requestModal.style.display = "flex";
-      document.body.style.overflow = "hidden";
+      lockBodyScroll();
     }
 
     function closeRequestModal() {
       requestModal.style.display = "none";
-      document.body.style.overflow = "auto";
+      unlockBodyScroll();
       if (mProofImage) mProofImage.removeAttribute('src');
     }
 
-    // Only set up handlers if we're on admin-dashboard page (not requests-list page)
-    // Check if requests-list.js already handled it by looking for a data attribute
     const detailsButtons = document.querySelectorAll('.view-details-btn:not([data-handled-by-requests-list])');
     if (detailsButtons.length > 0) {
       console.log('admin-dashboard.js: Setting up', detailsButtons.length, 'view-details buttons');
     }
     detailsButtons.forEach(button => {
       button.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent event bubbling
-        // read values from data attributes on the button
+        e.preventDefault();
+        e.stopPropagation();
+
         const requestId = button.dataset.requestId || '';
         const status = button.dataset.status || '';
         const docName = button.dataset.document || '';
@@ -342,24 +321,20 @@ updateDateReadyState();
         if (mCreated) mCreated.textContent = created;
         if (mUpdated) mUpdated.textContent = updated;
 
-        // normalize proof URL (handles encoded slashes and django media prefix)
         let imgUrl = proofUrl ? proofUrl.replace(/\\u002D/g, "-").trim() : '';
         if (imgUrl) {
-          try { imgUrl = decodeURIComponent(imgUrl); } catch (e) { /* ignore decode errors */ }
+          try { imgUrl = decodeURIComponent(imgUrl); } catch (e) {}
         }
 
-        // show proof section (we keep it visible even if no proof so placeholder shows)
         if (mProofSection) mProofSection.style.display = 'block';
 
         if (imgUrl) {
-          // fix common path problems
           if (imgUrl.startsWith('/media/http')) {
             imgUrl = imgUrl.replace(/^\/media\//, '');
           } else if (!imgUrl.startsWith('http') && !imgUrl.startsWith('/')) {
             imgUrl = '/media/' + imgUrl;
           }
 
-          // hide image until loaded
           if (mProofImage) mProofImage.style.display = 'none';
           if (mProofImage) {
             mProofImage.onload = function() {
@@ -391,68 +366,49 @@ updateDateReadyState();
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && requestModal.style.display === 'flex') closeRequestModal();
     });
-  } // end requestModal logic
+  }
 
-
-  /* ---------------------------------------------------------------------
-   *  PROCESS / UPDATE MODAL (multi-select capable)
-   *  - single or multi selection handled by checkboxes in the table
-   * ------------------------------------------------------------------- */
   let selectedRequestId = null;
   let confirmBound = false;
+
+  function getScrollbarWidth() {
+    return window.innerWidth - document.documentElement.clientWidth;
+  }
+
+  function lockBodyScroll() {
+    const sw = getScrollbarWidth();
+    document.body.style.overflow = "hidden";
+    if (sw > 0) document.body.style.paddingRight = sw + "px";
+  }
+
+  function unlockBodyScroll() {
+    document.body.style.overflow = "auto";
+    document.body.style.paddingRight = "";
+  }
 
   const processButtons = document.querySelectorAll(".process-btn");
 
   processButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       selectedRequestId = btn.dataset.requestId;
-      // build set from checked boxes (multi-select support)
-      const checked = getSelectedRequestIds();
-      const idSet = new Set(checked);
-      if (selectedRequestId) idSet.add(String(selectedRequestId));
-      const ids = Array.from(idSet).filter(Boolean);
+      const ids = [String(selectedRequestId)].filter(Boolean);
 
-      // prepare label
-      const labelIds = ids.map(id => `REQ-${id}`);
-      const maxShow = 6;
-      let label = '';
-      if (labelIds.length <= maxShow) {
-        label = labelIds.join(', ');
-      } else {
-        const head = labelIds.slice(0, maxShow).join(', ');
-        label = `${head} +${labelIds.length - maxShow} more`;
-      }
+      const label = ids.map(id => `REQ-${id}`).join(', ');
       if (requestIdField) requestIdField.textContent = label;
       if (remarksField) remarksField.value = "";
 
-      // set dropdown to current status of clicked row (or blank for pending)
       const row = btn.closest("tr");
       const currentStatus = row?.querySelector(".badge")?.textContent?.trim().toLowerCase() || '';
       if (statusDropdown) {
         statusDropdown.value = currentStatus === 'pending' ? '' : currentStatus;
         mountCleanSelect();
         rebuildCleanSelect();
+        if (currentStatus) applyDisabledForCurrentStatus(currentStatus);
       }
 
-      // compute intersection of valid next statuses for multi selection
-      if (ids.length <= 1) {
-        if (currentStatus && statusDropdown) {
-          applyDisabledForCurrentStatus(currentStatus);
-        }
-      } else {
-        let intersection = new Set(['processing','approved','rejected','completed']);
-        ids.forEach(id => {
-          const s = getRowCurrentStatus(id);
-          const next = new Set(validNextStatuses(s));
-          intersection = new Set([...intersection].filter(x => next.has(x)));
-        });
-        applyDisabledForSelection(intersection);
-      }
-
-      // open
       if (processModal) {
         processModal.style.display = "flex";
-        document.body.style.overflow = "hidden";
+        lockBodyScroll();
         setTimeout(() => statusDropdown?.focus(), 50);
       }
     });
@@ -460,7 +416,7 @@ updateDateReadyState();
 
   function closeProcessModal() {
     if (processModal) processModal.style.display = "none";
-    document.body.style.overflow = "auto";
+    unlockBodyScroll();
     selectedRequestId = null;
   }
 
@@ -477,10 +433,6 @@ updateDateReadyState();
     if (e.key === "Escape" && processModal?.style.display === "flex") closeProcessModal();
   });
 
-
-  /* ---------------------------------------------------------------------
-   *  CONFIRM STATUS UPDATE (bulk-capable)
-   * ------------------------------------------------------------------- */
   if (!confirmBound && confirmProcess) {
     confirmBound = true;
 
@@ -498,11 +450,7 @@ updateDateReadyState();
         return;
       }
 
-      // collect ids: checked + the clicked one
-      const checkedIds = getSelectedRequestIds();
-      const idSet = new Set(checkedIds);
-      if (selectedRequestId) idSet.add(String(selectedRequestId));
-      const idsToUpdate = Array.from(idSet).filter(Boolean);
+      const idsToUpdate = [String(selectedRequestId)].filter(Boolean);
 
       if (idsToUpdate.length === 0) {
         alert("Please select at least one request to update.");
@@ -522,7 +470,6 @@ updateDateReadyState();
         return;
       }
 
-      // confirmation message
       let confirmMsg = (validIds.length === 1)
         ? `Are you sure you want to set REQ-${validIds[0]} to ${newStatus.toUpperCase()}?`
         : `Are you sure you want to set ${validIds.length} requests to ${newStatus.toUpperCase()}?`;
@@ -536,13 +483,11 @@ updateDateReadyState();
 
       if (!confirm(confirmMsg)) return;
 
-      // ui lock
       confirmProcess.disabled = true;
       const originalText = confirmProcess.textContent;
       confirmProcess.textContent = "Updating...";
 
       try {
-        // update the first id via the main endpoint and capture response
         const firstId = String(validIds[0]);
         const res = await fetch(`/dashboard/update-status/${firstId}/`, {
           method: "POST",
@@ -568,7 +513,6 @@ updateDateReadyState();
           throw new Error(data.error || "Unknown error occurred");
         }
 
-        // record results and then process remaining valid IDs sequentially
         const results = [];
         results.push({ id: firstId, success: true, claim_slip: data.claim_slip });
 
@@ -584,7 +528,6 @@ updateDateReadyState();
           else results.push({ id, success: true, claim_slip: d.claim_slip });
         }
 
-        // close modal and show summary
         closeProcessModal();
 
         const successIds = results.filter(r => r.success).map(r => `REQ-${r.id}`);
@@ -608,52 +551,8 @@ updateDateReadyState();
         alert(`Failed to update: ${err.message}\n\nPlease try again.`);
       }
     });
-  } // end confirm binding
-
-
-  /* ---------------------------------------------------------------------
-   *  SELECT ALL / ROW CHECKBOX HANDLING (keeps selection UI in sync)
-   * ------------------------------------------------------------------- */
-  // Ensure selectAllCheckbox exists before referencing
-  if (selectAllCheckbox) {
-    selectAllCheckbox.addEventListener('change', function() {
-      const isChecked = this.checked;
-
-      rowCheckboxes.forEach(function(checkbox) {
-        checkbox.checked = isChecked;
-        const row = checkbox.closest('.request-row');
-        if (row) row.classList.toggle('selected', isChecked);
-      });
-    });
   }
 
-  rowCheckboxes.forEach(function(checkbox) {
-    checkbox.addEventListener('change', function() {
-      const row = this.closest('.request-row');
-      if (row) row.classList.toggle('selected', this.checked);
-
-      if (selectAllCheckbox) {
-        const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
-        selectAllCheckbox.checked = checkedBoxes.length === rowCheckboxes.length;
-        selectAllCheckbox.indeterminate =
-          checkedBoxes.length > 0 && checkedBoxes.length < rowCheckboxes.length;
-      }
-    });
-  });
-
-  function getSelectedRequestIds() {
-    const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
-    return Array.from(selectedCheckboxes)
-      .map(cb => cb.closest('.request-row')?.dataset.requestId)
-      .filter(Boolean);
-  }
-
-  // expose for other scripts if needed
-  window.getSelectedRequestIds = getSelectedRequestIds;
-
-  /* ---------------------------------------------------------------------
-   *  SEARCH + FILTER helpers (unchanged behavior)
-   * ------------------------------------------------------------------- */
   if (searchInput) {
     searchInput.addEventListener('keypress', function(e) {
       if (e.key === 'Enter') {
@@ -703,29 +602,12 @@ updateDateReadyState();
     });
   }
 
-  /* ---------------------------------------------------------------------
-   *  SMALL SAFEGUARD: ensure process buttons exist (log when missing)
-   * ------------------------------------------------------------------- */
   if (processButtons.length === 0) {
     console.warn("No .process-btn elements found on the page.");
   }
 
-  if (!selectAllCheckbox) {
-    console.warn("Select All checkbox not found (id='selectAll').");
-  }
-
-  if (rowCheckboxes.length === 0) {
-    console.warn("No row checkboxes found (class='row-checkbox').");
-  }
-
-  // ---------------------------------------------------------------
-  // Notification Dropdown (from main)
-  // ---------------------------------------------------------------
-  window.getSelectedRequestIds = getSelectedRequestIds;
-
-
-  const notifBtn = document.getElementById("notifBtn");
-  const notifDropdown = document.getElementById("notifDropdown");
+  const notifBtn = null;
+  const notifDropdown = null;
 
   if (notifBtn && notifDropdown) {
     notifBtn.addEventListener("click", () => {
@@ -740,7 +622,6 @@ updateDateReadyState();
             if (!res.ok) {
               throw new Error(`HTTP error! status: ${res.status}`);
             }
-            // Check if response is JSON
             const contentType = res.headers.get("content-type");
             if (!contentType || !contentType.includes("application/json")) {
               throw new Error("Response is not JSON");
@@ -760,7 +641,6 @@ updateDateReadyState();
 
             if (!data || !Array.isArray(data.notifications) || data.notifications.length === 0) {
               notifList.innerHTML = `<div class="notif-item">No notifications yet</div>`;
-              // Remove show all button if it exists
               const showAllBtn = notifDropdown.querySelector(".show-all-btn");
               if (showAllBtn) showAllBtn.remove();
               return;
@@ -770,15 +650,20 @@ updateDateReadyState();
               const readClass = n.is_read ? "" : "unread";
               const msg = n.message || '';
               const time = n.time || '';
+              let statusCls = '';
+              const m = msg.toLowerCase();
+              if (m.includes('approved')) statusCls = 'approved';
+              else if (m.includes('processing')) statusCls = 'processing';
+              else if (m.includes('completed')) statusCls = 'completed';
+              else if (m.includes('rejected')) statusCls = 'rejected';
               notifList.innerHTML += `
-                <div class="notif-item ${readClass}">
+                <div class="notif-item ${statusCls} ${readClass}">
                   <p>${msg}</p>
                   <span class="time">${time}</span>
                 </div>
               `;
             });
 
-            // Add "Show all" button if notifications exist
             let showAllBtn = notifDropdown.querySelector(".show-all-btn");
             if (!showAllBtn) {
               showAllBtn = document.createElement('a');
@@ -844,4 +729,4 @@ updateDateReadyState();
     });
   }
 
-}); // DOMContentLoaded end
+});
