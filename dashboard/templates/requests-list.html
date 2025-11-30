@@ -1,4 +1,5 @@
 {% load static %}
+{% load tz %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -117,7 +118,7 @@
               <th>REQ ID</th>
               <th>Student Info</th>
               <th>Document</th>
-              <th>Payment Proof</th>
+              <th>Details</th>
               <th>Status</th>
               <th>Action</th>
               <th>Claim Slip</th>
@@ -131,11 +132,17 @@
               <td>{{ req.user.name }}<br><small>{{ req.user.student_id }}</small></td>
               <td>{{ req.document.name }}</td>
               <td>
-                {% if req.payment and req.payment.proof_of_payment %}
-                  <button class="view-proof-btn" data-img-url="{{ req.payment.proof_of_payment|safe|default:''  }}">View Proof</button>
-                {% else %}
-                  <span class="no-proof">No Proof</span>
-                {% endif %}
+                <button class="action-btn view-details-btn"
+                  data-request-id="{{ req.request_id }}"
+                  data-document="{{ req.document.name }}"
+                  data-copies="{{ req.copies }}"
+                  data-date-needed="{{ req.date_needed|date:'M d, Y' }}"
+                  data-status="{{ req.get_status_display }}"
+                  data-created="{{ req.created_at|localtime|date:'M d, Y h:i A' }}"
+                  data-updated="{{ req.updated_at|localtime|date:'M d, Y h:i A' }}"
+                  data-payment-status="{% if req.payment %}{{ req.payment.get_payment_status_display }}{% endif %}"
+                  data-proof-url="{{ req.payment.proof_of_payment|safe|default:'' }}"
+                >View Details</button>
               </td>
               <td class="status-cell">
                 <span class="badge {{ req.status }}">{{ req.status|upper }}</span>
@@ -244,6 +251,12 @@
               <small class="helper-text">Remarks are shared with the requester.</small>
             </div>
           </div>
+          <div class="form-row">
+              <label for="dateReady" class="form-label">Date Ready</label>
+              <div class="form-field">
+                  <input type="date" id="dateReady" class="input-control" min="" disabled>
+                  <small class="helper-text">Date the document will be available for pickup.</small>
+              </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -253,7 +266,71 @@
     </div>
   </div>
 
-  <script src="{% static 'js/admin-dashboard.js' %}"></script>
+  <!-- Request Details Modal -->
+  <div id="requestModal" class="dt-modal" style="display:none;">
+    <div class="dt-modal-content">
+      <button class="dt-close" aria-label="Close">&times;</button>
+      <div class="dt-modal-header">
+        <div class="dt-header-left">
+          <div class="dt-header-top">
+            <div class="dt-id" id="mRequestId">REQ-00000</div>
+            <span class="dt-status-badge" id="mStatus">Approved</span>
+          </div>
+          <div class="dt-subtitle">Request Details</div>
+        </div>
+      </div>
+      <div class="dt-modal-body">
+        <div class="dt-grid dt-main-grid">
+          <div class="dt-card">
+            <div class="dt-card-label">
+              <img class="dt-icon" src="{% static 'images/document.png' %}" alt="Document" />
+              <span>Document</span>
+            </div>
+            <div class="dt-card-value" id="mDocument"></div>
+          </div>
+          <div class="dt-card">
+            <div class="dt-card-label">
+              <img class="dt-icon" src="{% static 'images/documents-requested.png' %}" alt="Copies" />
+              <span>Copies</span>
+            </div>
+            <div class="dt-card-value" id="mCopies"></div>
+          </div>
+          <div class="dt-card">
+            <div class="dt-card-label">
+              <img class="dt-icon" src="{% static 'images/pickup.png' %}" alt="Date Needed" />
+              <span>Date Needed</span>
+            </div>
+            <div class="dt-card-value" id="mDateNeeded"></div>
+          </div>
+          <div class="dt-card">
+            <div class="dt-card-label">
+              <img class="dt-icon" src="{% static 'images/check.png' %}" alt="Created" />
+              <span>Created</span>
+            </div>
+            <div class="dt-card-value" id="mCreated"></div>
+          </div>
+          <div class="dt-card">
+            <div class="dt-card-label">
+              <img class="dt-icon" src="{% static 'images/processing.png' %}" alt="Last Updated" />
+              <span>Last Updated</span>
+            </div>
+            <div class="dt-card-value" id="mUpdated"></div>
+          </div>
+        </div>
+        <div class="dt-card dt-proof" id="mProofSection" style="display:none;">
+          <div class="dt-card-label">
+            <img class="dt-icon" src="{% static 'images/view.png' %}" alt="Proof of Payment" />
+            <span>Proof of Payment</span>
+          </div>
+          <div class="dt-proof-frame">
+            <img id="mProofImage" alt="Proof of Payment" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="{% static 'js/requests-list.js' %}"></script>
+  <script src="{% static 'js/admin-dashboard.js' %}"></script>
 </body>
 </html>

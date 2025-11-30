@@ -105,10 +105,12 @@ def admin_profile(request):
         return redirect('adminlogin')
 
     context = {
-        'full_name': user.name,
+        'home_url': reverse('admin-dashboard'),
+        'full_name': user.name if user else None,
         'email': user.email,
     }
     return render(request, 'admin-profile.html', context)
+
 
 @login_required
 @no_cache
@@ -250,11 +252,14 @@ def update_request_status(request, request_id):
             data = json.loads(request.body)
             new_status = data.get('status')
             remarks = data.get('remarks', '').strip()
+            date_ready = data.get('date_ready')
         except json.JSONDecodeError:
             return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
     else:
         new_status = request.POST.get('status')
         remarks = request.POST.get('remarks', '').strip()
+        date_ready = request.POST.get('date_ready')
+        
     
     if not new_status:
         return JsonResponse({'success': False, 'error': 'Status is required'}, status=400)
@@ -262,6 +267,7 @@ def update_request_status(request, request_id):
     valid_statuses = ['pending', 'processing', 'approved', 'rejected', 'completed']
     if new_status not in valid_statuses:
         return JsonResponse({'success': False, 'error': 'Invalid status value'}, status=400)
+
 
     try:
         staff_user = get_object_or_404(User, id=request.session.get("user_id"))
@@ -305,6 +311,7 @@ def update_request_status(request, request_id):
                 changed_at=timezone.now()
             )
             
+            # CLAIM SLIP HANDLING
             claim_slip_info = None
             if new_status == 'approved':
                 existing_claim = Claim_Slips.objects.filter(request=doc_request).first()
@@ -336,6 +343,7 @@ def update_request_status(request, request_id):
             'message': f"Request updated to {new_status}",
             'new_status': new_status,
             'claim_slip': claim_slip_info,
+            'date_ready': str(doc_request.date_ready) if doc_request.date_ready else None,
         })
         
     except Exception as e:
