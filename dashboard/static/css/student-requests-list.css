@@ -114,3 +114,89 @@ table.requests-table thead th { font-weight: 600; }
 .requests-list-page .requests-table td.action-cell .claim-slip-btn {
   margin-left: 8px;
 }
+
+/* Wrapper for dropdown alignment */
+.notification-wrapper {
+  position: relative;
+}
+
+/* Dropdown container */
+.notification-dropdown {
+  width: 260px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  padding: 15px;
+  position: absolute;
+  right: 0;
+  top: 50px;
+  display: none; 
+  z-index: 200;
+}
+
+/* Title */
+.notification-dropdown h4 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Items */
+.notif-item {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.notif-item:last-child {
+  border-bottom: none;
+}
+
+/* Unread highlight (light red like screenshot) */
+.notif-item.unread {
+  background: #ffeaea;
+}
+
+/* Time text */
+.time {
+  display: block;
+  font-size: 12px;
+  margin-top: 3px;
+  color: #888;
+}
+
+/* Mark all as read button */
+.mark-read-btn {
+  margin-top: 10px;
+  width: 100%;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  color: #C62828;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 6px 10px;
+    border-radius: 6px;
+    width: 380px;
+}
+
+.search-box svg {
+    margin-right: 6px;
+    opacity: .6;
+}
+
+.search-box input {
+    border: none;
+    width: 100%;
+    outline: none;
+    font-size: 14px;
+}

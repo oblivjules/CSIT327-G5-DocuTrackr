@@ -707,8 +707,30 @@ updateDateReadyState();
   if (!selectAllCheckbox) {
     console.warn("Select All checkbox not found (id='selectAll').");
   }
+
   if (rowCheckboxes.length === 0) {
     console.warn("No row checkboxes found (class='row-checkbox').");
+  }
+
+  // ---------------------------------------------------------------
+  // Notification Dropdown (from main)
+  // ---------------------------------------------------------------
+  window.getSelectedRequestIds = getSelectedRequestIds;
+
+  const notifBtn = document.getElementById("notifBtn");
+  const notifDropdown = document.getElementById("notifDropdown");
+
+  if (notifBtn && notifDropdown) {
+    notifBtn.addEventListener("click", () => {
+      notifDropdown.style.display =
+        notifDropdown.style.display === "block" ? "none" : "block";
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
+        notifDropdown.style.display = "none";
+      }
+    });
   }
 
 }); // DOMContentLoaded end

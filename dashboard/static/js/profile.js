@@ -122,34 +122,62 @@ passwordForm.addEventListener("submit", async (e) => {
 
     if (!valid) return;
 
-    // ========== SEND REQUEST ==========
+    // ================================
+    // PASSWORD REQUIREMENT VALIDATION
+    // ================================
+    const reqLength = document.getElementById('req-length');
+    const reqUpper = document.getElementById('req-uppercase');
+    const reqNumber = document.getElementById('req-number');
+    const reqSpecial = document.getElementById('req-special');
+    const newPasswordInput = document.getElementById('newPassword');
+
+    function setReq(el, ok) {
+      if (!el) return;
+      el.classList.toggle('valid', ok);
+      el.classList.toggle('invalid', !ok);
+    }
+
+    if (newPasswordInput) {
+      const updateReqs = () => {
+        const val = newPasswordInput.value || '';
+        setReq(reqLength, val.length >= 8);
+        setReq(reqUpper, /[A-Z]/.test(val));
+        setReq(reqNumber, /[0-9]/.test(val));
+        setReq(reqSpecial, /[^A-Za-z0-9]/.test(val));
+      };
+
+      newPasswordInput.addEventListener('input', updateReqs);
+      updateReqs();
+    }
+
+    // ================================
+    // SEND CHANGE PASSWORD REQUEST
+    // ================================
     const res = await fetch("/change-password/", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "X-CSRFToken": getCSRFToken(),
-        },
-        body: new URLSearchParams({
-            old_password: oldP,
-            new_password: newP,
-            confirm_password: confP
-        })
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "X-CSRFToken": getCSRFToken(),
+      },
+      body: new URLSearchParams({
+        old_password: oldP,
+        new_password: newP,
+        confirm_password: confP
+      })
     });
 
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok || !data.success) {
-        showError("err-oldPassword", data.error || "Incorrect password.");
-        return;
+      showError("err-oldPassword", data.error || "Incorrect password.");
+      return;
     }
 
     // SUCCESS
-passwordForm.reset();
-passwordForm.style.display = "none";
-passwordValue.style.display = "block";
-saveCancel.style.display = "none";
-changeBtn.style.display = "inline-block";
+    passwordForm.reset();
+    passwordForm.style.display = "none";
+    passwordValue.style.display = "block";
+    saveCancel.style.display = "none";
+    changeBtn.style.display = "inline-block";
 
-showSuccessToast("Password changed successfully!");
-
-});
+    showSuccessToast("Password changed successfully!");

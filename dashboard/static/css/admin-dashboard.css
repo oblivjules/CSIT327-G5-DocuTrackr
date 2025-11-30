@@ -1429,6 +1429,7 @@ select.input-control option[disabled] {
   padding: 4px 10px;
 }
 
+/* === Request Details Modal Styles (from PR) === */
 .dt-modal {
   position: fixed;
   top: 0;
@@ -1512,35 +1513,12 @@ select.input-control option[disabled] {
   margin-right: 16px;
 }
 
-.dt-status-badge.pending {
-  background-color: #fef3c7;
-  color: #92400e;
-}
-
-.dt-status-badge.approved {
-  background-color: #d1fae5;
-  color: #065f46;
-}
-
-.dt-status-badge.processing {
-  background-color: #fcd34d;
-  color: #78350f;
-}
-
-.dt-status-badge.ready {
-  background-color: #e0e7ff;
-  color: #3730a3;
-}
-
-.dt-status-badge.completed {
-  background-color: #e0e7ff;
-  color: #3730a3;
-}
-
-.dt-status-badge.rejected {
-  background-color: #fee2e2;
-  color: #991b1b;
-}
+.dt-status-badge.pending { background-color: #fef3c7; color: #92400e; }
+.dt-status-badge.approved { background-color: #d1fae5; color: #065f46; }
+.dt-status-badge.processing { background-color: #fcd34d; color: #78350f; }
+.dt-status-badge.ready { background-color: #e0e7ff; color: #3730a3; }
+.dt-status-badge.completed { background-color: #e0e7ff; color: #3730a3; }
+.dt-status-badge.rejected { background-color: #fee2e2; color: #991b1b; }
 
 .dt-subtitle {
   color: #6b7280;
@@ -1548,9 +1526,7 @@ select.input-control option[disabled] {
   font-weight: 500;
 }
 
-.dt-modal-body {
-  padding: 32px;
-}
+.dt-modal-body { padding: 32px; }
 
 .dt-grid {
   display: grid;
@@ -1618,28 +1594,68 @@ select.input-control option[disabled] {
 }
 
 @media (max-width: 768px) {
-  .dt-modal {
-    padding: 16px;
-  }
-  
-  .dt-modal-header {
-    padding: 24px 64px 20px 24px;
-  }
-  
-  .dt-modal-body {
-    padding: 24px;
-  }
-  
-  .dt-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-  
-  .dt-close {
-    top: 16px;
-    right: 16px;
-    font-size: 28px;
-  }
+  .dt-modal { padding: 16px; }
+  .dt-modal-header { padding: 24px 64px 20px 24px; }
+  .dt-modal-body { padding: 24px; }
+  .dt-grid { grid-template-columns: 1fr; gap: 16px; margin-bottom: 24px; }
+  .dt-close { top: 16px; right: 16px; font-size: 28px; }
+}
+
+/* === Notification Dropdown Styles (from main) === */
+
+.notification-wrapper {
+  position: relative;
+}
+
+.notification-dropdown {
+  width: 260px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  padding: 15px;
+  position: absolute;
+  right: 0;
+  top: 50px;
+  display: none; 
+  z-index: 200;
+}
+
+.notification-dropdown h4 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.notif-item {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.notif-item:last-child {
+  border-bottom: none;
+}
+
+.notif-item.unread {
+  background: #ffeaea;
+}
+
+.time {
+  display: block;
+  font-size: 12px;
+  margin-top: 3px;
+  color: #888;
+}
+
+.mark-read-btn {
+  margin-top: 10px;
+  width: 100%;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  color: #C62828;
+  font-weight: 600;
+  cursor: pointer;
 }
 
