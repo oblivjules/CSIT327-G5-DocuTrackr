@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const searchInput = document.querySelector('input[name="search"]');
   const selectAllCheckbox = document.getElementById('selectAll');
   const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+  const requestModal = document.getElementById("requestModal"); // detailed request modal
 
   if (requestModal) {
     const requestCloseBtn = requestModal.querySelector(".dt-close");
@@ -42,8 +43,30 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function openRequestModal() {
-      requestModal.style.display = "flex";
-      document.body.style.overflow = "hidden";
+      console.log('requests-list.js: openRequestModal called');
+      console.log('requests-list.js: Modal element exists?', !!requestModal);
+      if (requestModal) {
+        console.log('requests-list.js: Current inline display:', requestModal.style.display);
+        console.log('requests-list.js: Current computed display:', window.getComputedStyle(requestModal).display);
+        console.log('requests-list.js: Modal in DOM?', document.body.contains(requestModal));
+        
+        // Remove the inline display:none style
+        if (requestModal.style.display === 'none' || requestModal.getAttribute('style')?.includes('display:none')) {
+          requestModal.style.display = '';
+        }
+        
+        // Set display to flex
+        requestModal.style.display = "flex";
+        document.body.style.overflow = "hidden";
+        
+        // Force a reflow
+        void requestModal.offsetHeight;
+        
+        console.log('requests-list.js: After setting - inline display:', requestModal.style.display);
+        console.log('requests-list.js: After setting - computed display:', window.getComputedStyle(requestModal).display);
+        console.log('requests-list.js: Modal offsetParent:', requestModal.offsetParent);
+        console.log('requests-list.js: Modal getBoundingClientRect:', requestModal.getBoundingClientRect());
+      }
     }
 
     function closeRequestModal() {
@@ -53,68 +76,84 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const detailsButtons = document.querySelectorAll('.view-details-btn');
-    detailsButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        // read values from data attributes on the button
-        const requestId = button.dataset.requestId || '';
-        const status = button.dataset.status || '';
-        const docName = button.dataset.document || '';
-        const copies = button.dataset.copies || '—';
-        const dateNeeded = button.dataset.dateNeeded || '—';
-        const created = button.dataset.created || '—';
-        const updated = button.dataset.updated || '—';
-        let proofUrl = button.dataset.proofUrl || '';
+    console.log('requests-list.js: Found', detailsButtons.length, 'view-details buttons');
+    
+    if (detailsButtons.length > 0 && requestModal) {
+      detailsButtons.forEach(button => {
+        // Mark button as handled by requests-list.js to prevent admin-dashboard.js from also handling it
+        button.setAttribute('data-handled-by-requests-list', 'true');
+        
+        button.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('requests-list.js: View details button clicked');
+          
+          // read values from data attributes on the button
+          const requestId = button.dataset.requestId || '';
+          const status = button.dataset.status || '';
+          const docName = button.dataset.document || '';
+          const copies = button.dataset.copies || '—';
+          const dateNeeded = button.dataset.dateNeeded || '—';
+          const created = button.dataset.created || '—';
+          const updated = button.dataset.updated || '—';
+          let proofUrl = button.dataset.proofUrl || '';
 
-        if (mRequestId) mRequestId.textContent = `REQ-${requestId}`;
-        if (mStatus) {
-          mStatus.textContent = status;
-          mStatus.className = 'dt-status-badge ' + status.toLowerCase();
-        }
-        if (mDocument) mDocument.textContent = docName;
-        if (mCopies) mCopies.textContent = copies;
-        if (mDateNeeded) mDateNeeded.textContent = dateNeeded;
-        if (mCreated) mCreated.textContent = created;
-        if (mUpdated) mUpdated.textContent = updated;
+          console.log('requests-list.js: Opening modal for REQ-', requestId);
 
-        // normalize proof URL (handles encoded slashes and django media prefix)
-        let imgUrl = proofUrl ? proofUrl.replace(/\\u002D/g, "-").trim() : '';
-        if (imgUrl) {
-          try { imgUrl = decodeURIComponent(imgUrl); } catch (e) { /* ignore decode errors */ }
-        }
+          if (mRequestId) mRequestId.textContent = `REQ-${requestId}`;
+          if (mStatus) {
+            mStatus.textContent = status;
+            mStatus.className = 'dt-status-badge ' + status.toLowerCase();
+          }
+          if (mDocument) mDocument.textContent = docName;
+          if (mCopies) mCopies.textContent = copies;
+          if (mDateNeeded) mDateNeeded.textContent = dateNeeded;
+          if (mCreated) mCreated.textContent = created;
+          if (mUpdated) mUpdated.textContent = updated;
 
-        // show proof section (we keep it visible even if no proof so placeholder shows)
-        if (mProofSection) mProofSection.style.display = 'block';
-
-        if (imgUrl) {
-          // fix common path problems
-          if (imgUrl.startsWith('/media/http')) {
-            imgUrl = imgUrl.replace(/^\/media\//, '');
-          } else if (!imgUrl.startsWith('http') && !imgUrl.startsWith('/')) {
-            imgUrl = '/media/' + imgUrl;
+          // normalize proof URL (handles encoded slashes and django media prefix)
+          let imgUrl = proofUrl ? proofUrl.replace(/\\u002D/g, "-").trim() : '';
+          if (imgUrl) {
+            try { imgUrl = decodeURIComponent(imgUrl); } catch (e) { /* ignore decode errors */ }
           }
 
-          // hide image until loaded
-          if (mProofImage) mProofImage.style.display = 'none';
-          if (mProofImage) {
-            mProofImage.onload = function() {
-              hidePlaceholder();
-              mProofImage.style.display = 'block';
-            };
-            mProofImage.onerror = function() {
-              console.error('Failed to load proof image (details modal):', imgUrl);
+          // show proof section (we keep it visible even if no proof so placeholder shows)
+          if (mProofSection) mProofSection.style.display = 'block';
+
+          if (imgUrl) {
+            // fix common path problems
+            if (imgUrl.startsWith('/media/http')) {
+              imgUrl = imgUrl.replace(/^\/media\//, '');
+            } else if (!imgUrl.startsWith('http') && !imgUrl.startsWith('/')) {
+              imgUrl = '/media/' + imgUrl;
+            }
+
+            // hide image until loaded
+            if (mProofImage) mProofImage.style.display = 'none';
+            if (mProofImage) {
+              mProofImage.onload = function() {
+                hidePlaceholder();
+                mProofImage.style.display = 'block';
+              };
+              mProofImage.onerror = function() {
+                console.error('Failed to load proof image (details modal):', imgUrl);
+                showPlaceholder();
+              };
+              mProofImage.src = imgUrl;
+            } else {
               showPlaceholder();
-            };
-            mProofImage.src = imgUrl;
+            }
           } else {
             showPlaceholder();
           }
-        } else {
-          showPlaceholder();
-        }
 
-        openRequestModal();
+          openRequestModal();
+          console.log('requests-list.js: Modal should be open now');
+        });
       });
-    });
+    } else {
+      console.warn('requests-list.js: No view-details buttons or modal found');
+    }
 
     requestCloseBtn?.addEventListener('click', closeRequestModal);
 

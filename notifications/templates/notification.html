@@ -1,23 +1,83 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Popup Notification Example</title>
-  <link rel="stylesheet" href="notification.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications - DocuTrackr</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/notification.css' %}">
 </head>
+
 <body>
 
-  <div class="container">
-    <h2>Notification Example</h2>
-    <button onclick="showNotification('success', 'Request Approved Successfully!')">Show Success</button>
-    <button onclick="showNotification('error', 'Request Rejected!')">Show Error</button>
-    <button onclick="showNotification('warning', 'Incomplete Form Submitted!')">Show Warning</button>
-  </div>
+  <main class="notif-container">
+    
+    <div class="notif-header">
+      <div>
+        <h1>All Notifications</h1>
+        <p class="notif-subtext">
+          {% if unread_count == 0 %}
+          {% else %}
+            You have {{ unread_count }} unread notification{{ unread_count|pluralize }}
+          {% endif %}
+        </p>
+      </div>
 
-  <!-- Notification Container -->
-  <div id="notification-container"></div>
+      <button id="markAllReadBtn" class="mark-all-btn">
+        ✓ Mark all read
+      </button>
+    </div>
 
-  <script src="notification.js"></script>
+    <div class="notif-card">
+      {% if notifications %}
+        {% for notif in notifications %}
+          <div class="notif-item {% if not notif.is_read %}unread{% endif %}">
+            <p class="notif-message">{{ notif.message }}</p>
+            <span class="notif-time">
+              {{ notif.created_at|timesince }} ago
+            </span>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="notif-empty">No notifications available.</p>
+      {% endif %}
+    </div>
+
+    {% if page_obj %}
+      <div class="notif-pagination">
+        <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+        <div class="pagination-buttons">
+          {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="pagination-btn">&lsaquo; Previous</a>
+          {% else %}
+            <span class="pagination-btn disabled">&lsaquo; Previous</span>
+          {% endif %}
+
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="pagination-btn">Next &rsaquo;</a>
+          {% else %}
+            <span class="pagination-btn disabled">Next &rsaquo;</span>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+  </main>
+
+  <script>
+    document.getElementById("markAllReadBtn").addEventListener("click", () => {
+      fetch("/notifications/api/mark-read/")
+        .then(res => res.json())
+        .then(() => {
+          document.querySelectorAll(".notif-item.unread")
+            .forEach(item => item.classList.remove("unread"));
+        });
+    });
+  </script>
+
 </body>
 </html>
