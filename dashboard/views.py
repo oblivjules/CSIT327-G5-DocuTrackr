@@ -16,7 +16,6 @@ from notifications.models import Notification
 @login_required
 @no_cache
 def student_dashboard(request):
-
     user_id = request.session.get('user_id')
     role = request.session.get('role')
 
@@ -29,23 +28,24 @@ def student_dashboard(request):
         request.session.flush()
         return redirect('index')
 
-    user_requests = (
-        Request.objects.filter(user=user)
-        .select_related('document', 'payment')
-        .prefetch_related('status_logs')
-        .order_by('-created_at')
-    )
+    user_requests = Request.objects.filter(user=user).select_related('document', 'payment').prefetch_related('status_logs').order_by('-created_at')
+
+    # --- ADD SEARCH LOGIC ---
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        user_requests = user_requests.filter(
+            Q(request_id__icontains=search_query) |
+            Q(document__name__icontains=search_query) |
+            Q(status__icontains=search_query) |
+            Q(created_at__date__icontains=search_query)
+        )
 
     total_requested = user_requests.count()
     ready_for_pickup = user_requests.filter(status__in=['approved', 'completed']).count()
 
     recent_requests = user_requests[:10]
 
-    recent_activities = (
-        Request_Status_Log.objects.select_related('request', 'request__document')
-        .filter(request__user=user)
-        .order_by('-changed_at')
-    )
+    recent_activities = Request_Status_Log.objects.select_related('request', 'request__document').filter(request__user=user).order_by('-changed_at')
 
     context = {
         'full_name': user.name,
@@ -53,6 +53,8 @@ def student_dashboard(request):
         'ready_for_pickup': ready_for_pickup,
         'recent_requests': recent_requests,
         'recent_activities': recent_activities,
+        'search_query': search_query,
+        'is_searching': bool(search_query),
     }
 
     return render(request, 'student-dashboard.html', context)
