@@ -10,6 +10,34 @@
   <link rel="stylesheet" href="{% static 'css/notification.css' %}">
 </head>
 <body>
+<header class="navbar">
+
+  <div class="navbar-left">
+    <a href="{{ home_url }}">
+      <img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" />
+    </a>
+  </div>
+
+  <div class="navbar-right">
+
+    {% if full_name %}
+      <a href="{{ home_url }}" class="user-name">{{ full_name }}</a>
+    {% endif %}
+
+    <a href="{% url 'profile' %}" class="icon-item profile-icon">
+      <img src="{% static 'images/Profile.png' %}" alt="User Profile" />
+    </a>
+
+    <a href="{% url 'student_logout' %}" class="icon-item logout-icon">
+      <img src="{% static 'images/logout.png' %}" alt="Logout" />
+    </a>
+
+  </div>
+
+</header>
+
+  <a href="javascript:history.back()" class="back-btn no-print">← Back</a>
+  
   <main class="notif-container">
     <div class="notif-header">
       <div>
@@ -51,6 +79,37 @@
       </div>
     </div>
   </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>DocuTrackr</h4>
+        <p>Simplifying document requests for CIT-U students.</p>
+      </div>
+      <div class="footer-section">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="{% url 'student-dashboard' %}">Home</a></li>
+          <li><a href="{% url 'about' %}">About</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">FAQ</a></li>
+          <li><a href="#">Report Issue</a></li>
+          <li><a href="#">Feedback</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 DocuTrackr. All rights reserved. | CIT-U Document Management System</p>
+    </div>
+  </footer>
 
   <script>
     function getCSRFToken() {
