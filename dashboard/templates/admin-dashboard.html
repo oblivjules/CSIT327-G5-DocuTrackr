@@ -30,36 +30,6 @@
       {% endif %}
 
       <div class="navbar-icons">
-        <!-- 🔔 Notification Dropdown Wrapper -->
-        <div class="notification-wrapper">
-            <div class="icon-item notification-icon" id="notifBtn">
-              <img src="{% static 'images/bell.png' %}" alt="Notification Bell">
-            </div>
-            <!-- 🔽 DROPDOWN -->
-            <div class="notification-dropdown" id="notifDropdown">
-              <h4>Notifications</h4>
-
-              <div class="notif-list">
-                <div class="notif-item">
-                  <p><strong>REQ-2025-007</strong> was successfully approved</p>
-                  <span class="time">1 hour ago</span>
-                </div>
-
-                <div class="notif-item unread">
-                  <p>New document request submitted by Student A</p>
-                  <span class="time">3 hours ago</span>
-                </div>
-
-                <div class="notif-item">
-                  <p>Payment confirmation for REQ-2025-006 received</p>
-                  <span class="time">1 day ago</span>
-                </div>
-              </div>
-
-              <button class="mark-read-btn">Mark all as read</button>
-            </div>
-        </div>
-        
         <a href="{% url 'admin-profile' %}" class="icon-item profile-icon">
           <img src="{% static 'images/Profile.png' %}" alt="User Profile" />
         </a>
@@ -148,7 +118,6 @@
       <div class="table-container">
         <table class="requests-table">
           <colgroup>
-            <col style="width:42px;" />
             <col style="width:100px;" />
             <col style="width:160px;" />
             <col style="width:160px;" />
@@ -159,7 +128,6 @@
           </colgroup>
           <thead>
             <tr>
-              <th><input type="checkbox" id="selectAll" /></th>
               <th>REQ ID</th>
               <th>Student Info</th>
               <th>Document</th>
@@ -172,7 +140,6 @@
           <tbody>
             {% for req in recent_requests %}
             <tr class="request-row" data-request-id="{{ req.request_id }}">
-              <td><input type="checkbox" class="row-checkbox" /></td>
               <td><strong>REQ-{{ req.request_id }}</strong></td>
               <td>{{ req.user.name }}<br><small>{{ req.user.student_id }}</small></td>
               <td>{{ req.document.name }}</td>
@@ -216,7 +183,7 @@
               </td>
             </tr>
             {% empty %}
-            <tr><td colspan="8" style="text-align:center;">No requests found.</td></tr>
+            <tr><td colspan="7" style="text-align:center;">No requests found.</td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -358,7 +325,7 @@
     </div>
   </div>
   <!-- Request Details Modal -->
-  <div id="requestModal" class="dt-modal">
+  <div id="requestModal" class="dt-modal" style="display:none;">
     <div class="dt-modal-content">
       <button class="dt-close" aria-label="Close">&times;</button>
       <div class="dt-modal-header">

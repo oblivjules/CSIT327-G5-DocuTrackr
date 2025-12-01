@@ -39,22 +39,7 @@
             <div class="notification-dropdown" id="notifDropdown">
               <h4>Notifications</h4>
 
-              <div class="notif-list">
-                <div class="notif-item">
-                  <p><strong>REQ-2025-007</strong> was successfully approved</p>
-                  <span class="time">1 hour ago</span>
-                </div>
-
-                <div class="notif-item unread">
-                  <p>New document request submitted by Student A</p>
-                  <span class="time">3 hours ago</span>
-                </div>
-
-                <div class="notif-item">
-                  <p>Payment confirmation for REQ-2025-006 received</p>
-                  <span class="time">1 day ago</span>
-                </div>
-              </div>
+              <div class="notif-list"></div>
 
               <button class="mark-read-btn">Mark all as read</button>
             </div>
@@ -217,5 +202,114 @@
   <div id="successToast" class="success-toast">Password changed successfully!</div>
 
   <script src="{% static 'js/profile.js' %}"></script>
+  <script>
+  const notifBtn = document.getElementById("notifBtn");
+  const notifDropdown = document.getElementById("notifDropdown");
+
+  function getCSRFToken() {
+    const cookies = document.cookie ? document.cookie.split(';') : [];
+    for (let cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'csrftoken') return value;
+    }
+    return '';
+  }
+
+  if (notifBtn && notifDropdown) {
+    notifBtn.addEventListener("click", () => {
+      const isOpen = notifDropdown.style.display === "block";
+      notifDropdown.style.display = isOpen ? "none" : "block";
+
+      if (!isOpen) {
+        fetch("/notifications/api/fetch/", { credentials: "include" })
+          .then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const ct = res.headers.get("content-type");
+            if (!ct || !ct.includes("application/json")) throw new Error("Not JSON");
+            return res.json();
+          })
+          .then(data => {
+            let notifList = notifDropdown.querySelector(".notif-list");
+            if (!notifList) {
+              notifList = document.createElement('div');
+              notifList.className = 'notif-list';
+              const markBtn = notifDropdown.querySelector('.mark-read-btn');
+              if (markBtn) notifDropdown.insertBefore(notifList, markBtn);
+              else notifDropdown.appendChild(notifList);
+            }
+            notifList.innerHTML = "";
+
+            if (!data || !Array.isArray(data.notifications) || data.notifications.length === 0) {
+              notifList.innerHTML = `<div class=\"notif-item\">No notifications yet</div>`;
+              let showAllBtn = notifDropdown.querySelector(".show-all-btn");
+              if (showAllBtn) showAllBtn.remove();
+              return;
+            }
+
+            data.notifications.forEach(n => {
+              const readClass = n.is_read ? "" : "unread";
+              const msg = n.message || '';
+              const time = n.time || '';
+              notifList.innerHTML += `
+                <div class=\"notif-item ${readClass}\">
+                  <p>${msg}</p>
+                  <span class=\"time\">${time}</span>
+                </div>
+              `;
+            });
+
+            let showAllBtn = notifDropdown.querySelector(".show-all-btn");
+            if (!showAllBtn) {
+              showAllBtn = document.createElement('a');
+              showAllBtn.className = 'show-all-btn';
+              showAllBtn.href = '/notifications/all/';
+              showAllBtn.textContent = 'Show all';
+              const markBtn = notifDropdown.querySelector('.mark-read-btn');
+              if (markBtn) notifDropdown.insertBefore(showAllBtn, markBtn);
+              else notifDropdown.appendChild(showAllBtn);
+            }
+          })
+          .catch(() => {
+            let notifList = notifDropdown.querySelector(".notif-list");
+            if (!notifList) {
+              notifList = document.createElement('div');
+              notifList.className = 'notif-list';
+              const markBtn = notifDropdown.querySelector('.mark-read-btn');
+              if (markBtn) notifDropdown.insertBefore(notifList, markBtn);
+              else notifDropdown.appendChild(notifList);
+            }
+            notifList.innerHTML = `<div class=\"notif-item\">Error loading notifications. Please refresh.</div>`;
+          });
+      }
+    });
+
+    const markReadBtn = notifDropdown.querySelector(".mark-read-btn");
+    if (markReadBtn) {
+      markReadBtn.addEventListener("click", () => {
+        fetch("/notifications/api/mark-read/", {
+          method: "POST",
+          credentials: "include",
+          headers: { "X-CSRFToken": getCSRFToken(), "Content-Type": "application/json" }
+        })
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const ct = res.headers.get("content-type");
+          if (!ct || !ct.includes("application/json")) throw new Error("Not JSON");
+          return res.json();
+        })
+        .then(() => {
+          document.querySelectorAll(".notif-item.unread").forEach(i => i.classList.remove("unread"));
+        })
+        .catch(() => {});
+      });
+    }
+
+    document.addEventListener("click", (e) => {
+      if (!notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
+        notifDropdown.style.display = "none";
+      }
+    });
+  }
+  </script>
 </body>
 </html>

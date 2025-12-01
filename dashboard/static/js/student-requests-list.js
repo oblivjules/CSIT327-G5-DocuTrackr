@@ -5,13 +5,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const proofImage = document.getElementById('proofImage');
   const closeBtn = document.querySelector('#proofModal .close-btn');
 
-  function openModal(imgUrl) {
+  function openProofModal(imgUrl) {
     if (!imgUrl) return;
     proofImage.src = imgUrl;
     proofModal.style.display = 'block';
   }
 
-  function closeModal() {
+  function closeProofModal() {
     proofModal.style.display = 'none';
     proofImage.src = '';
   }
@@ -19,15 +19,15 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.view-proof-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const imgUrl = btn.getAttribute('data-img-url');
-      openModal(imgUrl);
+      openProofModal(imgUrl);
     });
   });
 
-  closeBtn?.addEventListener('click', closeModal);
+  closeBtn?.addEventListener('click', closeProofModal);
 
   window.addEventListener('click', (event) => {
     if (event.target === proofModal) {
-      closeModal();
+      closeProofModal();
     }
   });
 
@@ -61,7 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
               if (!res.ok) {
                 throw new Error(`HTTP error! status: ${res.status}`);
               }
-              // Check if response is JSON
               const contentType = res.headers.get("content-type");
               if (!contentType || !contentType.includes("application/json")) {
                 throw new Error("Response is not JSON");
@@ -158,19 +157,112 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
-      document.addEventListener("click", (e) => {
-        if (!notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
-          notifDropdown.style.display = "none";
-        }
-      });
+    document.addEventListener("click", (e) => {
+      if (!notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
+        notifDropdown.style.display = "none";
+      }
+    });
     }
 
 
 
     document.addEventListener("click", (e) => {
-    if (!notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
+      if (!notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
         notifDropdown.style.display = "none";
-    }
+      }
     });
+
+  const modal = document.getElementById('requestModal');
+  const closeDetailsBtn = modal?.querySelector('.dt-close');
+  const requestIdElement = document.getElementById('mRequestId');
+  const statusElement = document.getElementById('mStatus');
+  const documentElement = document.getElementById('mDocument');
+  const copiesElement = document.getElementById('mCopies');
+  const dateNeededElement = document.getElementById('mDateNeeded');
+  const createdElement = document.getElementById('mCreated');
+  const updatedElement = document.getElementById('mUpdated');
+  const proofSection = document.getElementById('mProofSection');
+  const mProofImage = document.getElementById('mProofImage');
+
+  function getScrollbarWidth() {
+    return window.innerWidth - document.documentElement.clientWidth;
+  }
+
+  function lockBodyScroll() {
+    const w = getScrollbarWidth();
+    document.body.style.overflow = 'hidden';
+    if (w > 0) document.body.style.paddingRight = w + 'px';
+  }
+
+  function unlockBodyScroll() {
+    document.body.style.overflow = 'auto';
+    document.body.style.paddingRight = '';
+  }
+
+  function openRequestModal() {
+    if (!modal) return;
+    modal.style.display = 'flex';
+    lockBodyScroll();
+  }
+
+  function closeRequestModal() {
+    if (!modal) return;
+    modal.style.display = 'none';
+    unlockBodyScroll();
+    if (mProofImage) mProofImage.removeAttribute('src');
+  }
+
+  document.querySelectorAll('.view-details-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const requestId = button.dataset.requestId || '';
+      const status = button.dataset.status || '';
+      const docName = button.dataset.document || '';
+      const copies = button.dataset.copies || '—';
+      const dateNeeded = button.dataset.dateNeeded || '—';
+      const created = button.dataset.created || '—';
+      const updated = button.dataset.updated || '—';
+      const proofUrl = button.dataset.proofUrl || '';
+
+      if (requestIdElement) requestIdElement.textContent = `REQ-${requestId}`;
+      if (statusElement) {
+        statusElement.textContent = status;
+        statusElement.className = 'dt-status-badge ' + status.toLowerCase();
+      }
+      if (documentElement) documentElement.textContent = docName;
+      if (copiesElement) copiesElement.textContent = copies;
+      if (dateNeededElement) dateNeededElement.textContent = dateNeeded;
+      if (createdElement) createdElement.textContent = created;
+      if (updatedElement) updatedElement.textContent = updated;
+
+      let imgUrl = proofUrl ? proofUrl.replace(/\u002D/g, "-").trim() : '';
+      if (imgUrl) {
+        try { imgUrl = decodeURIComponent(imgUrl); } catch (e) {}
+        if (imgUrl.startsWith('/media/http')) {
+          imgUrl = imgUrl.replace(/^\/media\//, '');
+        } else if (!imgUrl.startsWith('http') && !imgUrl.startsWith('/')) {
+          imgUrl = '/media/' + imgUrl;
+        }
+        mProofImage.style.display = 'none';
+        mProofImage.onload = function() {
+          mProofImage.style.display = 'block';
+        };
+        mProofImage.onerror = function() {
+          mProofImage.removeAttribute('src');
+          mProofImage.style.display = 'none';
+        };
+        mProofImage.src = imgUrl;
+        proofSection.style.display = 'block';
+      } else {
+        mProofImage.removeAttribute('src');
+        mProofImage.style.display = 'none';
+        proofSection.style.display = 'none';
+      }
+
+      openRequestModal();
+    });
+  });
+
+  closeDetailsBtn?.addEventListener('click', closeRequestModal);
+  modal?.addEventListener('click', (e) => { if (e.target === modal) closeRequestModal(); });
 
 });
