@@ -10,31 +10,6 @@
   <link rel="stylesheet" href="{% static 'css/notification.css' %}">
 </head>
 <body>
-<header class="navbar">
-
-  <div class="navbar-left">
-    <a href="{{ home_url }}">
-      <img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" />
-    </a>
-  </div>
-
-  <div class="navbar-right">
-
-    {% if full_name %}
-      <a href="{{ home_url }}" class="user-name">{{ full_name }}</a>
-    {% endif %}
-
-    <a href="{% url 'profile' %}" class="icon-item profile-icon">
-      <img src="{% static 'images/Profile.png' %}" alt="User Profile" />
-    </a>
-
-    <a href="{% url 'student_logout' %}" class="icon-item logout-icon">
-      <img src="{% static 'images/logout.png' %}" alt="Logout" />
-    </a>
-
-  </div>
-
-</header>
 
   <a href="javascript:history.back()" class="back-btn no-print">← Back</a>
   
@@ -80,7 +55,6 @@
     </div>
   </main>
 
-  <!-- Footer -->
   <footer class="footer">
     <div class="footer-content">
       <div class="footer-section">
@@ -139,6 +113,9 @@
             item.classList.remove("unread");
           });
           btn.textContent = "✓ All marked as read";
+          const sub = document.querySelector('.notif-subtext');
+          if (sub) { sub.textContent = 'All caught up! 🎉'; }
+          try { sessionStorage.setItem('docutrackr_notifs_marked_all_read', '1'); } catch (e) {}
           setTimeout(() => { btn.disabled = false; }, 2000);
         })
         .catch(err => {
@@ -198,7 +175,6 @@
       prev.classList.toggle('disabled', prev.disabled);
       next.classList.toggle('disabled', next.disabled);
     }
-    // Hover lift handled via CSS on .notif-item:hover
     prev.addEventListener('click', function() { if (page > 1) { page--; renderPage(); } });
     next.addEventListener('click', function() { const totalPages = Math.ceil(items.length / perPage); if (page < totalPages) { page++; renderPage(); } });
     computePerPage();
