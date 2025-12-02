@@ -59,6 +59,29 @@
               {% if search_query %}
                 <input type="hidden" name="search" value="{{ search_query }}" />
               {% endif %}
+              {% if status_filter %}
+                <input type="hidden" name="status" value="{{ status_filter }}" />
+              {% endif %}
+              {% if sort %}
+                <input type="hidden" name="sort" value="{{ sort }}" />
+              {% endif %}
+              {% if dir %}
+                <input type="hidden" name="dir" value="{{ dir }}" />
+              {% endif %}
+              <div class="filter-select-wrapper">
+                <img src="{% static 'images/dropdown.png' %}" alt="Filter" class="filter-icon" />
+                <select name="doc" class="filter-select" onchange="this.form.submit()">
+                  <option value="">All Documents</option>
+                  {% for name in document_choices %}
+                    <option value="{{ name }}" {% if doc_filter == name %}selected{% endif %}>{{ name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </form>
+            <form method="GET" class="filter-form">
+              {% if search_query %}
+                <input type="hidden" name="search" value="{{ search_query }}" />
+              {% endif %}
               <div class="filter-select-wrapper">
                 <img src="{% static 'images/dropdown.png' %}" alt="Filter" class="filter-icon" />
                 <select name="status" class="filter-select" onchange="this.form.submit()">

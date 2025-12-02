@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect
 from .models import Notification
 from authentication.models import User
 import traceback
+from django.urls import reverse
 
 def api_login_required(view_func):
     """Decorator that returns JSON for API endpoints when not authenticated"""
@@ -95,10 +96,18 @@ def notifications_page(request):
         user=user, is_read=False
     ).count()
 
+    role = request.session.get('role')
+    if role == 'student':
+        home_url = reverse('student-dashboard')
+    else:
+        home_url = reverse('admin-dashboard')
+
     context = {
         "notifications": notif_list,
         "page_obj": None,
         "unread_count": unread_count,
+        "full_name": user.name,
+        "home_url": home_url,
     }
 
     return render(request, "notification.html", context)

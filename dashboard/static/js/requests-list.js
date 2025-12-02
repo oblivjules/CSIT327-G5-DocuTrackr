@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const detailsButtons = document.querySelectorAll('.view-details-btn');
-    console.log("FOUND DETAILS BUTTONS:", detailsButtons.length); // <- add this here
+    console.log("FOUND DETAILS BUTTONS:", detailsButtons.length);
 
     detailsButtons.forEach(button => {
       button.setAttribute('data-handled-by-requests-list', 'true');

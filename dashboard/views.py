@@ -10,6 +10,7 @@ import json
 import hashlib
 
 from requests.models import Request, Request_Status_Log, Claim_Slips
+from documents.models import Document
 from authentication.models import User
 from notifications.models import Notification
 
@@ -128,6 +129,9 @@ def admin_dashboard(request):
 
     search_query = request.GET.get('search', '').strip()
     status_filter = request.GET.get('status', '').strip()
+    doc_filter = request.GET.get('doc', '').strip()
+    sort_key = request.GET.get('sort', '').strip()
+    sort_dir = request.GET.get('dir', 'asc').strip().lower()
 
     pending_count = Request.objects.filter(status='pending').count()
     processing_count = Request.objects.filter(status='processing').count()
@@ -139,6 +143,9 @@ def admin_dashboard(request):
     if status_filter:
         requests_queryset = requests_queryset.filter(status=status_filter)
 
+    if doc_filter:
+        requests_queryset = requests_queryset.filter(document__name=doc_filter)
+
     if search_query:
         requests_queryset = requests_queryset.filter(
             Q(request_id__icontains=search_query) |  
@@ -149,7 +156,13 @@ def admin_dashboard(request):
             Q(created_at__date__icontains=search_query)  
         )
 
-    recent_requests = requests_queryset.order_by('-created_at')[:10]
+    order_fields = ['-created_at']
+    if sort_key == 'document':
+        if sort_dir == 'desc':
+            order_fields = ['-document__name', '-created_at']
+        else:
+            order_fields = ['document__name', '-created_at']
+    recent_requests = requests_queryset.order_by(*order_fields)[:10]
 
     pending_count = Request.objects.filter(status='pending').count()
     processing_count = Request.objects.filter(status='processing').count()
@@ -159,6 +172,7 @@ def admin_dashboard(request):
     filtered_count = len(recent_requests)
 
     status_choices = Request.STATUS_CHOICES
+    document_choices = list(Document.objects.values_list('name', flat=True).distinct().order_by('name'))
 
     recent_activities = Request_Status_Log.objects.select_related(
         'request', 'request__user', 'request__document', 'changed_by'
@@ -178,6 +192,10 @@ def admin_dashboard(request):
         'search_query': search_query,
         'status_filter': status_filter,
         'status_choices': status_choices,
+        'document_choices': document_choices,
+        'doc_filter': doc_filter,
+        'sort': sort_key,
+        'dir': sort_dir,
         'is_searching': bool(search_query),
         'is_filtering': bool(status_filter),
         'recent_activities': recent_activities,
@@ -208,11 +226,17 @@ def student_requests_list(request):
 
     search_query = request.GET.get('search', '').strip()
     status_filter = request.GET.get('status', '').strip()
+    doc_filter = request.GET.get('doc', '').strip()
+    sort_key = request.GET.get('sort', '').strip()
+    sort_dir = request.GET.get('dir', 'asc').strip().lower()
 
     qs = Request.objects.filter(user=user).select_related('document', 'payment')
 
     if status_filter:
         qs = qs.filter(status=status_filter)
+
+    if doc_filter:
+        qs = qs.filter(document__name=doc_filter)
 
     if search_query:
         qs = qs.filter(
@@ -222,7 +246,13 @@ def student_requests_list(request):
             Q(created_at__date__icontains=search_query)
         )
 
-    recent_requests = qs.order_by('-created_at')
+    order_fields = ['-created_at']
+    if sort_key == 'document':
+        if sort_dir == 'desc':
+            order_fields = ['-document__name', '-created_at']
+        else:
+            order_fields = ['document__name', '-created_at']
+    recent_requests = qs.order_by(*order_fields)
     total_requests = Request.objects.filter(user=user).count()
 
     context = {
@@ -232,6 +262,10 @@ def student_requests_list(request):
         'search_query': search_query,
         'status_filter': status_filter,
         'status_choices': Request.STATUS_CHOICES,
+        'document_choices': list(Document.objects.values_list('name', flat=True).distinct().order_by('name')),
+        'doc_filter': doc_filter,
+        'sort': sort_key,
+        'dir': sort_dir,
         'is_searching': bool(search_query),
     }
 
@@ -381,11 +415,17 @@ def requests_list(request):
 
     search_query = request.GET.get('search', '').strip()
     status_filter = request.GET.get('status', '').strip()
+    doc_filter = request.GET.get('doc', '').strip()
+    sort_key = request.GET.get('sort', '').strip()
+    sort_dir = request.GET.get('dir', 'asc').strip().lower()
 
-    qs = Request.objects.select_related('user', 'document').order_by('-created_at')
+    qs = Request.objects.select_related('user', 'document', 'payment')
 
     if status_filter:
         qs = qs.filter(status=status_filter)
+
+    if doc_filter:
+        qs = qs.filter(document__name=doc_filter)
 
     if search_query:
         qs = qs.filter(
@@ -397,7 +437,13 @@ def requests_list(request):
             Q(created_at__date__icontains=search_query)
         )
 
-    all_requests = qs
+    order_fields = ['-created_at']
+    if sort_key == 'document':
+        if sort_dir == 'desc':
+            order_fields = ['-document__name', '-created_at']
+        else:
+            order_fields = ['document__name', '-created_at']
+    all_requests = qs.order_by(*order_fields)
 
     context = {
         'full_name': User.objects.get(id=request.session.get('user_id')).name if request.session.get('user_id') else None,
@@ -405,6 +451,10 @@ def requests_list(request):
         'status_choices': Request.STATUS_CHOICES,
         'search_query': search_query,
         'status_filter': status_filter,
+        'document_choices': list(Document.objects.values_list('name', flat=True).distinct().order_by('name')),
+        'doc_filter': doc_filter,
+        'sort': sort_key,
+        'dir': sort_dir,
     }
 
     return render(request, 'requests-list.html', context)
