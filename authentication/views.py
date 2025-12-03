@@ -8,6 +8,12 @@ from django.contrib.auth.hashers import make_password
 from .decorators import no_cache
 from .decorators import login_required
 from django.http import JsonResponse
+from django.urls import reverse
+from django.contrib import messages
+from authentication.supabase_client import supabase
+import re
+
+
 
 # Student Login
 def index(request):
@@ -160,7 +166,7 @@ def forgotPassword(request):
             request.session['message'] = "No account found with that email address."
             request.session['message_type'] = 'error'
 
-        return redirect('forgotpassword')
+        return redirect('forgot_password')
 
     message = request.session.pop('message', None)
     message_type = request.session.pop('message_type', None)
@@ -239,3 +245,154 @@ def change_password(request):
     user.password_hash = make_password(new_password)
     user.save()
     return JsonResponse({'success': True})
+
+
+def forgot_password(request):
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+
+        if not email or not email.endswith('@cit.edu'):
+            err = 'Only CIT institutional email addresses (@cit.edu) are allowed.'
+            if is_ajax:
+                return JsonResponse({'success': False, 'errors': [err]}, status=400)
+            return render(request, 'forgot-password.html', {'message': err, 'message_type': 'error'})
+
+        try:
+            supabase.auth.sign_in_with_otp({
+                'email': email,
+                'options': {'should_create_user': False}
+            })
+        except Exception as e:
+            # don't leak whether email exists
+            print(f"Forgot password supabase error (silenced): {e}")
+
+        success_msg = f'If an account exists with {email}, an OTP has been sent. Please check your inbox.'
+        redirect_url = reverse('verify_otp', kwargs={'email': email})
+        if is_ajax:
+            return JsonResponse({'success': True, 'message': success_msg, 'redirect_url': redirect_url})
+        return redirect('verify_otp', email=email)
+
+    return render(request, 'forgot-password.html')
+
+
+def verify_otp(request, email):
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    if request.method == 'POST':
+        otp = request.POST.get('otp', '').strip()
+        if not otp or len(otp) != 6:
+            err = 'Please enter a valid 6-digit OTP.'
+            if is_ajax:
+                return JsonResponse({'success': False, 'errors': [err]}, status=400)
+            messages.error(request, err)
+            return render(request, 'verify_otp.html', {'email': email})
+
+        try:
+            response = supabase.auth.verify_otp({
+                'email': email,
+                'token': otp,
+                'type': 'email'
+            })
+            # response.session may be None on failure
+            if getattr(response, 'session', None):
+                # store tokens to session to allow password update
+                request.session['supa_access_token'] = response.session.access_token
+                request.session['supa_refresh_token'] = response.session.refresh_token
+                request.session['reset_email'] = email
+
+                success_msg = 'OTP verified! Please enter your new password.'
+                redirect_url = reverse('reset_password')
+                if is_ajax:
+                    return JsonResponse({'success': True, 'message': success_msg, 'redirect_url': redirect_url})
+                messages.success(request, success_msg)
+                return redirect('reset_password')
+            else:
+                err = 'Invalid or expired OTP. Please try again.'
+                if is_ajax:
+                    return JsonResponse({'success': False, 'errors': [err]}, status=400)
+                messages.error(request, err)
+        except Exception as e:
+            err_text = str(e).lower()
+            user_msg = 'An unexpected error occurred. Please try again.'
+            if 'token has expired' in err_text:
+                user_msg = 'OTP has expired or OTP you entered is incorrect. Please try again.'
+            elif 'invalid' in err_text or 'not found' in err_text:
+                user_msg = 'The OTP you entered is incorrect. Please try again.'
+            else:
+                print(f"VERIFY OTP ERROR: {e}")
+
+            if is_ajax:
+                return JsonResponse({'success': False, 'errors': [user_msg]}, status=400)
+            messages.error(request, user_msg)
+
+    return render(request, 'verify_otp.html', {'email': email})
+
+
+def reset_password(request):
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+    # Cannot access this page unless OTP was verified
+    if 'supa_access_token' not in request.session:
+        messages.error(request, 'Please verify your OTP first.')
+        return redirect('forgot_password')
+
+    if request.method == 'POST':
+        p1 = request.POST.get('password1', '').strip()
+        p2 = request.POST.get('password2', '').strip()
+        errors = []
+
+        # Password validation
+        if p1 != p2:
+            errors.append('Passwords do not match.')
+        if len(p1) < 8:
+            errors.append('Password must be at least 8 characters long.')
+        if not re.search(r'[A-Z]', p1):
+            errors.append('Password needs an uppercase letter.')
+        if not re.search(r'[a-z]', p1):
+            errors.append('Password needs a lowercase letter.')
+        if not re.search(r'[0-9]', p1):
+            errors.append('Password needs a number.')
+        if not re.search(r'[@$!%*?&]', p1):
+            errors.append('Password needs a special character (@$!%*?&).')
+
+        # If password validation failed
+        if errors:
+            if is_ajax:
+                return JsonResponse({'success': False, 'errors': errors}, status=400)
+
+            for e in errors:
+                messages.error(request, e)
+            return render(request, 'reset_password.html')
+
+        try:
+            # IMPORTANT: Apply restored Supabase session before updating password
+            supabase.auth.set_session(
+                request.session['supa_access_token'],
+                request.session['supa_refresh_token']
+            )
+
+            # Update password in Supabase
+            supabase.auth.update_user({'password': p1})
+
+            # Cleanup stored OTP/session tokens
+            request.session.pop('reset_email', None)
+            request.session.pop('supa_access_token', None)
+            request.session.pop('supa_refresh_token', None)
+
+            success_msg = 'Your password has been successfully reset. Please sign in.'
+            redirect_url = reverse('index')
+
+            if is_ajax:
+                messages.success(request, success_msg)
+                return JsonResponse({'success': True, 'message': success_msg, 'redirect_url': redirect_url})
+
+            messages.success(request, success_msg)
+            return redirect('index')
+
+        except Exception as e:
+            err_msg = f'Error: {str(e)}'
+            if is_ajax:
+                return JsonResponse({'success': False, 'errors': [err_msg]}, status=400)
+            messages.error(request, err_msg)
+
+    return render(request, 'reset_password.html')

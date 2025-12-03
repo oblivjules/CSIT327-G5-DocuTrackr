@@ -13,6 +13,8 @@ class User(models.Model):
     student_id = models.CharField(max_length=50, null=True, blank=True)
     registrar_id = models.CharField(max_length=50, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    reset_otp = models.CharField(max_length=6, null=True, blank=True)
+    reset_otp_created_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.name

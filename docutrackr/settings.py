@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import dj_database_url
 from dotenv import load_dotenv
+from supabase import create_client
 
 
 # -------------------------------------------------------------------
@@ -36,6 +37,9 @@ CSRF_TRUSTED_ORIGINS = [
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")
 SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET", "payments")
+SUPABASE: object = None
+if SUPABASE_URL and SUPABASE_ANON_KEY:
+    SUPABASE = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 # -------------------------------------------------------------------
 # Database Configuration
@@ -48,6 +52,18 @@ DATABASES = {
         ssl_require=True
     )
 }
+
+# -------------------------------------------------------------------
+# Django SMTP
+# -------------------------------------------------------------------
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.office365.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
 
 # -------------------------------------------------------------------
 # Application Definition

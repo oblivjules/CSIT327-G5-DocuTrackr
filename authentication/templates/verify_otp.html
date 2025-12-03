@@ -1,0 +1,103 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Verify OTP - DocuTrackr</title>
+  <link rel="stylesheet" href="{% static 'css/forgot-password.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="forgot-password">
+    <img class="background" src="{% static 'images/background.jpg' %}" alt="Background">
+    <div class="overlay"></div>
+
+    <div class="card">
+      <img src="{% static 'images/docutracker_logo.png' %}" alt="DocuTrackr Logo" class="logo">
+
+      <h2 class="title">Verify OTP</h2>
+      <p class="subtitle">Enter the 6-digit code sent to {{ email }}</p>
+
+      <div id="form-messages"></div>
+
+      <form method="post" id="otp-form">
+        {% csrf_token %}
+        <div class="input-group">
+          <label>Enter OTP</label>
+          <div class="input-wrapper">
+            <input type="text"
+                   name="otp"
+                   id="otp"
+                   class="otp-input"
+                   placeholder="123456"
+                   pattern="\d{6}"
+                   maxlength="6"
+                   required
+                   autofocus>
+          </div>
+          <small style="display:block; text-align:left; margin-top:6px; color:#666;">OTP expires in 5 minutes.</small>
+        </div>
+
+        <button type="submit" class="send-btn" id="verify-button">VERIFY OTP</button>
+      </form>
+
+      <p style="margin-top:12px;">
+        Didn’t receive it? <a href="{% url 'forgot_password' %}">Request new OTP</a>
+      </p>
+    </div>
+  </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('otp-form');
+  const verifyBtn = document.getElementById('verify-button');
+  const messages = document.getElementById('form-messages');
+
+  function showMessage(msgs, isError=false) {
+    messages.innerHTML = '';
+    const div = document.createElement('div');
+    div.className = isError ? 'error' : 'success';
+    if (Array.isArray(msgs)) {
+      msgs.forEach(m => { const p = document.createElement('p'); p.textContent = m; div.appendChild(p); });
+    } else {
+      div.textContent = msgs;
+    }
+    messages.appendChild(div);
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    verifyBtn.disabled = true;
+    verifyBtn.textContent = 'VERIFYING...';
+    messages.innerHTML = '';
+
+    const formData = new FormData(form);
+
+    try {
+      const resp = await fetch(window.location.href, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: formData
+      });
+
+      const data = await resp.json();
+
+      if (!resp.ok) {
+        throw new Error(data.errors ? data.errors.join('\n') : 'Unknown error');
+      }
+
+      showMessage(data.message || 'OTP verified.');
+      setTimeout(() => { window.location.href = data.redirect_url; }, 900);
+
+    } catch (err) {
+      showMessage([err.message], true);
+    } finally {
+      verifyBtn.disabled = false;
+      verifyBtn.textContent = 'VERIFY OTP';
+    }
+  });
+});
+</script>
+</body>
+</html>
