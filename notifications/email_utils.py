@@ -20,6 +20,13 @@ def send_status_email(to_email, request_obj, status_log=None, remarks=None):
         status_log: optional Request_Status_Log for getting the new status
         remarks: optional remarks string to include in the email
     """
+    # Check if email is enabled
+    email_enabled = getattr(settings, 'EMAIL_ENABLED', True)
+    if not email_enabled:
+        logger.info("Email sending is disabled. Skipping email to %s for request %s", 
+                   to_email, getattr(request_obj, 'request_id', 'unknown'))
+        return False
+    
     if not to_email:
         return False
 
@@ -111,17 +118,24 @@ def send_status_email(to_email, request_obj, status_log=None, remarks=None):
             msg.send()
             logger.info("Sent status email to %s for request %s (attempt %d)", to_email, getattr(request_obj, 'request_id', 'unknown'), attempt)
             return True
-        except (socket.error, OSError) as sock_ex:
-            logger.warning("Attempt %d: network error sending email to %s: %s", attempt, to_email, sock_ex)
+        except (socket.error, OSError, ConnectionError) as sock_ex:
+            error_msg = str(sock_ex)
+            logger.warning("Attempt %d: network error sending email to %s: %s", attempt, to_email, error_msg)
             if attempt >= max_attempts:
-                logger.exception("Failed to send status email to %s for request %s after %d attempts", to_email, getattr(request_obj, 'request_id', 'unknown'), attempt)
+                logger.error("Failed to send status email to %s for request %s after %d attempts. "
+                           "This may be due to network restrictions on the deployment platform. "
+                           "Email functionality may need to be configured with a cloud email service.", 
+                           to_email, getattr(request_obj, 'request_id', 'unknown'), attempt)
+                # Don't raise exception - just log and return False
                 return False
             time.sleep(backoff)
             backoff *= 2
             continue
         except Exception as ex:
             # Other exceptions (authentication, SMTP errors). Don't retry forever.
-            logger.exception("Error sending status email to %s for request %s: %s", to_email, getattr(request_obj, 'request_id', 'unknown'), ex)
+            logger.exception("Error sending status email to %s for request %s: %s", 
+                           to_email, getattr(request_obj, 'request_id', 'unknown'), ex)
+            # Don't raise exception - just log and return False
             return False
 
     return False

@@ -41,16 +41,24 @@ SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET", "payments")
 # -------------------------------------------------------------------
 # Email Settings
 # -------------------------------------------------------------------
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "aquinojulianne.r@gmail.com"  # sender
-EMAIL_HOST_PASSWORD = "pwpojhpnzvjntozi"
-DEFAULT_FROM_EMAIL = 'DocuTrackr Notifications <aquinojulianne.r@gmail.com>'
+# Allow disabling email sending entirely (useful when SMTP is not available)
+EMAIL_ENABLED = os.environ.get('EMAIL_ENABLED', 'True').lower() == 'true'
+
+if EMAIL_ENABLED:
+    EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+    EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+    EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'aquinojulianne.r@gmail.com')
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'pwpojhpnzvjntozi')
+    DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'DocuTrackr Notifications <aquinojulianne.r@gmail.com>')
+else:
+    # Use console backend when email is disabled (logs to console instead)
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    DEFAULT_FROM_EMAIL = 'DocuTrackr Notifications <noreply@docutrackr.local>'
 
 # Email socket timeout (seconds) - used by Django's SMTP backend when sending
-EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '5'))
+EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '10'))
 # Optional: number of attempts send_status_email should try before giving up
 EMAIL_MAX_ATTEMPTS = int(os.environ.get('EMAIL_MAX_ATTEMPTS', '3'))
 
