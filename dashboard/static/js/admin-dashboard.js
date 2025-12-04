@@ -255,6 +255,7 @@ updateDateReadyState();
     const mDateNeeded = document.getElementById("mDateNeeded");
     const mCreated = document.getElementById("mCreated");
     const mUpdated = document.getElementById("mUpdated");
+    const mRemarks = document.getElementById("mRemarks");
     const mProofSection = document.getElementById("mProofSection");
     const mProofImage = document.getElementById("mProofImage");
 
@@ -309,6 +310,7 @@ updateDateReadyState();
         const created = button.dataset.created || '—';
         const updated = button.dataset.updated || '—';
         let proofUrl = button.dataset.proofUrl || '';
+        const remarks = button.dataset.remarks || '—';
 
         if (mRequestId) mRequestId.textContent = `REQ-${requestId}`;
         if (mStatus) {
@@ -320,6 +322,7 @@ updateDateReadyState();
         if (mDateNeeded) mDateNeeded.textContent = dateNeeded;
         if (mCreated) mCreated.textContent = created;
         if (mUpdated) mUpdated.textContent = updated;
+        if (mRemarks) mRemarks.textContent = remarks;
 
         let imgUrl = proofUrl ? proofUrl.replace(/\\u002D/g, "-").trim() : '';
         if (imgUrl) {

@@ -1,5 +1,3 @@
-console.log(">>> REQUESTS LIST JS LOADED <<<");
-
 document.addEventListener('DOMContentLoaded', function() {
   const searchForm = document.querySelector('.search-form');
   const searchInput = document.querySelector('input[name="search"]');
@@ -16,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const mUpdated = document.getElementById("mUpdated");
     const mProofSection = document.getElementById("mProofSection");
     const mProofImage = document.getElementById("mProofImage");
+    const mRemarks = document.getElementById("mRemarks");
 
     function showPlaceholder() {
       if (!mProofSection) return;
@@ -85,6 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const created = button.dataset.created || '—';
         const updated = button.dataset.updated || '—';
         let proofUrl = button.dataset.proofUrl || '';
+        const remarks = button.dataset.remarks || '—';
 
         if (mRequestId) mRequestId.textContent = `REQ-${requestId}`;
         if (mStatus) {
@@ -96,6 +96,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (mDateNeeded) mDateNeeded.textContent = dateNeeded;
         if (mCreated) mCreated.textContent = created;
         if (mUpdated) mUpdated.textContent = updated;
+        if (mRemarks) mRemarks.textContent = remarks;
 
         let imgUrl = proofUrl ? proofUrl.replace(/\u002D/g, "-").trim() : '';
         if (imgUrl) {
@@ -124,10 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
           showPlaceholder();
         }
-
-        console.log("OPEN MODAL TRIGGERED");
         openRequestModal();
-         console.log("Opening REQUEST modal");
       });
     });
 

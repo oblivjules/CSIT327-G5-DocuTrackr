@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const dateNeededElement = document.getElementById('mDateNeeded');
     const createdElement = document.getElementById('mCreated');
     const updatedElement = document.getElementById('mUpdated');
+    const remarksElement = document.getElementById('mRemarks');
     const proofSection = document.getElementById('mProofSection');
     const proofImage = document.getElementById('mProofImage');
 
@@ -75,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const created = button.dataset.created || '—';
             const updated = button.dataset.updated || '—';
             const proofUrl = button.dataset.proofUrl;
+            const remarks = button.dataset.remarks || '—';
 
             if (requestIdElement) requestIdElement.textContent = `REQ-${requestId}`;
             if (statusElement) {
@@ -86,6 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (dateNeededElement) dateNeededElement.textContent = dateNeeded;
             if (createdElement) createdElement.textContent = created;
             if (updatedElement) updatedElement.textContent = updated;
+            if (remarksElement) remarksElement.textContent = remarks;
 
             let imgUrl = proofUrl ? proofUrl.replace(/\\u002D/g, "-").trim() : "";
 

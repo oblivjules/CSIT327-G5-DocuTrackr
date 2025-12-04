@@ -1,61 +1,129 @@
-{% load static i18n %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Notifications - DocuTrackr</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/png" href="{% static 'images/docutrackr-logo.png' %}">
-  <link rel="stylesheet" href="{% static 'css/notification.css' %}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocuTrackr - Notifications</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <link rel="icon" type="image/png" href="{% static 'images/docutrackr-logo.png' %}">
+    <link rel="stylesheet" href="{% static 'css/notification.css' %}">
 </head>
 <body>
 
-  <a href="javascript:history.back()" class="back-btn no-print">← Back</a>
-  
-  <main class="notif-container">
-    <div class="notif-header">
-      <div>
-        <h1>Notifications</h1>
-        <p class="notif-subtext">
-          {% if unread_count == 0 %}
-            All caught up! 🎉
-          {% else %}
-            {% blocktrans count counter=unread_count %}
-              You have {{ counter }} unread notification
-            {% plural %}
-              You have {{ counter }} unread notifications
-            {% endblocktrans %}
-          {% endif %}
-        </p>
-      </div>
-    </div>
-
-    <div class="notif-content">
-      <div class="notif-card">
-        {% if notifications %}
-          {% for notif in notifications %}
-            <div class="notif-item {% if not notif.is_read %}unread{% endif %}">
-              <p class="notif-message">{{ notif.message }}</p>
-              <span class="notif-time">{{ notif.created_at|timesince }} ago</span>
+    <header class="navbar">
+        <div class="navbar-left">
+            <a href="{{ home_url }}"><img src="{% static 'images/logo.png' %}" alt="DocuTrackr Logo" class="logo" /></a>
+            <nav>
+                <ul>
+                    <li><a href="{{ home_url }}">Home</a></li>
+                    <li><a href="{% url 'about' %}">About</a></li>
+                    <li><a href="{% url 'create_request' %}">Create Request</a></li>
+                    <li><a href="{% url 'student-requests' %}">Requests</a></li>
+                </ul>
+            </nav>
+        </div>
+        <div class="navbar-right">
+            {% if full_name %}
+                <a href="{{ home_url }}" class="user-name">{{ full_name }}</a>
+            {% else %}
+                <span class="user-name"></span>
+            {% endif %}
+            <div class="navbar-icons">
+                <!-- 🔔 Notification Dropdown Wrapper -->
+                <div class="notification-wrapper">
+                    <div class="icon-item notification-icon" id="notifBtn">
+                        <img src="{% static 'images/bell.png' %}" alt="Notification Bell">
+                        <span class="notification-badge" id="notifBadge">...</span>
+                    </div>
+                    <!-- 🔽 DROPDOWN -->
+                    <div class="notification-dropdown" id="notifDropdown">
+                        <h4>Notifications</h4>
+                        <div class="notif-list"></div>
+                        <button class="mark-read-btn">Mark all as read</button>
+                    </div>
+                </div>
+                <a href="{% url 'profile' %}" class="icon-item profile-icon">
+                    <img src="{% static 'images/Profile.png' %}" alt="User Profile" />
+                </a>
+                
+                <a href="{% url 'student_logout' %}" class="icon-item logout-icon">
+                    <img src="{% static 'images/logout.png' %}" alt="Logout" />
+                </a>
             </div>
-          {% endfor %}
-        {% else %}
-          <p class="notif-empty">No notifications available.</p>
-        {% endif %}
-      </div>
-      <div class="notif-actions">
-        <button id="markAllReadBtn" class="mark-all-btn">✓ Mark all as read</button>
-      </div>
-      <div class="notif-controls">
-        <button id="prevPage" class="pagination-btn">&lsaquo; Previous</button>
-        <span id="pageInfo"></span>
-        <button id="nextPage" class="pagination-btn">Next &rsaquo;</button>
-      </div>
-    </div>
-  </main>
+        </div>
+    </header>
 
-  <footer class="footer">
+    <div class="container">
+        <div class="page-header">
+            <h1>Notifications</h1>
+            <p>Stay updated on all your document tracking activities</p>
+        </div>
+
+        <div class="filter-section">
+            <button class="filter-btn active" onclick="filterNotifications('all')">All</button>
+            <button class="filter-btn" onclick="filterNotifications('unread')">Unread</button>
+            <button class="filter-btn" onclick="filterNotifications('approved')">Approved</button>
+            <button class="filter-btn" onclick="filterNotifications('processing')">Processing</button>
+            <button class="filter-btn" onclick="filterNotifications('completed')">Completed</button>
+            <button class="filter-btn" onclick="filterNotifications('rejected')">Rejected</button>
+        </div>
+
+        <div class="notifications-grid" id="notificationsGrid">
+            {% if notifications %}
+                {% for n in notifications %}
+                    {% if not n.is_read %}
+                        <div class="notification-card unread" data-type="unread" data-status="{{ n.request.status }}">
+                            <div class="notification-header">
+                                <h3 class="notification-title">{{ n.message }}</h3>
+                                <span class="notification-status status-{{ n.request.status }}">{{ n.request.status|title }}</span>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-meta">
+                                    <span>📌 Request ID: {{ n.request.request_id }}</span>
+                                </div>
+                            </div>
+                            <div class="notification-footer">
+                                <div class="notification-actions">
+                                    <button class="btn-action mark-one-btn" data-notif-id="{{ n.notification_id }}">Mark as Read</button>
+                                    <a class="btn-action btn-primary" href="{% url 'student-requests' %}?request_id={{ n.request.request_id }}">View</a>
+                                </div>
+                                <span class="notification-timestamp">{{ n.created_at|date:"M j, g:i A" }}</span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="notification-card {{ n.request.status }}" data-type="{{ n.request.status }}">
+                            <div class="notification-header">
+                                <h3 class="notification-title">{{ n.message }}</h3>
+                                <span class="notification-status status-{{ n.request.status }}">{{ n.request.status|title }}</span>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-meta">
+                                    <span>📌 Request ID: {{ n.request.request_id }}</span>
+                                </div>
+                            </div>
+                            <div class="notification-footer">
+                                <div class="notification-actions">
+                                    <a class="btn-action btn-primary" href="{% url 'student-requests' %}?request_id={{ n.request.request_id }}">View</a>
+                                </div>
+                                <span class="notification-timestamp">{{ n.created_at|date:"M j, g:i A" }}</span>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <h3>No notifications yet</h3>
+                    <p>We’ll notify you here when something changes.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <footer class="footer">
     <div class="footer-content">
       <div class="footer-section">
         <h4>DocuTrackr</h4>
@@ -85,101 +153,6 @@
     </div>
   </footer>
 
-  <script>
-    function getCSRFToken() {
-      const name = 'csrftoken=';
-      const cookies = document.cookie.split(';');
-      for (let c of cookies) {
-        c = c.trim();
-        if (c.startsWith(name)) return c.substring(name.length);
-      }
-      return '';
-    }
-
-    document.getElementById("markAllReadBtn").addEventListener("click", function() {
-      const btn = this;
-      btn.disabled = true;
-      
-      fetch("/notifications/api/mark-read/", {
-        method: "POST",
-        headers: { "X-CSRFToken": getCSRFToken() }
-      })
-        .then(res => {
-          if (!res.ok) throw new Error('Failed to mark as read');
-          return res.json();
-        })
-        .then(() => {
-          document.querySelectorAll(".notif-item.unread").forEach(item => {
-            item.classList.remove("unread");
-          });
-          btn.textContent = "✓ All marked as read";
-          const sub = document.querySelector('.notif-subtext');
-          if (sub) { sub.textContent = 'All caught up! 🎉'; }
-          try { sessionStorage.setItem('docutrackr_notifs_marked_all_read', '1'); } catch (e) {}
-          setTimeout(() => { btn.disabled = false; }, 2000);
-        })
-        .catch(err => {
-          console.error("Error marking notifications as read:", err);
-          btn.disabled = false;
-        });
-    });
-
-    document.querySelectorAll('.notif-item').forEach(item => {
-      const messageEl = item.querySelector('.notif-message');
-      const messageText = (messageEl?.textContent || '').toLowerCase();
-      item.removeAttribute('title');
-      
-      let statusClass = '';
-      if (messageText.includes('approved')) {
-        statusClass = 'approved';
-      } else if (messageText.includes('processing') || messageText.includes('in progress')) {
-        statusClass = 'processing';
-      } else if (messageText.includes('completed') || messageText.includes('complete')) {
-        statusClass = 'completed';
-      } else if (messageText.includes('rejected') || messageText.includes('denied')) {
-        statusClass = 'rejected';
-      } else if (messageText.includes('pending') || messageText.includes('waiting')) {
-        statusClass = 'pending';
-      }
-      
-      if (statusClass) {
-        item.classList.add(statusClass);
-      }
-    });
-
-    const card = document.querySelector('.notif-card');
-    const controls = document.querySelector('.notif-controls');
-    const items = Array.from(card.querySelectorAll('.notif-item'));
-    const prev = document.getElementById('prevPage');
-    const next = document.getElementById('nextPage');
-    const pageInfo = document.getElementById('pageInfo');
-    let perPage = 1;
-    let page = 1;
-
-    function computePerPage() {
-      const cardH = card.clientHeight;
-      const itemH = items[0]?.offsetHeight || 84;
-      const gap = 16;
-      perPage = Math.max(1, Math.floor((cardH + gap) / (itemH + gap)));
-    }
-    function renderPage() {
-      const total = items.length;
-      const totalPages = Math.max(1, Math.ceil(total / perPage));
-      if (page > totalPages) page = totalPages;
-      const start = (page - 1) * perPage;
-      const end = Math.min(start + perPage, total);
-      items.forEach((el, i) => { el.style.display = (i >= start && i < end) ? 'flex' : 'none'; });
-      pageInfo.textContent = `Page ${page} of ${totalPages}`;
-      prev.disabled = page <= 1;
-      next.disabled = end >= total;
-      prev.classList.toggle('disabled', prev.disabled);
-      next.classList.toggle('disabled', next.disabled);
-    }
-    prev.addEventListener('click', function() { if (page > 1) { page--; renderPage(); } });
-    next.addEventListener('click', function() { const totalPages = Math.ceil(items.length / perPage); if (page < totalPages) { page++; renderPage(); } });
-    computePerPage();
-    renderPage();
-    window.addEventListener('resize', function() { const old = perPage; computePerPage(); if (perPage !== old) { page = 1; renderPage(); } });
-  </script>
+    <script src="{% static 'js/notification.js' %}"></script>
 </body>
 </html>

@@ -179,6 +179,7 @@
                   data-updated="{{ req.updated_at|localtime|date:'M d, Y h:i A' }}"
                   data-payment-status="{% if req.payment %}{{ req.payment.get_payment_status_display }}{% endif %}"
                   data-proof-url="{{ req.payment.proof_of_payment|safe|default:'' }}"
+                  data-remarks="{{ req.remarks_text|default:'—'|escapejs }}"
                 >View Details</button>
               </td>
               <td class="status-cell">
@@ -187,10 +188,6 @@
               <td>
                 {% if req.status != 'completed' and req.status != 'rejected' %}
                   <button class="action-btn process-btn" data-request-id="{{ req.request_id }}">Update</button>
-                {% elif req.status == 'completed' %}
-                  <span class="done">Completed</span>
-                  {% else %}
-                  <span class="rejected">Rejected</span>
                 {% endif %}
               </td>
               <td>
@@ -408,6 +405,13 @@
           <div class="dt-proof-frame">
             <img id="mProofImage" alt="Proof of Payment" />
           </div>
+        </div>
+        <div class="dt-card" id="mRemarksCard">
+          <div class="dt-card-label">
+            <img class="dt-icon" src="{% static 'images/check.png' %}" alt="Remarks" />
+            <span>Remarks</span>
+          </div>
+          <div class="dt-card-value" id="mRemarks">—</div>
         </div>
       </div>
     </div>

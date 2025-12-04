@@ -5,6 +5,7 @@ from .models import Notification
 from authentication.models import User
 import traceback
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 
 def api_login_required(view_func):
     """Decorator that returns JSON for API endpoints when not authenticated"""
@@ -38,7 +39,8 @@ def fetch_notifications(request):
                     "message": n.message,
                     "time": n.created_at.strftime("%b %d, %I:%M %p"),
                     "is_read": n.is_read,
-                    "request_id": n.request.request_id if n.request else None
+                    "request_id": n.request.request_id if n.request else None,
+                    "status": n.request.status if n.request else None
                 })
             except AttributeError as e:
                 # Handle case where request might be None or deleted
@@ -47,10 +49,12 @@ def fetch_notifications(request):
                     "message": n.message,
                     "time": n.created_at.strftime("%b %d, %I:%M %p"),
                     "is_read": n.is_read,
-                    "request_id": None
+                    "request_id": None,
+                    "status": None
                 })
 
-        return JsonResponse({"notifications": data})
+        unread_count = Notification.objects.filter(user=user, is_read=False).count()
+        return JsonResponse({"notifications": data, "unread_count": unread_count})
     except Exception as e:
         print(f"❌ Error in fetch_notifications: {e}")
         print(traceback.format_exc())
@@ -73,6 +77,31 @@ def mark_all_notifications_read(request):
         print(f"❌ Error in mark_all_notifications_read: {e}")
         print(traceback.format_exc())
         return JsonResponse({"success": False, "error": "Failed to mark notifications as read"}, status=500)
+
+@api_login_required
+@require_POST
+def mark_notification_read(request, notification_id):
+    try:
+        user_id = request.session.get('user_id')
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return JsonResponse({"success": False, "error": "User not found"}, status=404)
+
+        notif = Notification.objects.filter(notification_id=notification_id, user=user).first()
+        if not notif:
+            return JsonResponse({"success": False, "error": "Notification not found"}, status=404)
+
+        if not notif.is_read:
+            notif.is_read = True
+            notif.save(update_fields=['is_read'])
+
+        unread_count = Notification.objects.filter(user=user, is_read=False).count()
+        return JsonResponse({"success": True, "unread_count": unread_count})
+    except Exception as e:
+        print(f"❌ Error in mark_notification_read: {e}")
+        print(traceback.format_exc())
+        return JsonResponse({"success": False, "error": "Failed to mark notification as read"}, status=500)
 
 def notifications_page(request):
     if 'user_id' not in request.session:

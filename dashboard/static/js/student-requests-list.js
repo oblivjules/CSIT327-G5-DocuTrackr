@@ -48,8 +48,9 @@ document.addEventListener('DOMContentLoaded', () => {
       return '';
     }
 
-    if (notifBtn && notifDropdown) {
-      notifBtn.addEventListener("click", () => {
+    if (false) {
+      notifBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
         const isOpen = notifDropdown.style.display === "block";
         notifDropdown.style.display = isOpen ? "none" : "block";
 
@@ -157,6 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
+    // Single outside-click handler to close dropdown
     document.addEventListener("click", (e) => {
       if (!notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
         notifDropdown.style.display = "none";
@@ -166,11 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    document.addEventListener("click", (e) => {
-      if (!notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
-        notifDropdown.style.display = "none";
-      }
-    });
+    // Removed duplicate outside-click handler to prevent instant close
 
   const modal = document.getElementById('requestModal');
   const closeDetailsBtn = modal?.querySelector('.dt-close');
@@ -181,6 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const dateNeededElement = document.getElementById('mDateNeeded');
   const createdElement = document.getElementById('mCreated');
   const updatedElement = document.getElementById('mUpdated');
+  const remarksElement = document.getElementById('mRemarks');
   const proofSection = document.getElementById('mProofSection');
   const mProofImage = document.getElementById('mProofImage');
 
@@ -222,6 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const created = button.dataset.created || '—';
       const updated = button.dataset.updated || '—';
       const proofUrl = button.dataset.proofUrl || '';
+      const remarks = button.dataset.remarks || '—';
 
       if (requestIdElement) requestIdElement.textContent = `REQ-${requestId}`;
       if (statusElement) {
@@ -233,6 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (dateNeededElement) dateNeededElement.textContent = dateNeeded;
       if (createdElement) createdElement.textContent = created;
       if (updatedElement) updatedElement.textContent = updated;
+      if (remarksElement) remarksElement.textContent = remarks;
 
       let imgUrl = proofUrl ? proofUrl.replace(/\u002D/g, "-").trim() : '';
       if (imgUrl) {
@@ -261,6 +262,18 @@ document.addEventListener('DOMContentLoaded', () => {
       openRequestModal();
     });
   });
+
+  // Auto-open details if navigated with ?request_id=...
+  const qp = new URLSearchParams(window.location.search);
+  const focusId = qp.get('request_id');
+  if (focusId) {
+    const row = document.querySelector(`.request-row[data-request-id="${focusId}"]`);
+    const btn = row ? row.querySelector('.view-details-btn') : null;
+    if (btn) {
+      btn.click();
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
 
   closeDetailsBtn?.addEventListener('click', closeRequestModal);
   modal?.addEventListener('click', (e) => { if (e.target === modal) closeRequestModal(); });
@@ -315,7 +328,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (notifBtn && notifDropdown) {
-        notifBtn.addEventListener("click", () => {
+        notifBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
             const isOpen = notifDropdown.style.display === "block";
             notifDropdown.style.display = isOpen ? "none" : "block";
 
