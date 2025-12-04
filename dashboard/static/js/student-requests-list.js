@@ -266,3 +266,171 @@ document.addEventListener('DOMContentLoaded', () => {
   modal?.addEventListener('click', (e) => { if (e.target === modal) closeRequestModal(); });
 
 });
+
+    const notifBtn = document.getElementById("notifBtn");
+    const notifDropdown = document.getElementById("notifDropdown");
+    const notifBadge = document.getElementById("notifBadge");
+
+    // Fetch unread count on page load
+    function updateNotificationBadge() {
+        fetch("/notifications/api/fetch/", { credentials: "include" })
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                const contentType = res.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    throw new Error("Response is not JSON");
+                }
+                return res.json();
+            })
+            .then(data => {
+                const unreadCount = data.notifications ? data.notifications.filter(n => !n.is_read).length : 0;
+                if (notifBadge) {
+                    if (unreadCount > 0) {
+                        notifBadge.textContent = unreadCount > 99 ? "99+" : unreadCount;
+                        notifBadge.classList.remove("hide");
+                    } else {
+                        notifBadge.classList.add("hide");
+                    }
+                }
+            })
+            .catch(err => {
+                console.error('Failed to fetch notification count:', err);
+                if (notifBadge) notifBadge.classList.add("hide");
+            });
+    }
+
+    // Update badge on page load
+    updateNotificationBadge();
+
+    // Refresh badge every 30 seconds
+    setInterval(updateNotificationBadge, 30000);
+
+    function getCSRFToken() {
+        const cookies = document.cookie ? document.cookie.split(';') : [];
+        for (let cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'csrftoken') return value;
+        }
+        return '';
+    }
+
+    if (notifBtn && notifDropdown) {
+        notifBtn.addEventListener("click", () => {
+            const isOpen = notifDropdown.style.display === "block";
+            notifDropdown.style.display = isOpen ? "none" : "block";
+
+            if (!isOpen) {
+                fetch("/notifications/api/fetch/", { credentials: "include" })
+                    .then(res => {
+                        if (!res.ok) {
+                            throw new Error(`HTTP error! status: ${res.status}`);
+                        }
+                        // Check if response is JSON
+                        const contentType = res.headers.get("content-type");
+                        if (!contentType || !contentType.includes("application/json")) {
+                            throw new Error("Response is not JSON");
+                        }
+                        return res.json();
+                    })
+                    .then(data => {
+                        let notifList = notifDropdown.querySelector(".notif-list");
+
+                        if (!notifList) {
+                            notifList = document.createElement('div');
+                            notifList.className = 'notif-list';
+
+                            const markBtn = notifDropdown.querySelector('.mark-read-btn');
+                            if (markBtn) notifDropdown.insertBefore(notifList, markBtn);
+                            else notifDropdown.appendChild(notifList);
+                        }
+
+                        notifList.innerHTML = "";
+
+                        if (!data || !Array.isArray(data.notifications) || data.notifications.length === 0) {
+                            notifList.innerHTML = `<div class="notif-item">No notifications yet</div>`;
+                            // Remove show all button if it exists
+                            const showAllBtn = notifDropdown.querySelector(".show-all-btn");
+                            if (showAllBtn) showAllBtn.remove();
+                            return;
+                        }
+
+                        data.notifications.forEach(n => {
+                            const readClass = n.is_read ? "" : "unread";
+                            notifList.innerHTML += `
+                                <div class="notif-item ${readClass}">
+                                    <p>${n.message}</p>
+                                    <span class="time">${n.time}</span>
+                                </div>
+                            `;
+                        });
+
+                        // Add "Show all" button if notifications exist
+                        let showAllBtn = notifDropdown.querySelector(".show-all-btn");
+                        if (!showAllBtn) {
+                            showAllBtn = document.createElement('a');
+                            showAllBtn.className = 'show-all-btn';
+                            showAllBtn.href = '/notifications/all/';
+                            showAllBtn.textContent = 'Show all';
+                            const markBtn = notifDropdown.querySelector('.mark-read-btn');
+                            if (markBtn) {
+                                notifDropdown.insertBefore(showAllBtn, markBtn);
+                            } else {
+                                notifDropdown.appendChild(showAllBtn);
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Failed to fetch notifications:', err);
+                        let notifList = notifDropdown.querySelector(".notif-list");
+                        if (!notifList) {
+                            notifList = document.createElement('div');
+                            notifList.className = 'notif-list';
+                            const markBtn = notifDropdown.querySelector('.mark-read-btn');
+                            if (markBtn) notifDropdown.insertBefore(notifList, markBtn);
+                            else notifDropdown.appendChild(notifList);
+                        }
+                        notifList.innerHTML = `<div class="notif-item">Error loading notifications. Please refresh.</div>`;
+                    });
+            }
+        });
+
+        const markReadBtn = notifDropdown.querySelector(".mark-read-btn");
+        if (markReadBtn) {
+            markReadBtn.addEventListener("click", () => {
+                fetch("/notifications/api/mark-read/", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "X-CSRFToken": getCSRFToken(),
+                        "Content-Type": "application/json"
+                    }
+                })
+                    .then(res => {
+                        if (!res.ok) {
+                            throw new Error(`HTTP error! status: ${res.status}`);
+                        }
+                        const contentType = res.headers.get("content-type");
+                        if (!contentType || !contentType.includes("application/json")) {
+                            throw new Error("Response is not JSON");
+                        }
+                        return res.json();
+                    })
+                    .then(() => {
+                        document.querySelectorAll(".notif-item.unread")
+                            .forEach(i => i.classList.remove("unread"));
+                        // Update badge after marking as read
+                        updateNotificationBadge();
+                    })
+                    .catch(err => {
+                        console.error('Failed to mark notifications read:', err);
+                    });
+            });
+        }
+
+        document.addEventListener("click", (e) => {
+            if (!notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
+                notifDropdown.style.display = "none";
+            }
+        });
+    }
+

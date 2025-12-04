@@ -154,6 +154,41 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const notifBtn = document.getElementById("notifBtn");
     const notifDropdown = document.getElementById("notifDropdown");
+    const notifBadge = document.getElementById("notifBadge");
+
+    // Fetch unread count on page load
+    function updateNotificationBadge() {
+        fetch("/notifications/api/fetch/", { credentials: "include" })
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                const contentType = res.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    throw new Error("Response is not JSON");
+                }
+                return res.json();
+            })
+            .then(data => {
+                const unreadCount = data.notifications ? data.notifications.filter(n => !n.is_read).length : 0;
+                if (notifBadge) {
+                    if (unreadCount > 0) {
+                        notifBadge.textContent = unreadCount > 99 ? "99+" : unreadCount;
+                        notifBadge.classList.remove("hide");
+                    } else {
+                        notifBadge.classList.add("hide");
+                    }
+                }
+            })
+            .catch(err => {
+                console.error('Failed to fetch notification count:', err);
+                if (notifBadge) notifBadge.classList.add("hide");
+            });
+    }
+
+    // Update badge on page load
+    updateNotificationBadge();
+
+    // Refresh badge every 30 seconds
+    setInterval(updateNotificationBadge, 30000);
 
     function getCSRFToken() {
         const cookies = document.cookie ? document.cookie.split(';') : [];
@@ -268,6 +303,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     .then(() => {
                         document.querySelectorAll(".notif-item.unread")
                             .forEach(i => i.classList.remove("unread"));
+                        // Update badge after marking as read
+                        updateNotificationBadge();
                     })
                     .catch(err => {
                         console.error('Failed to mark notifications read:', err);

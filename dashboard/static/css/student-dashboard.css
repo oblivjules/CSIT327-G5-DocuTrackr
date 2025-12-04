@@ -147,13 +147,47 @@ main {
   align-items: center;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
   text-decoration: none;
 }
 
 .notification-icon {
   background: linear-gradient(135deg, #3498db, #2980b9);
   box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+.notification-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  font-weight: 700;
+  font-size: 11px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+  min-width: 24px;
+  animation: badge-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.notification-badge.hide {
+  display: none;
+}
+
+@keyframes badge-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.6);
+  }
 }
 
 .profile-icon {
@@ -990,7 +1024,6 @@ main {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-/* Wrapper for dropdown alignment */
 .notification-wrapper {
   position: relative;
 }
@@ -1103,3 +1136,45 @@ main {
     outline: none;
     font-size: 14px;
 }
+
+/* Filter select styling (copied from admin styles for consistency) */
+.filter-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.filter-select-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.filter-select-wrapper .filter-icon {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.filter-select {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  color: #1a1a1a;
+  padding: 8px 12px 8px 32px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.filter-select:hover { background-color: #f8f8f8; border-color: #89393a; }
+.filter-select:focus { outline: none; border-color: #89393a; box-shadow: 0 0 0 2px rgba(137,57,58,0.1); }

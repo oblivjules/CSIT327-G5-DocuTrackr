@@ -36,6 +36,7 @@
         <div class="notification-wrapper">
             <div class="icon-item notification-icon" id="notifBtn">
               <img src="{% static 'images/bell.png' %}" alt="Notification Bell">
+              <span class="notification-badge" id="notifBadge">...</span>
             </div>
 
             <div class="notification-dropdown" id="notifDropdown">
@@ -114,6 +115,23 @@
                 <button type="submit" style="display:none;"></button>
             </div>
         </form>
+
+        <div class="filter-container">
+          <form method="GET" class="filter-form" style="display:inline-block;">
+            {% if request.GET.search %}
+              <input type="hidden" name="search" value="{{ request.GET.search }}" />
+            {% endif %}
+            <div class="filter-select-wrapper">
+              <img src="{% static 'images/dropdown.png' %}" alt="Filter" class="filter-icon" />
+              <select name="doc" class="filter-select" onchange="this.form.submit()">
+                <option value="">All Documents</option>
+                {% for name in document_choices %}
+                  <option value="{{ name }}" {% if doc_filter == name %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </form>
+        </div>
       </div>
       
       <div class="table-container">

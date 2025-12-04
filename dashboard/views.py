@@ -33,6 +33,8 @@ def student_dashboard(request):
 
     # --- ADD SEARCH LOGIC ---
     search_query = request.GET.get('search', '').strip()
+    doc_filter = request.GET.get('doc', '').strip()
+    
     if search_query:
         user_requests = user_requests.filter(
             Q(request_id__icontains=search_query) |
@@ -40,6 +42,9 @@ def student_dashboard(request):
             Q(status__icontains=search_query) |
             Q(created_at__date__icontains=search_query)
         )
+    
+    if doc_filter:
+        user_requests = user_requests.filter(document__name=doc_filter)
 
     total_requested = user_requests.count()
     ready_for_pickup = user_requests.filter(status__in=['approved', 'completed']).count()
@@ -56,6 +61,8 @@ def student_dashboard(request):
         'recent_activities': recent_activities,
         'search_query': search_query,
         'is_searching': bool(search_query),
+        'document_choices': list(Document.objects.values_list('name', flat=True).distinct().order_by('name')),
+        'doc_filter': doc_filter,
     }
 
     return render(request, 'student-dashboard.html', context)
