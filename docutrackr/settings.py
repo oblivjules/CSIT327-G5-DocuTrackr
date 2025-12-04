@@ -58,7 +58,8 @@ else:
     DEFAULT_FROM_EMAIL = 'DocuTrackr Notifications <noreply@docutrackr.local>'
 
 # Email socket timeout (seconds) - used by Django's SMTP backend when sending
-EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '10'))
+# SendGrid recommends 10-30 seconds, Gmail may need longer
+EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '15'))
 # Optional: number of attempts send_status_email should try before giving up
 EMAIL_MAX_ATTEMPTS = int(os.environ.get('EMAIL_MAX_ATTEMPTS', '3'))
 
@@ -172,3 +173,43 @@ USE_TZ = True
 # Default Primary Key Field
 # -------------------------------------------------------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# -------------------------------------------------------------------
+# Logging Configuration
+# -------------------------------------------------------------------
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'notifications': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
+
+# Log email configuration at startup (for debugging)
+import logging
+logger = logging.getLogger(__name__)
+if EMAIL_ENABLED:
+    logger.info("📧 Email Configuration: HOST=%s, PORT=%s, USER=%s, FROM=%s", 
+                EMAIL_HOST, EMAIL_PORT, EMAIL_HOST_USER, DEFAULT_FROM_EMAIL)
+else:
+    logger.info("📧 Email sending is DISABLED")

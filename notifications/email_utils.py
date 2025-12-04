@@ -29,6 +29,13 @@ def send_status_email(to_email, request_obj, status_log=None, remarks=None):
     
     if not to_email:
         return False
+    
+    # Log email configuration (for debugging - don't log passwords)
+    email_host = getattr(settings, 'EMAIL_HOST', 'not set')
+    email_backend = getattr(settings, 'EMAIL_BACKEND', 'not set')
+    email_user = getattr(settings, 'EMAIL_HOST_USER', 'not set')
+    # Log at info level so it shows in production logs
+    logger.info("Email config: HOST=%s, BACKEND=%s, USER=%s", email_host, email_backend, email_user)
 
     # Use the log's new_status if provided, otherwise use request's current status
     status = status_log.new_status if status_log else str(request_obj.status)
@@ -118,14 +125,17 @@ def send_status_email(to_email, request_obj, status_log=None, remarks=None):
             msg.send()
             logger.info("Sent status email to %s for request %s (attempt %d)", to_email, getattr(request_obj, 'request_id', 'unknown'), attempt)
             return True
-        except (socket.error, OSError, ConnectionError) as sock_ex:
+        except (socket.error, OSError, ConnectionError, TimeoutError) as sock_ex:
             error_msg = str(sock_ex)
-            logger.warning("Attempt %d: network error sending email to %s: %s", attempt, to_email, error_msg)
+            email_host = getattr(settings, 'EMAIL_HOST', 'unknown')
+            logger.warning("Attempt %d: network error sending email to %s via %s: %s", 
+                          attempt, to_email, email_host, error_msg)
             if attempt >= max_attempts:
                 logger.error("Failed to send status email to %s for request %s after %d attempts. "
-                           "This may be due to network restrictions on the deployment platform. "
-                           "Email functionality may need to be configured with a cloud email service.", 
-                           to_email, getattr(request_obj, 'request_id', 'unknown'), attempt)
+                           "Email host: %s. "
+                           "If using Gmail SMTP, switch to SendGrid or another cloud email service. "
+                           "Check Render environment variables: EMAIL_HOST, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD", 
+                           to_email, getattr(request_obj, 'request_id', 'unknown'), attempt, email_host)
                 # Don't raise exception - just log and return False
                 return False
             time.sleep(backoff)
