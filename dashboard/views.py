@@ -478,12 +478,21 @@ def update_request_status(request, request_id):
             created_at=timezone.now()
         )
 
-        # ---- EMAIL ----
+        # ---- EMAIL (safe, non-blocking) ----
         from notifications.email_utils import send_status_email
-        doc_request.refresh_from_db()
-        if doc_request.user.email:
-            send_status_email(doc_request.user.email, doc_request, status_log=status_log, remarks=remarks)
 
+        email_address = doc_request.user.email
+
+        def send_email_after_commit():
+            try:
+                send_status_email(email_address, doc_request, status_log=status_log, remarks=remarks)
+            except Exception:
+                logger.exception(f"Request {request_id}: Failed to send email to {email_address}")
+
+        # Schedule email AFTER transaction commits (does NOT block the request)
+        if email_address:
+            transaction.on_commit(send_email_after_commit)
+        
     # FINAL RESPONSE
     return JsonResponse({
         'success': True,
