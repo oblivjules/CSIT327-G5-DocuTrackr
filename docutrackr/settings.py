@@ -49,6 +49,10 @@ EMAIL_HOST_USER = "aquinojulianne.r@gmail.com"  # sender
 EMAIL_HOST_PASSWORD = "pwpojhpnzvjntozi"
 DEFAULT_FROM_EMAIL = 'DocuTrackr Notifications <aquinojulianne.r@gmail.com>'
 
+# Email socket timeout (seconds) - used by Django's SMTP backend when sending
+EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '5'))
+# Optional: number of attempts send_status_email should try before giving up
+EMAIL_MAX_ATTEMPTS = int(os.environ.get('EMAIL_MAX_ATTEMPTS', '3'))
 
 
 # -------------------------------------------------------------------

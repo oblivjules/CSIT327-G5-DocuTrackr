@@ -1,6 +1,8 @@
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 import logging
+import time
+import socket
 
 logger = logging.getLogger(__name__)
 
@@ -8,7 +10,10 @@ logger = logging.getLogger(__name__)
 def send_status_email(to_email, request_obj, status_log=None, remarks=None):
     """Send a status update email. This function is defensive to avoid raising
     exceptions during request handling (signals call this synchronously).
-    
+
+    This version includes a small retry/backoff loop for transient network
+    problems and uses `EMAIL_MAX_ATTEMPTS` and `EMAIL_TIMEOUT` from settings.
+
     Args:
         to_email: recipient email address
         request_obj: Request object
@@ -20,7 +25,7 @@ def send_status_email(to_email, request_obj, status_log=None, remarks=None):
 
     # Use the log's new_status if provided, otherwise use request's current status
     status = status_log.new_status if status_log else str(request_obj.status)
-    
+
     # subject
     subject = f"Request #{request_obj.request_id} Status Update – {status.title()}"
 
@@ -87,17 +92,36 @@ def send_status_email(to_email, request_obj, status_log=None, remarks=None):
     from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None)
     cc_list = getattr(settings, 'REGISTRAR_EMAILS', None) or []
 
-    try:
-        msg = EmailMultiAlternatives(
-            subject,
-            text_content,
-            from_email,
-            [to_email],
-            cc=cc_list if isinstance(cc_list, (list, tuple)) else [cc_list] if cc_list else None,
-        )
-        msg.attach_alternative(html_content, "text/html")
-        msg.send()
-        return True
-    except Exception as ex:
-        logger.exception("Failed to send status email to %s for request %s", to_email, getattr(request_obj, 'request_id', 'unknown'))
-        return False
+    max_attempts = getattr(settings, 'EMAIL_MAX_ATTEMPTS', 3)
+    attempt = 0
+    backoff = 1.0
+
+    while attempt < max_attempts:
+        attempt += 1
+        try:
+            msg = EmailMultiAlternatives(
+                subject,
+                text_content,
+                from_email,
+                [to_email],
+                cc=cc_list if isinstance(cc_list, (list, tuple)) else [cc_list] if cc_list else None,
+            )
+            msg.attach_alternative(html_content, "text/html")
+            # msg.send() will use Django's EMAIL_TIMEOUT if configured in settings
+            msg.send()
+            logger.info("Sent status email to %s for request %s (attempt %d)", to_email, getattr(request_obj, 'request_id', 'unknown'), attempt)
+            return True
+        except (socket.error, OSError) as sock_ex:
+            logger.warning("Attempt %d: network error sending email to %s: %s", attempt, to_email, sock_ex)
+            if attempt >= max_attempts:
+                logger.exception("Failed to send status email to %s for request %s after %d attempts", to_email, getattr(request_obj, 'request_id', 'unknown'), attempt)
+                return False
+            time.sleep(backoff)
+            backoff *= 2
+            continue
+        except Exception as ex:
+            # Other exceptions (authentication, SMTP errors). Don't retry forever.
+            logger.exception("Error sending status email to %s for request %s: %s", to_email, getattr(request_obj, 'request_id', 'unknown'), ex)
+            return False
+
+    return False
