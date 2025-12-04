@@ -5,6 +5,7 @@ Django settings for docutrackr project.
 import os
 from pathlib import Path
 import dj_database_url
+import sys
 from dotenv import load_dotenv
 
 
@@ -38,6 +39,19 @@ SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")
 SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET", "payments")
 
 # -------------------------------------------------------------------
+# Email Settings
+# -------------------------------------------------------------------
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "aquinojulianne.r@gmail.com"  # sender
+EMAIL_HOST_PASSWORD = "pwpojhpnzvjntozi"
+DEFAULT_FROM_EMAIL = 'DocuTrackr Notifications <aquinojulianne.r@gmail.com>'
+
+
+
+# -------------------------------------------------------------------
 # Database Configuration
 # -------------------------------------------------------------------
 DATABASE_URL = os.environ.get("DATABASE_URL")
@@ -48,6 +62,13 @@ DATABASES = {
         ssl_require=True
     )
 }
+
+# Use SQLite for tests to avoid database contention issues
+if "test" in sys.argv:
+    DATABASES["default"] = {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "test_db.sqlite3",
+    }
 
 # -------------------------------------------------------------------
 # Application Definition

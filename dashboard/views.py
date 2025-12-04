@@ -2,17 +2,22 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
 from django.db import transaction
 from django.utils import timezone
+from django.utils.dateparse import parse_date
+from datetime import datetime
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from authentication.decorators import login_required, no_cache
 import json
 import hashlib
+import logging
 
 from requests.models import Request, Request_Status_Log, Claim_Slips, Payment
 from documents.models import Document
 from authentication.models import User
 from notifications.models import Notification
+
+logger = logging.getLogger(__name__)
 
 @login_required
 @no_cache
@@ -331,134 +336,162 @@ def student_requests_list(request):
     return render(request, 'student-requests-list.html', context)
 
 @login_required
-@csrf_exempt  
+@csrf_exempt
 def update_request_status(request, request_id):
-    """Unified handler for updating request status (Registrar only)"""
+    """Handles status updates with simple, consistent, one-time date_ready + claim slip logic."""
+    
     if request.method != "POST":
         return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
-    
+
     if request.session.get('role') != 'registrar':
         return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
-    
-    if request.content_type == 'application/json':
+
+    # Read input (JSON or form)
+    if request.content_type == "application/json":
         try:
             data = json.loads(request.body)
-            new_status = data.get('status')
-            remarks = data.get('remarks', '').strip()
-            date_ready = data.get('date_ready')
         except json.JSONDecodeError:
             return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
-    else:
-        new_status = request.POST.get('status')
-        remarks = request.POST.get('remarks', '').strip()
-        date_ready = request.POST.get('date_ready')
-        
-    
-    if not new_status:
-        return JsonResponse({'success': False, 'error': 'Status is required'}, status=400)
 
+        new_status = data.get("status")
+        remarks = (data.get("remarks") or "").strip()
+        date_ready_raw = data.get("date_ready")
+        
+        # Debug logging - remove in production if needed
+        if date_ready_raw:
+            logger.info(f"Request {request_id}: Received date_ready_raw='{date_ready_raw}' (type: {type(date_ready_raw)})")
+    else:
+        new_status = request.POST.get("status")
+        remarks = (request.POST.get("remarks") or "").strip()
+        date_ready_raw = request.POST.get("date_ready")
+
+    # Validate
     valid_statuses = ['pending', 'processing', 'approved', 'rejected', 'completed']
     if new_status not in valid_statuses:
         return JsonResponse({'success': False, 'error': 'Invalid status value'}, status=400)
 
+    staff_user = get_object_or_404(User, id=request.session.get("user_id"))
+    doc_request = get_object_or_404(Request, pk=request_id)
 
-    try:
-        staff_user = get_object_or_404(User, id=request.session.get("user_id"))
-        doc_request = get_object_or_404(Request, pk=request_id)  # Changed variable name to avoid conflict
+    if doc_request.status == new_status:
+        return JsonResponse({
+            'success': False,
+            'error': f"Request is already {new_status}"
+        }, status=400)
+
+    with transaction.atomic():
+        # Lock row for update
+        doc_request = Request.objects.select_for_update().get(pk=request_id)
         old_status = doc_request.status
-        
+
         if old_status == new_status:
             return JsonResponse({
-                'success': False, 
-                'error': f'Request is already {new_status}'
-            }, status=400)
-        
-        invalid_transitions = {
-            'completed': ['pending', 'processing']
-        }
-        if old_status in invalid_transitions and new_status in invalid_transitions[old_status]:
-            return JsonResponse({
                 'success': False,
-                'error': f'Cannot change from {old_status} to {new_status}'
+                'error': f"Request is already {new_status}"
             }, status=400)
-        
-        with transaction.atomic():
-            doc_request = Request.objects.select_for_update().get(pk=request_id)
-            old_status = doc_request.status
 
-            if old_status == new_status:
-                return JsonResponse({
-                    'success': False,
-                    'error': f'Request is already {new_status}'
-                }, status=400)
+        # ---- STATUS UPDATE ----
+        doc_request.status = new_status
+        doc_request.updated_at = timezone.now()
 
-            doc_request.status = new_status
-            doc_request.updated_at = timezone.now()
-            doc_request.save()
-
-            if remarks:
-                try:
-                    if hasattr(doc_request, 'payment') and doc_request.payment:
-                        doc_request.payment.remarks = remarks
-                        doc_request.payment.save(update_fields=['remarks'])
-                    else:
-                        Payment.objects.create(request_id=doc_request, remarks=remarks)
-                except Exception:
-                    pass
-
-            Request_Status_Log.objects.create(
-                request=doc_request,
-                old_status=old_status,
-                new_status=new_status,
-                changed_by=staff_user,
-                changed_at=timezone.now()
-            )
+        # --------------------------------------------------------
+        #   APPROVED LOGIC: Set date_ready ONCE when first approved
+        #   No edits allowed after that!
+        # --------------------------------------------------------
+        claim_slip_info = None
+        if new_status == "approved":
+            # Only set date_ready if:
+            # 1. Status is changing TO approved (wasn't approved before)
+            # 2. date_ready is not already set
+            is_first_time_approved = (old_status != "approved")
             
-            # CLAIM SLIP HANDLING
-            claim_slip_info = None
-            if new_status == 'approved':
-                existing_claim = Claim_Slips.objects.filter(request=doc_request).first()
-                if existing_claim:
-                    claim_slip_info = existing_claim.claim_number
+            if is_first_time_approved and doc_request.date_ready is None:
+                # ONLY use date_ready from frontend form
+                parsed_date_ready = None
+                
+                # Check if date_ready was provided from frontend
+                if date_ready_raw is not None and str(date_ready_raw).strip():
+                    date_ready_str = str(date_ready_raw).strip()
+                    try:
+                        # Try parse_date first
+                        parsed_date_ready = parse_date(date_ready_str)
+                        if parsed_date_ready is None:
+                            # If parse_date fails, try strptime
+                            parsed_date_ready = datetime.strptime(date_ready_str, "%Y-%m-%d").date()
+                    except (ValueError, TypeError) as e:
+                        logger.error(f"Request {request_id}: Failed to parse date_ready '{date_ready_raw}': {e}")
+                        parsed_date_ready = None
+                
+                # Set date_ready - use parsed value if available, otherwise today
+                if parsed_date_ready:
+                    doc_request.date_ready = parsed_date_ready
                 else:
-                    claim_slip = Claim_Slips.objects.create(
-                        request=doc_request,
-                        claim_number=f"CLAIM-{doc_request.request_id}-{int(timezone.now().timestamp())}",
-                        date_ready=doc_request.date_needed if doc_request.date_needed else timezone.now().date(),
-                        issued_by=staff_user
-                    )
-                    claim_slip_info = claim_slip.claim_number
+                    # If form didn't provide a valid date, use today
+                    doc_request.date_ready = timezone.now().date()
+                    logger.warning(f"Request {request_id}: No valid date_ready from form, using today")
 
-            message = f"Your document request (REQ-{doc_request.request_id}) status has been updated to {new_status.upper()}."
-            if remarks:
-                message += f" Remarks: {remarks}"
-            
-            Notification.objects.create(
-                user=doc_request.user,
-                request=doc_request,
-                message=message,
-                is_read=False,
-                created_at=timezone.now()
-            )
-        
-        return JsonResponse({
-            'success': True,
-            'message': f"Request updated to {new_status}",
-            'new_status': new_status,
-            'claim_slip': claim_slip_info,
-            'date_ready': str(doc_request.date_ready) if doc_request.date_ready else None,
-        })
-        
-    except Exception as e:
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.error(f"Error updating request {request_id}: {str(e)}", exc_info=True)
-        
-        return JsonResponse({
-            'success': False, 
-            'error': f'An error occurred while updating the request'
-        }, status=500)
+            # Save Request (with date_ready if it was just set)
+            if is_first_time_approved and doc_request.date_ready:
+                doc_request.save(update_fields=['status', 'date_ready', 'updated_at'])
+            else:
+                doc_request.save(update_fields=['status', 'updated_at'])
 
+            # Create Claim Slip ONLY if it doesn't exist yet
+            existing_claim = Claim_Slips.objects.filter(request=doc_request).first()
+            if not existing_claim:
+                # Use the date_ready from request (should be set by form)
+                # If somehow None, use today as fallback for claim slip only
+                claim_date = doc_request.date_ready if doc_request.date_ready else timezone.now().date()
+                claim_slip = Claim_Slips.objects.create(
+                    request=doc_request,
+                    claim_number=f"CLAIM-{doc_request.request_id}-{int(timezone.now().timestamp())}",
+                    date_ready=claim_date,
+                    issued_by=staff_user
+                )
+                claim_slip_info = claim_slip.claim_number
+            else:
+                claim_slip_info = existing_claim.claim_number
+
+        else:
+            # Not approved - just save status, don't touch date_ready
+            doc_request.save(update_fields=['status', 'updated_at'])
+
+        # ---- STATUS LOG ----
+        status_log = Request_Status_Log.objects.create(
+            request=doc_request,
+            old_status=old_status,
+            new_status=new_status,
+            changed_by=staff_user,
+            changed_at=timezone.now()
+        )
+
+        # ---- NOTIFICATION ----
+        msg = f"Your document request (REQ-{doc_request.request_id}) is now {new_status.upper()}."
+        if remarks:
+            msg += f" Remarks: {remarks}"
+
+        Notification.objects.create(
+            user=doc_request.user,
+            request=doc_request,
+            message=msg,
+            is_read=False,
+            created_at=timezone.now()
+        )
+
+        # ---- EMAIL ----
+        from notifications.email_utils import send_status_email
+        doc_request.refresh_from_db()
+        if doc_request.user.email:
+            send_status_email(doc_request.user.email, doc_request, status_log=status_log, remarks=remarks)
+
+    # FINAL RESPONSE
+    return JsonResponse({
+        'success': True,
+        'message': f"Status updated to {new_status}",
+        'new_status': new_status,
+        'claim_slip': claim_slip_info,
+        'date_ready': str(doc_request.date_ready) if doc_request.date_ready else None,
+    })
 
 def claim_slip_view(request, slip_id):
     claim_slip = get_object_or_404(Claim_Slips, pk=slip_id)
