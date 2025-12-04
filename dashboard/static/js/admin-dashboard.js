@@ -35,15 +35,22 @@ document.addEventListener('DOMContentLoaded', function() {
   if (!processModal) console.warn("processModal not found — cannot update statuses.");
 
   function updateDateReadyState() {
+    if (!statusDropdown || !dateReady) return;
+    
     const status = statusDropdown.value.toLowerCase();
 
     if (status === "approved") {
         dateReady.disabled = false;
-
-        if (!dateReady.value) {
-            const today = new Date().toISOString().split("T")[0];
+        // Set min date to today
+        const today = new Date().toISOString().split("T")[0];
+        dateReady.min = today;
+        
+        // ONLY set to today if the field is COMPLETELY empty
+        // NEVER overwrite if user has already entered a date
+        if (!dateReady.value || dateReady.value.trim() === "") {
             dateReady.value = today;
         }
+        // If it has a value, LEAVE IT ALONE!
 
     } else {
         dateReady.disabled = true;
@@ -51,8 +58,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 }
 
+// Only update when status dropdown changes - don't auto-update on page load
 statusDropdown.addEventListener("change", updateDateReadyState);
-updateDateReadyState();
+// Don't call updateDateReadyState() on page load - let user set the date manually
 
   function getCSRFToken() {
     let csrfToken = null;
@@ -399,6 +407,11 @@ updateDateReadyState();
       const label = ids.map(id => `REQ-${id}`).join(', ');
       if (requestIdField) requestIdField.textContent = label;
       if (remarksField) remarksField.value = "";
+      
+      // Clear date field when modal opens - user will set it
+      if (dateReady) {
+        dateReady.value = "";
+      }
 
       const row = btn.closest("tr");
       const currentStatus = row?.querySelector(".badge")?.textContent?.trim().toLowerCase() || '';
@@ -492,6 +505,30 @@ updateDateReadyState();
 
       try {
         const firstId = String(validIds[0]);
+        
+        // Get date_ready value - read DIRECTLY from DOM right before sending
+        let dateReadyValue = null;
+        if (newStatus === 'approved') {
+          const dateInput = document.getElementById("dateReady");
+          if (dateInput) {
+            // Make sure field is enabled
+            if (dateInput.disabled) {
+              dateInput.disabled = false;
+            }
+            
+            // Get the value
+            dateReadyValue = dateInput.value ? dateInput.value.trim() : null;
+            
+            // If empty, use today as default
+            if (!dateReadyValue) {
+              dateReadyValue = new Date().toISOString().split("T")[0];
+            }
+          } else {
+            // If input not found, use today
+            dateReadyValue = new Date().toISOString().split("T")[0];
+          }
+        }
+        
         const res = await fetch(`/dashboard/update-status/${firstId}/`, {
           method: "POST",
           headers: {
@@ -501,7 +538,7 @@ updateDateReadyState();
           body: JSON.stringify({
             status: newStatus,
             remarks: remarks,
-            date_ready: dateReady
+            date_ready: dateReadyValue
           }),
         });
 

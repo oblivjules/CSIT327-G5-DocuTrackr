@@ -52,14 +52,27 @@ def create_request(request):
             request.session['error'] = "Invalid document type."
             return redirect('create_request')
 
+        # Parse date_needed if provided
+        parsed_date_needed = None
+        if date_needed and str(date_needed).strip():
+            try:
+                from datetime import datetime
+                parsed_date_needed = datetime.strptime(date_needed, '%Y-%m-%d').date()
+            except (ValueError, TypeError):
+                # If parsing fails, try to let Django handle it
+                parsed_date_needed = date_needed
+        
         # Create the new Request
         new_request = Request.objects.create(
             user=user,
             document=document,
             copies=copies,
-            date_needed=date_needed,
+            date_needed=parsed_date_needed,
             status='pending',
         )
+        
+        # Refresh to ensure all fields are properly loaded before email is sent
+        new_request.refresh_from_db()
 
         # Initialize Supabase client
         supabase_url = getattr(settings, "SUPABASE_URL", None)
