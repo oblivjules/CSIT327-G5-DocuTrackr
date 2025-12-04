@@ -36,18 +36,46 @@ def student_dashboard(request):
 
     user_requests = Request.objects.filter(user=user).select_related('document', 'payment').prefetch_related('status_logs').order_by('-created_at')
 
-    # --- ADD SEARCH LOGIC ---
     search_query = request.GET.get('search', '').strip()
     doc_filter = request.GET.get('doc', '').strip()
-    
+
     if search_query:
+        ql = search_query.lower()
+        month_map = {
+            'january': 1, 'jan': 1,
+            'february': 2, 'feb': 2,
+            'march': 3, 'mar': 3,
+            'april': 4, 'apr': 4,
+            'may': 5,
+            'june': 6, 'jun': 6,
+            'july': 7, 'jul': 7,
+            'august': 8, 'aug': 8,
+            'september': 9, 'sep': 9,
+            'october': 10, 'oct': 10,
+            'november': 11, 'nov': 11,
+            'december': 12, 'dec': 12,
+        }
+        year_val = None
+        if search_query.isdigit() and len(search_query) == 4:
+            try:
+                year_val = int(search_query)
+            except Exception:
+                year_val = None
+        month_val = month_map.get(ql)
+
+        date_filter = Q()
+        if year_val:
+            date_filter |= Q(created_at__year=year_val)
+        if month_val:
+            date_filter |= Q(created_at__month=month_val)
+
         user_requests = user_requests.filter(
             Q(request_id__icontains=search_query) |
             Q(document__name__icontains=search_query) |
             Q(status__icontains=search_query) |
-            Q(created_at__date__icontains=search_query)
+            date_filter
         )
-    
+
     if doc_filter:
         user_requests = user_requests.filter(document__name=doc_filter)
 
@@ -56,7 +84,6 @@ def student_dashboard(request):
 
     recent_requests = list(user_requests[:10])
 
-    # Backfill remarks for each request: prefer Payment.remarks; fallback to latest Notification text
     try:
         from notifications.models import Notification
         for r in recent_requests:
@@ -80,6 +107,7 @@ def student_dashboard(request):
 
     context = {
         'full_name': user.name,
+        'user_id': user.id,
         'total_requested': total_requested,
         'ready_for_pickup': ready_for_pickup,
         'recent_requests': recent_requests,
@@ -88,6 +116,7 @@ def student_dashboard(request):
         'is_searching': bool(search_query),
         'document_choices': list(Document.objects.values_list('name', flat=True).distinct().order_by('name')),
         'doc_filter': doc_filter,
+        'user_id': user.id,
     }
 
     return render(request, 'student-dashboard.html', context)
@@ -179,13 +208,42 @@ def admin_dashboard(request):
         requests_queryset = requests_queryset.filter(document__name=doc_filter)
 
     if search_query:
+        ql = search_query.lower()
+        month_map = {
+            'january': 1, 'jan': 1,
+            'february': 2, 'feb': 2,
+            'march': 3, 'mar': 3,
+            'april': 4, 'apr': 4,
+            'may': 5,
+            'june': 6, 'jun': 6,
+            'july': 7, 'jul': 7,
+            'august': 8, 'aug': 8,
+            'september': 9, 'sep': 9,
+            'october': 10, 'oct': 10,
+            'november': 11, 'nov': 11,
+            'december': 12, 'dec': 12,
+        }
+        year_val = None
+        if search_query.isdigit() and len(search_query) == 4:
+            try:
+                year_val = int(search_query)
+            except Exception:
+                year_val = None
+        month_val = month_map.get(ql)
+
+        date_filter = Q()
+        if year_val:
+            date_filter |= Q(created_at__year=year_val)
+        if month_val:
+            date_filter |= Q(created_at__month=month_val)
+
         requests_queryset = requests_queryset.filter(
-            Q(request_id__icontains=search_query) |  
-            Q(user__name__icontains=search_query) |  
-            Q(user__student_id__icontains=search_query) |  
-            Q(document__name__icontains=search_query) |  
-            Q(status__icontains=search_query) |  
-            Q(created_at__date__icontains=search_query)  
+            Q(request_id__icontains=search_query) |
+            Q(user__name__icontains=search_query) |
+            Q(user__student_id__icontains=search_query) |
+            Q(document__name__icontains=search_query) |
+            Q(status__icontains=search_query) |
+            date_filter
         )
 
     order_fields = ['-created_at']
@@ -232,6 +290,7 @@ def admin_dashboard(request):
 
     context = {
         'full_name': user_name,
+        'user_id': user_id,
         'pending_count': pending_count,
         'processing_count': processing_count,
         'ready_count': ready_count,
@@ -289,11 +348,40 @@ def student_requests_list(request):
         qs = qs.filter(document__name=doc_filter)
 
     if search_query:
+        ql = search_query.lower()
+        month_map = {
+            'january': 1, 'jan': 1,
+            'february': 2, 'feb': 2,
+            'march': 3, 'mar': 3,
+            'april': 4, 'apr': 4,
+            'may': 5,
+            'june': 6, 'jun': 6,
+            'july': 7, 'jul': 7,
+            'august': 8, 'aug': 8,
+            'september': 9, 'sep': 9,
+            'october': 10, 'oct': 10,
+            'november': 11, 'nov': 11,
+            'december': 12, 'dec': 12,
+        }
+        year_val = None
+        if search_query.isdigit() and len(search_query) == 4:
+            try:
+                year_val = int(search_query)
+            except Exception:
+                year_val = None
+        month_val = month_map.get(ql)
+
+        date_filter = Q()
+        if year_val:
+            date_filter |= Q(created_at__year=year_val)
+        if month_val:
+            date_filter |= Q(created_at__month=month_val)
+
         qs = qs.filter(
             Q(request_id__icontains=search_query) |
             Q(document__name__icontains=search_query) |
             Q(status__icontains=search_query) |
-            Q(created_at__date__icontains=search_query)
+            date_filter
         )
 
     order_fields = ['-created_at']
@@ -530,13 +618,42 @@ def requests_list(request):
         qs = qs.filter(document__name=doc_filter)
 
     if search_query:
+        ql = search_query.lower()
+        month_map = {
+            'january': 1, 'jan': 1,
+            'february': 2, 'feb': 2,
+            'march': 3, 'mar': 3,
+            'april': 4, 'apr': 4,
+            'may': 5,
+            'june': 6, 'jun': 6,
+            'july': 7, 'jul': 7,
+            'august': 8, 'aug': 8,
+            'september': 9, 'sep': 9,
+            'october': 10, 'oct': 10,
+            'november': 11, 'nov': 11,
+            'december': 12, 'dec': 12,
+        }
+        year_val = None
+        if search_query.isdigit() and len(search_query) == 4:
+            try:
+                year_val = int(search_query)
+            except Exception:
+                year_val = None
+        month_val = month_map.get(ql)
+
+        date_filter = Q()
+        if year_val:
+            date_filter |= Q(created_at__year=year_val)
+        if month_val:
+            date_filter |= Q(created_at__month=month_val)
+
         qs = qs.filter(
             Q(request_id__icontains=search_query) |
             Q(user__name__icontains=search_query) |
             Q(user__student_id__icontains=search_query) |
             Q(document__name__icontains=search_query) |
             Q(status__icontains=search_query) |
-            Q(created_at__date__icontains=search_query)
+            date_filter
         )
 
     order_fields = ['-created_at']
@@ -578,3 +695,18 @@ def requests_list(request):
     }
 
     return render(request, 'requests-list.html', context)
+
+@login_required
+@no_cache
+def delete_recent_staff_activity(request):
+    if request.session.get('role') != 'registrar':
+        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+    try:
+        qs = Request_Status_Log.objects.filter(changed_by__role='registrar')
+        deleted_count = qs.count()
+        qs.delete()
+        return JsonResponse({'success': True, 'deleted_count': deleted_count})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': 'Failed to delete'}, status=500)
