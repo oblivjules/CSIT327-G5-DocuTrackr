@@ -44,14 +44,25 @@ SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET", "payments")
 # Allow disabling email sending entirely (useful when SMTP is not available)
 EMAIL_ENABLED = os.environ.get('EMAIL_ENABLED', 'True').lower() == 'true'
 
+# Check if SendGrid API key is available (preferred method for cloud platforms)
+SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY') or os.environ.get('EMAIL_HOST_PASSWORD')
+
 if EMAIL_ENABLED:
-    EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
-    EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
-    EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
-    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'aquinojulianne.r@gmail.com')
-    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'pwpojhpnzvjntozi')
-    DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'DocuTrackr Notifications <aquinojulianne.r@gmail.com>')
+    # Prefer SendGrid API backend if API key is available (more reliable than SMTP)
+    if SENDGRID_API_KEY and SENDGRID_API_KEY.startswith('SG.'):
+        EMAIL_BACKEND = 'notifications.email_backends.SendGridAPIBackend'
+        DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'DocuTrackr Notifications <aquinojulianne.r@gmail.com>')
+        # Store API key for the backend
+        EMAIL_HOST_PASSWORD = SENDGRID_API_KEY
+    else:
+        # Fall back to SMTP (for Gmail or other SMTP services)
+        EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+        EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+        EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+        EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+        EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'aquinojulianne.r@gmail.com')
+        EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'pwpojhpnzvjntozi')
+        DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'DocuTrackr Notifications <aquinojulianne.r@gmail.com>')
 else:
     # Use console backend when email is disabled (logs to console instead)
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -209,7 +220,10 @@ LOGGING = {
 import logging
 logger = logging.getLogger(__name__)
 if EMAIL_ENABLED:
-    logger.info("📧 Email Configuration: HOST=%s, PORT=%s, USER=%s, FROM=%s", 
-                EMAIL_HOST, EMAIL_PORT, EMAIL_HOST_USER, DEFAULT_FROM_EMAIL)
+    if SENDGRID_API_KEY and SENDGRID_API_KEY.startswith('SG.'):
+        logger.info("📧 Email Configuration: BACKEND=SendGrid API, FROM=%s", DEFAULT_FROM_EMAIL)
+    else:
+        logger.info("📧 Email Configuration: BACKEND=SMTP, HOST=%s, PORT=%s, USER=%s, FROM=%s", 
+                    EMAIL_HOST, EMAIL_PORT, EMAIL_HOST_USER, DEFAULT_FROM_EMAIL)
 else:
     logger.info("📧 Email sending is DISABLED")

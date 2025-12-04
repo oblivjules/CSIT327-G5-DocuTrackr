@@ -31,11 +31,13 @@ def send_status_email(to_email, request_obj, status_log=None, remarks=None):
         return False
     
     # Log email configuration (for debugging - don't log passwords)
-    email_host = getattr(settings, 'EMAIL_HOST', 'not set')
     email_backend = getattr(settings, 'EMAIL_BACKEND', 'not set')
-    email_user = getattr(settings, 'EMAIL_HOST_USER', 'not set')
-    # Log at info level so it shows in production logs
-    logger.info("Email config: HOST=%s, BACKEND=%s, USER=%s", email_host, email_backend, email_user)
+    if 'SendGridAPI' in str(email_backend):
+        logger.info("Email config: Using SendGrid API backend")
+    else:
+        email_host = getattr(settings, 'EMAIL_HOST', 'not set')
+        email_user = getattr(settings, 'EMAIL_HOST_USER', 'not set')
+        logger.info("Email config: BACKEND=%s, HOST=%s, USER=%s", email_backend, email_host, email_user)
 
     # Use the log's new_status if provided, otherwise use request's current status
     status = status_log.new_status if status_log else str(request_obj.status)
@@ -127,15 +129,25 @@ def send_status_email(to_email, request_obj, status_log=None, remarks=None):
             return True
         except (socket.error, OSError, ConnectionError, TimeoutError) as sock_ex:
             error_msg = str(sock_ex)
-            email_host = getattr(settings, 'EMAIL_HOST', 'unknown')
-            logger.warning("Attempt %d: network error sending email to %s via %s: %s", 
-                          attempt, to_email, email_host, error_msg)
+            email_backend = getattr(settings, 'EMAIL_BACKEND', 'unknown')
+            if 'SendGridAPI' in str(email_backend):
+                logger.warning("Attempt %d: error sending email to %s via SendGrid API: %s", 
+                              attempt, to_email, error_msg)
+            else:
+                email_host = getattr(settings, 'EMAIL_HOST', 'unknown')
+                logger.warning("Attempt %d: network error sending email to %s via %s: %s", 
+                              attempt, to_email, email_host, error_msg)
             if attempt >= max_attempts:
-                logger.error("Failed to send status email to %s for request %s after %d attempts. "
-                           "Email host: %s. "
-                           "If using Gmail SMTP, switch to SendGrid or another cloud email service. "
-                           "Check Render environment variables: EMAIL_HOST, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD", 
-                           to_email, getattr(request_obj, 'request_id', 'unknown'), attempt, email_host)
+                email_backend = getattr(settings, 'EMAIL_BACKEND', 'unknown')
+                if 'SendGridAPI' in str(email_backend):
+                    logger.error("Failed to send status email to %s for request %s after %d attempts via SendGrid API. "
+                               "Check SENDGRID_API_KEY environment variable.", 
+                               to_email, getattr(request_obj, 'request_id', 'unknown'), attempt)
+                else:
+                    email_host = getattr(settings, 'EMAIL_HOST', 'unknown')
+                    logger.error("Failed to send status email to %s for request %s after %d attempts. "
+                               "Email host: %s. Consider using SendGrid API backend instead of SMTP.", 
+                               to_email, getattr(request_obj, 'request_id', 'unknown'), attempt, email_host)
                 # Don't raise exception - just log and return False
                 return False
             time.sleep(backoff)
