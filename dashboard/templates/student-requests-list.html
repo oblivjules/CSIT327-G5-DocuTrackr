@@ -176,7 +176,12 @@
         </table>
       </div>
       <div class="table-footer">
-        <span class="showing-text">Showing {{ recent_requests|length }} requests ({{ total_requests }} total)</span>
+        {% if search_query %}
+          <span class="showing-text">Showing {{ recent_requests|length }} result{{ recent_requests|length|pluralize }} for "{{ search_query }}"</span>
+          <a href="?" class="view-all-btn">Clear search</a>
+        {% else %}
+          <span class="showing-text">Showing {{ recent_requests|length }} requests ({{ total_requests }} total)</span>
+        {% endif %}
       </div>
     </section>
   </main>

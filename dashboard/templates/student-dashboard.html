@@ -198,17 +198,25 @@
         </table>
       </div>
 
-      <div class="table-footer">
-        <span class="showing-text">Showing {{ recent_requests|length }} recent requests ({{ total_requested }} total)</span>
+      <div class="table-footer {% if search_query %}search-mode{% endif %}">
+        {% if search_query %}
+          <span class="showing-text">Showing {{ recent_requests|length }} result{{ recent_requests|length|pluralize }} for "{{ search_query }}"</span>
+          <a href="?" class="clear-search-link">Clear search</a>
+        {% else %}
+          <span class="showing-text">Showing {{ recent_requests|length }} recent requests ({{ total_requested }} total)</span>
+        {% endif %}
         <a href="{% url 'student-requests' %}" class="view-all-btn" style="text-decoration: none;">View All Requests</a>
       </div>
     </section>
 
-    <section class="activity-section">
-      <h2>Recent Activity</h2>
+    <section class="activity-section" data-user-id="{{ user_id }}">
+      <div class="activity-top">
+        <h2>Recent Activity</h2>
+        <button id="studentDeleteActivityBtn" class="danger-btn">Delete All</button>
+      </div>
         <div class="activity-list">
         {% for log in recent_activities %}
-        <div class="activity-item">
+        <div class="activity-item" data-changed-at="{{ log.changed_at|date:'c' }}">
           <div class="activity-dot"></div>
           <div class="activity-content">
             {% if log.old_status == 'none' %}
@@ -245,9 +253,26 @@
             <p class="activity-time">{{ log.changed_at|timesince }} ago</p>
           </div>
         </div>
-        {% empty %}
-        <p>No recent activity.</p>
         {% endfor %}
+      </div>
+      <div id="studentDeleteActivityModal" class="modal-overlay" style="display:none;">
+        <div class="modal-container">
+          <div class="modal-header">
+            <div class="modal-logo">
+              <img class="modal-logo-img" src="{% static 'images/docutrackr-logo.png' %}" alt="DocuTrackr" />
+              <h3>Confirm Deletion</h3>
+            </div>
+            <button class="modal-close" id="studentDeleteActivityClose">&times;</button>
+          </div>
+          <div class="modal-body">
+            <h2>Delete all recent activity?</h2>
+            <p class="modal-message">This will clear the Recent Activity list. This action cannot be undone.</p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-cancel" id="studentCancelDeleteActivity">Cancel</button>
+            <button class="btn-confirm" id="studentConfirmDeleteActivity">Confirm</button>
+          </div>
+        </div>
       </div>
     </section>
     </div>

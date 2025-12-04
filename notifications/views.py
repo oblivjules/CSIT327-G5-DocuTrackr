@@ -6,6 +6,7 @@ from authentication.models import User
 import traceback
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
+from authentication.decorators import login_required, no_cache
 
 def api_login_required(view_func):
     """Decorator that returns JSON for API endpoints when not authenticated"""
@@ -28,8 +29,6 @@ def fetch_notifications(request):
         except User.DoesNotExist:
             return JsonResponse({"error": "User not found", "notifications": []}, status=404)
         
-        # Use select_related to avoid N+1 queries and ensure request is loaded
-        # Limit to 5 for dropdown (full list available on notifications page)
         notifs = Notification.objects.filter(user=user).select_related('request').order_by('-created_at')[:5]
 
         data = []
@@ -43,7 +42,6 @@ def fetch_notifications(request):
                     "status": n.request.status if n.request else None
                 })
             except AttributeError as e:
-                # Handle case where request might be None or deleted
                 print(f"⚠️ Error processing notification {n.notification_id}: {e}")
                 data.append({
                     "message": n.message,
@@ -103,6 +101,8 @@ def mark_notification_read(request, notification_id):
         print(traceback.format_exc())
         return JsonResponse({"success": False, "error": "Failed to mark notification as read"}, status=500)
 
+@login_required
+@no_cache
 def notifications_page(request):
     if 'user_id' not in request.session:
         return redirect('index')
@@ -115,12 +115,10 @@ def notifications_page(request):
         request.session.flush()
         return redirect('index')
     
-    # Get all notifications for the logged-in user
     notif_list = Notification.objects.filter(
         user=user
     ).order_by("-created_at")
 
-    # Count unread notifications
     unread_count = Notification.objects.filter(
         user=user, is_read=False
     ).count()

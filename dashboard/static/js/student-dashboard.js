@@ -346,4 +346,61 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    const studentDeleteActivityBtn = document.getElementById('studentDeleteActivityBtn');
+    const studentDeleteActivityModal = document.getElementById('studentDeleteActivityModal');
+    const studentConfirmDeleteActivity = document.getElementById('studentConfirmDeleteActivity');
+    const studentCancelDeleteActivity = document.getElementById('studentCancelDeleteActivity');
+    const studentDeleteActivityClose = document.getElementById('studentDeleteActivityClose');
+    const studentActivitySection = document.querySelector('.activity-section');
+    const studentActivityList = document.querySelector('.activity-section .activity-list');
+    const studentUid = studentActivitySection?.dataset.userId || 'global';
+    const studentClearedKey = `dt:student:activityClearedAt:${studentUid}`;
+
+    function openStudentDeleteModal() {
+        if (studentDeleteActivityModal) studentDeleteActivityModal.style.display = 'flex';
+        lockBodyScroll();
+    }
+
+    function closeStudentDeleteModal() {
+        if (studentDeleteActivityModal) studentDeleteActivityModal.style.display = 'none';
+        unlockBodyScroll();
+    }
+
+    studentDeleteActivityBtn?.addEventListener('click', openStudentDeleteModal);
+    studentCancelDeleteActivity?.addEventListener('click', closeStudentDeleteModal);
+    studentDeleteActivityClose?.addEventListener('click', closeStudentDeleteModal);
+
+    function applyClearedStateFromStorage() {
+        const clearedAt = localStorage.getItem(studentClearedKey);
+        if (!clearedAt || !studentActivityList) return;
+        const threshold = Date.parse(clearedAt);
+        const items = Array.from(studentActivityList.querySelectorAll('.activity-item'));
+        items.forEach(item => {
+            const t = item.getAttribute('data-changed-at');
+            const ts = t ? Date.parse(t) : 0;
+            if (!Number.isNaN(ts) && ts <= threshold) item.remove();
+            else if (Number.isNaN(ts)) item.remove();
+        });
+    }
+
+    applyClearedStateFromStorage();
+
+    studentConfirmDeleteActivity?.addEventListener('click', function() {
+        try { localStorage.setItem(studentClearedKey, new Date().toISOString()); } catch (e) {}
+        if (studentActivityList) studentActivityList.innerHTML = '';
+        closeStudentDeleteModal();
+    });
+
+    studentDeleteActivityModal?.addEventListener('click', function(e) {
+        if (e.target === studentDeleteActivityModal) {
+            closeStudentDeleteModal();
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && studentDeleteActivityModal && studentDeleteActivityModal.style.display === 'flex') {
+            closeStudentDeleteModal();
+        }
+    });
+
 });
