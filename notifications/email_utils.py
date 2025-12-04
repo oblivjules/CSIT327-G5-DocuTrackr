@@ -87,21 +87,47 @@ def send_status_email(to_email, request_obj, status_log=None, remarks=None):
         f"DocuTrackr"
     )
 
-    # HTML version
+    # HTML version - improved for better deliverability
     html_content = f"""
-    <p>Hello <strong>{user_name}</strong>,</p>
-    <p>Your request <strong>#{request_obj.request_id}</strong> has been updated to:</p>
-    <h2 style="color:#005cbf; margin-top:0;">{status.upper()}</h2>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+            <h1 style="color: #005cbf; margin-top: 0;">DocuTrackr</h1>
+            <h2 style="color: #005cbf; margin-top: 0;">Request Status Update</h2>
+        </div>
+        
+        <p>Hello <strong>{user_name}</strong>,</p>
+        
+        <p>Your document request has been updated. Please see the details below:</p>
+        
+        <div style="background-color: #e7f3ff; padding: 15px; border-left: 4px solid #005cbf; margin: 20px 0;">
+            <p style="margin: 0;"><strong>Request ID:</strong> #{request_obj.request_id}</p>
+            <p style="margin: 5px 0 0 0;"><strong>Status:</strong> <span style="color: #005cbf; font-weight: bold;">{status.upper()}</span></p>
+        </div>
 
-    <p><strong>Request Details:</strong></p>
-    <ul>
-        <li><strong>Document:</strong> {document_name}</li>
-        <li><strong>Date Needed:</strong> {date_needed}</li>
-        <li><strong>Date Ready:</strong> {date_ready}</li>
-        <li><strong>Remarks:</strong> {remarks_text}</li>
-    </ul>
+        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <p style="margin-top: 0;"><strong>Request Details:</strong></p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><strong>Document:</strong> {document_name}</li>
+                <li><strong>Date Needed:</strong> {date_needed}</li>
+                <li><strong>Date Ready:</strong> {date_ready}</li>
+                <li><strong>Remarks:</strong> {remarks_text}</li>
+            </ul>
+        </div>
 
-    <p>Thank you,<br>DocuTrackr</p>
+        <p style="margin-top: 30px;">This is an automated notification from the DocuTrackr system.</p>
+        
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 12px;">
+            <p style="margin: 0;">DocuTrackr - Document Request Management System</p>
+            <p style="margin: 5px 0 0 0;">If you have any questions, please contact your administrator.</p>
+        </div>
+    </body>
+    </html>
     """
 
     # Prepare recipients and cc

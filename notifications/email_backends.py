@@ -5,7 +5,7 @@ This is more reliable on cloud platforms like Render that may have SMTP restrict
 from django.core.mail.backends.base import BaseEmailBackend
 from django.conf import settings
 import logging
-from sendgrid import SendGridAPIClient
+from sendgrid import SendGridAPIClient  # pyright: ignore[reportMissingImports]
 from sendgrid.helpers.mail import Mail, Email, Content, HtmlContent
 
 logger = logging.getLogger(__name__)
@@ -64,14 +64,37 @@ class SendGridAPIBackend(BaseEmailBackend):
                             html_content = content
                             break
                 
+                # Parse from_email to extract email and name
+                # Format: "Name <email@domain.com>" or just "email@domain.com"
+                from_email_addr = from_email
+                from_name = None
+                if '<' in from_email and '>' in from_email:
+                    # Extract name and email from "Name <email@domain.com>"
+                    parts = from_email.split('<')
+                    from_name = parts[0].strip().strip('"').strip("'")
+                    from_email_addr = parts[1].split('>')[0].strip()
+                
                 # Create SendGrid Mail object
                 mail = Mail(
-                    from_email=from_email,
+                    from_email=(from_email_addr, from_name) if from_name else from_email_addr,
                     to_emails=to_emails,
                     subject=subject,
                     plain_text_content=body if not html_content else None,
                     html_content=html_content if html_content else None
                 )
+                
+                # Add reply-to header (use the actual sender email)
+                mail.reply_to = from_email_addr
+                
+                # Add custom headers to improve deliverability and reduce quarantine risk
+                # These headers help mail servers identify legitimate transactional emails
+                mail.custom_args = {
+                    'category': 'transactional',
+                    'source': 'docutrackr'
+                }
+                
+                # Add categories for SendGrid tracking
+                mail.categories = ['docutrackr', 'status-update']
                 
                 # Add CC recipients if any
                 if message.cc:
@@ -87,11 +110,16 @@ class SendGridAPIBackend(BaseEmailBackend):
                 # Check response status
                 if response.status_code in [200, 201, 202]:
                     num_sent += 1
-                    logger.info("Successfully sent email via SendGrid API to %s", to_emails)
+                    logger.info("Successfully sent email via SendGrid API to %s (status: %d, subject: %s)", 
+                               to_emails, response.status_code, subject)
+                    # Log response headers for debugging (may contain message ID)
+                    if hasattr(response, 'headers'):
+                        logger.debug("SendGrid response headers: %s", dict(response.headers))
                 else:
-                    logger.warning("SendGrid API returned status %d: %s", response.status_code, response.body)
+                    error_body = response.body.decode('utf-8') if hasattr(response.body, 'decode') else str(response.body)
+                    logger.warning("SendGrid API returned status %d: %s", response.status_code, error_body)
                     if not self.fail_silently:
-                        raise Exception(f"SendGrid API error: {response.status_code} - {response.body}")
+                        raise Exception(f"SendGrid API error: {response.status_code} - {error_body}")
                 
             except Exception as e:
                 logger.exception("Error sending email via SendGrid API: %s", e)
