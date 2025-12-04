@@ -135,6 +135,7 @@
                   data-updated="{{ req.updated_at|localtime|date:'M d, Y h:i A' }}"
                   data-payment-status="{% if req.payment %}{{ req.payment.get_payment_status_display }}{% endif %}"
                   data-proof-url="{{ req.payment.proof_of_payment|safe|default:'' }}"
+                  data-remarks="{{ req.remarks_text|default:'—'|escapejs }}"
                 >View Details</button>
               </td>
               <td class="status-cell">
@@ -313,6 +314,13 @@
           <div class="dt-proof-frame">
             <img id="mProofImage" alt="Proof of Payment" />
           </div>
+        </div>
+        <div class="dt-card" id="mRemarksCard">
+          <div class="dt-card-label">
+            <img class="dt-icon" src="{% static 'images/check.png' %}" alt="Remarks" />
+            <span>Remarks</span>
+          </div>
+          <div class="dt-card-value" id="mRemarks">—</div>
         </div>
       </div>
     </div>

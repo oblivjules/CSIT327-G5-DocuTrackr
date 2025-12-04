@@ -9,7 +9,7 @@ from authentication.decorators import login_required, no_cache
 import json
 import hashlib
 
-from requests.models import Request, Request_Status_Log, Claim_Slips
+from requests.models import Request, Request_Status_Log, Claim_Slips, Payment
 from documents.models import Document
 from authentication.models import User
 from notifications.models import Notification
@@ -49,9 +49,29 @@ def student_dashboard(request):
     total_requested = user_requests.count()
     ready_for_pickup = user_requests.filter(status__in=['approved', 'completed']).count()
 
-    recent_requests = user_requests[:10]
+    recent_requests = list(user_requests[:10])
 
-    recent_activities = Request_Status_Log.objects.select_related('request', 'request__document').filter(request__user=user).order_by('-changed_at')
+    # Backfill remarks for each request: prefer Payment.remarks; fallback to latest Notification text
+    try:
+        from notifications.models import Notification
+        for r in recent_requests:
+            remarks_text = ''
+            try:
+                if hasattr(r, 'payment') and r.payment and r.payment.remarks:
+                    remarks_text = r.payment.remarks or ''
+                else:
+                    n = Notification.objects.filter(user=user, request=r).order_by('-created_at').first()
+                    if n and 'Remarks:' in (n.message or ''):
+                        idx = n.message.find('Remarks:')
+                        if idx != -1:
+                            remarks_text = (n.message[idx + len('Remarks:'):]).strip()
+            except Exception:
+                pass
+            setattr(r, 'remarks_text', remarks_text)
+    except Exception:
+        pass
+
+    recent_activities = Request_Status_Log.objects.select_related('request', 'request__document', 'changed_by').filter(request__user=user).order_by('-changed_at')
 
     context = {
         'full_name': user.name,
@@ -169,7 +189,25 @@ def admin_dashboard(request):
             order_fields = ['-document__name', '-created_at']
         else:
             order_fields = ['document__name', '-created_at']
-    recent_requests = requests_queryset.order_by(*order_fields)[:10]
+    recent_requests = list(requests_queryset.order_by(*order_fields)[:10])
+    try:
+        from notifications.models import Notification
+        for r in recent_requests:
+            remarks_text = ''
+            try:
+                if hasattr(r, 'payment') and r.payment and r.payment.remarks:
+                    remarks_text = r.payment.remarks or ''
+                else:
+                    n = Notification.objects.filter(request=r).order_by('-created_at').first()
+                    if n and 'Remarks:' in (n.message or ''):
+                        idx = n.message.find('Remarks:')
+                        if idx != -1:
+                            remarks_text = (n.message[idx + len('Remarks:'):]).strip()
+            except Exception:
+                pass
+            setattr(r, 'remarks_text', remarks_text)
+    except Exception:
+        pass
 
     pending_count = Request.objects.filter(status='pending').count()
     processing_count = Request.objects.filter(status='processing').count()
@@ -259,7 +297,21 @@ def student_requests_list(request):
             order_fields = ['-document__name', '-created_at']
         else:
             order_fields = ['document__name', '-created_at']
-    recent_requests = qs.order_by(*order_fields)
+    recent_requests = list(qs.order_by(*order_fields))
+    try:
+        for r in recent_requests:
+            rt = ''
+            if hasattr(r, 'payment') and r.payment and r.payment.remarks:
+                rt = r.payment.remarks or ''
+            else:
+                n = Notification.objects.filter(user=user, request=r).order_by('-created_at').first()
+                if n and 'Remarks:' in (n.message or ''):
+                    idx = n.message.find('Remarks:')
+                    if idx != -1:
+                        rt = (n.message[idx + len('Remarks:'):]).strip()
+            setattr(r, 'remarks_text', rt)
+    except Exception:
+        pass
     total_requests = Request.objects.filter(user=user).count()
 
     context = {
@@ -343,6 +395,16 @@ def update_request_status(request, request_id):
             doc_request.status = new_status
             doc_request.updated_at = timezone.now()
             doc_request.save()
+
+            if remarks:
+                try:
+                    if hasattr(doc_request, 'payment') and doc_request.payment:
+                        doc_request.payment.remarks = remarks
+                        doc_request.payment.save(update_fields=['remarks'])
+                    else:
+                        Payment.objects.create(request_id=doc_request, remarks=remarks)
+                except Exception:
+                    pass
 
             Request_Status_Log.objects.create(
                 request=doc_request,
@@ -450,7 +512,25 @@ def requests_list(request):
             order_fields = ['-document__name', '-created_at']
         else:
             order_fields = ['document__name', '-created_at']
-    all_requests = qs.order_by(*order_fields)
+    all_requests = list(qs.order_by(*order_fields))
+    try:
+        from notifications.models import Notification
+        for r in all_requests:
+            remarks_text = ''
+            try:
+                if hasattr(r, 'payment') and r.payment and r.payment.remarks:
+                    remarks_text = r.payment.remarks or ''
+                else:
+                    n = Notification.objects.filter(request=r).order_by('-created_at').first()
+                    if n and 'Remarks:' in (n.message or ''):
+                        idx = n.message.find('Remarks:')
+                        if idx != -1:
+                            remarks_text = (n.message[idx + len('Remarks:'):]).strip()
+            except Exception:
+                pass
+            setattr(r, 'remarks_text', remarks_text)
+    except Exception:
+        pass
 
     context = {
         'full_name': User.objects.get(id=request.session.get('user_id')).name if request.session.get('user_id') else None,

@@ -180,6 +180,7 @@
                   data-updated="{{ req.updated_at|localtime|date:'M d, Y h:i A' }}"
                   data-payment-status="{% if req.payment %}{{ req.payment.get_payment_status_display }}{% endif %}"
                   data-proof-url="{{ req.payment.proof_of_payment|safe|default:'' }}"
+                  data-remarks="{{ req.remarks_text|default:''|escapejs }}"
                 >View Details</button>
                 {% if req.claim_slips.exists %}
                   {% if req.status == 'approved' or req.status == 'completed' %}
@@ -218,22 +219,22 @@
             {% elif log.new_status == 'processing' %}
               <p class="activity-title">Request Processing</p>
               <p class="activity-description">
-                Your REQ-{{ log.request.request_id }} ({{ log.request.document.name }}) is now being processed
+                Your REQ-{{ log.request.request_id }} ({{ log.request.document.name }}) is now being processed{% if log.changed_by %} by Staff {{ log.changed_by.name }}{% endif %}.
               </p>
             {% elif log.new_status == 'approved' %}
               <p class="activity-title">Request Approved</p>
               <p class="activity-description">
-                Your REQ-{{ log.request.request_id }} ({{ log.request.document.name }}) has been approved
+                Your REQ-{{ log.request.request_id }} ({{ log.request.document.name }}) has been approved{% if log.changed_by %} by Staff {{ log.changed_by.name }}{% endif %}. It is now ready for pick up.
               </p>
             {% elif log.new_status == 'completed' %}
-              <p class="activity-title">Ready for Pickup</p>
+              <p class="activity-title">Request Completed</p>
               <p class="activity-description">
-                Your REQ-{{ log.request.request_id }} ({{ log.request.document.name }}) is ready for pickup
+                Your REQ-{{ log.request.request_id }} ({{ log.request.document.name }}) has been picked up.
               </p>
             {% elif log.new_status == 'rejected' %}
               <p class="activity-title">Request Rejected</p>
               <p class="activity-description">
-                Your REQ-{{ log.request.request_id }} ({{ log.request.document.name }}) has been rejected
+                Your REQ-{{ log.request.request_id }} ({{ log.request.document.name }}) has been rejected{% if log.changed_by %} by Staff {{ log.changed_by.name }}{% endif %}.
               </p>
             {% else %}
               <p class="activity-title">Recent Staff Activity</p>
@@ -311,6 +312,13 @@
           <div class="dt-proof-frame">
             <img id="mProofImage" alt="Proof of Payment" />
           </div>
+        </div>
+        <div class="dt-card" id="mRemarksCard">
+          <div class="dt-card-label">
+            <img class="dt-icon" src="{% static 'images/check.png' %}" alt="Remarks" />
+            <span>Remarks</span>
+          </div>
+          <div class="dt-card-value" id="mRemarks">—</div>
         </div>
       </div>
     </div>
