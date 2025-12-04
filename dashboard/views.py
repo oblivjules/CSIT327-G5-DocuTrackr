@@ -11,6 +11,7 @@ from authentication.decorators import login_required, no_cache
 import json
 import hashlib
 import logging
+import threading
 
 from requests.models import Request, Request_Status_Log, Claim_Slips, Payment
 from documents.models import Document
@@ -389,111 +390,127 @@ def update_request_status(request, request_id):
         }, status=400)
 
     # ------------------------
-    # TRANSACTION BLOCK
+    # TRANSACTION BLOCK (with error handling)
     # ------------------------
-    with transaction.atomic():
-        # Lock row for update
-        doc_request = Request.objects.select_for_update().get(pk=request_id)
-        old_status = doc_request.status
+    try:
+        with transaction.atomic():
+            # Lock row for update
+            doc_request = Request.objects.select_for_update().get(pk=request_id)
+            old_status = doc_request.status
 
-        if old_status == new_status:
-            return JsonResponse({
-                'success': False,
-                'error': f"Request is already {new_status}"
-            }, status=400)
+            if old_status == new_status:
+                return JsonResponse({
+                    'success': False,
+                    'error': f"Request is already {new_status}"
+                }, status=400)
 
-        # ---- STATUS UPDATE ----
-        doc_request.status = new_status
-        doc_request.updated_at = timezone.now()
+            # ---- STATUS UPDATE ----
+            doc_request.status = new_status
+            doc_request.updated_at = timezone.now()
 
-        # --------------------------------------------------------
-        #   APPROVED LOGIC: Set date_ready ONCE when first approved
-        # --------------------------------------------------------
-        claim_slip_info = None
+            # --------------------------------------------------------
+            #   APPROVED LOGIC: Set date_ready ONCE when first approved
+            # --------------------------------------------------------
+            claim_slip_info = None
 
-        if new_status == "approved":
-            is_first_time_approved = (old_status != "approved")
+            if new_status == "approved":
+                is_first_time_approved = (old_status != "approved")
 
-            # Only attempt to parse date_ready if status is APPROVED
-            parsed_date_ready = None
-            if date_ready_raw and str(date_ready_raw).strip():
-                try:
-                    parsed_date_ready = parse_date(str(date_ready_raw))
-                    if not parsed_date_ready:
-                        parsed_date_ready = datetime.strptime(str(date_ready_raw), "%Y-%m-%d").date()
-                except Exception as e:
-                    logger.error(
-                        f"Request {request_id}: Failed to parse date_ready '{date_ready_raw}': {e}"
-                    )
-                    parsed_date_ready = None
+                # Only attempt to parse date_ready if status is APPROVED
+                parsed_date_ready = None
+                if date_ready_raw and str(date_ready_raw).strip():
+                    try:
+                        parsed_date_ready = parse_date(str(date_ready_raw))
+                        if not parsed_date_ready:
+                            parsed_date_ready = datetime.strptime(str(date_ready_raw), "%Y-%m-%d").date()
+                    except Exception as e:
+                        logger.error(
+                            f"Request {request_id}: Failed to parse date_ready '{date_ready_raw}': {e}"
+                        )
+                        parsed_date_ready = None
 
-            # Set date_ready only the FIRST TIME the request becomes approved
-            if is_first_time_approved and doc_request.date_ready is None:
-                if parsed_date_ready:
-                    doc_request.date_ready = parsed_date_ready
+                # Set date_ready only the FIRST TIME the request becomes approved
+                if is_first_time_approved and doc_request.date_ready is None:
+                    if parsed_date_ready:
+                        doc_request.date_ready = parsed_date_ready
+                    else:
+                        # fallback to today
+                        doc_request.date_ready = timezone.now().date()
+                        logger.warning(
+                            f"Request {request_id}: No valid date_ready from form, using today"
+                        )
+
+                # Save the request with date_ready only once
+                if is_first_time_approved and doc_request.date_ready:
+                    doc_request.save(update_fields=['status', 'date_ready', 'updated_at'])
                 else:
-                    # fallback to today
-                    doc_request.date_ready = timezone.now().date()
-                    logger.warning(
-                        f"Request {request_id}: No valid date_ready from form, using today"
-                    )
+                    doc_request.save(update_fields=['status', 'updated_at'])
 
-            # Save the request with date_ready only once
-            if is_first_time_approved and doc_request.date_ready:
-                doc_request.save(update_fields=['status', 'date_ready', 'updated_at'])
+                # Claim slip creation (only once)
+                existing_claim = Claim_Slips.objects.filter(request=doc_request).first()
+                if not existing_claim:
+                    claim_date = doc_request.date_ready or timezone.now().date()
+                    claim_slip = Claim_Slips.objects.create(
+                        request=doc_request,
+                        claim_number=f"CLAIM-{doc_request.request_id}-{int(timezone.now().timestamp())}",
+                        date_ready=claim_date,
+                        issued_by=staff_user
+                    )
+                    claim_slip_info = claim_slip.claim_number
+                else:
+                    claim_slip_info = existing_claim.claim_number
+
             else:
+                # Not approved - just save status, don't touch date_ready
                 doc_request.save(update_fields=['status', 'updated_at'])
 
-            # Claim slip creation (only once)
-            existing_claim = Claim_Slips.objects.filter(request=doc_request).first()
-            if not existing_claim:
-                claim_date = doc_request.date_ready or timezone.now().date()
-                claim_slip = Claim_Slips.objects.create(
-                    request=doc_request,
-                    claim_number=f"CLAIM-{doc_request.request_id}-{int(timezone.now().timestamp())}",
-                    date_ready=claim_date,
-                    issued_by=staff_user
-                )
-                claim_slip_info = claim_slip.claim_number
-            else:
-                claim_slip_info = existing_claim.claim_number
+            # ---- STATUS LOG ----
+            status_log = Request_Status_Log.objects.create(
+                request=doc_request,
+                old_status=old_status,
+                new_status=new_status,
+                changed_by=staff_user,
+                changed_at=timezone.now()
+            )
 
-        else:
-            # Not approved - just save status, don't touch date_ready
-            doc_request.save(update_fields=['status', 'updated_at'])
+            # ---- NOTIFICATION ----
+            msg = f"Your document request (REQ-{doc_request.request_id}) is now {new_status.upper()}."
+            if remarks:
+                msg += f" Remarks: {remarks}"
 
-        # ---- STATUS LOG ----
-        status_log = Request_Status_Log.objects.create(
-            request=doc_request,
-            old_status=old_status,
-            new_status=new_status,
-            changed_by=staff_user,
-            changed_at=timezone.now()
-        )
-
-        # ---- NOTIFICATION ----
-        msg = f"Your document request (REQ-{doc_request.request_id}) is now {new_status.upper()}."
-        if remarks:
-            msg += f" Remarks: {remarks}"
-
-        Notification.objects.create(
-            user=doc_request.user,
-            request=doc_request,
-            message=msg,
-            is_read=False,
-            created_at=timezone.now()
-        )
+            Notification.objects.create(
+                user=doc_request.user,
+                request=doc_request,
+                message=msg,
+                is_read=False,
+                created_at=timezone.now()
+            )
+    except Exception as e:
+        logger.exception(f"Request {request_id}: Failed updating status: {e}")
+        return JsonResponse({'success': False, 'error': 'Internal server error'}, status=500)
 
     # ---------------------------------------------------------------------
     # EMAIL IS NOW SAFELY OUTSIDE THE TRANSACTION BLOCK
     # ---------------------------------------------------------------------
+    # ---------------------------------------------------------------------
+    # EMAIL IS NOW ASYNCHRONOUS TO AVOID BLOCKING THE REQUEST/WORKER
+    # ---------------------------------------------------------------------
     from notifications.email_utils import send_status_email
     doc_request.refresh_from_db()
+
     if doc_request.user.email:
+        def _send_status_email_async(to_email, doc_req, status_log_obj, remarks_text):
+            try:
+                send_status_email(to_email, doc_req, status_log=status_log_obj, remarks=remarks_text)
+            except Exception:
+                logger.exception(f"Request {request_id}: Failed to send async email to {to_email}")
+
+        # Start a daemon thread so email sending won't block the HTTP response.
         try:
-            send_status_email(doc_request.user.email, doc_request, status_log=status_log, remarks=remarks)
-        except Exception as e:
-            logger.exception(f"Request {request_id}: Failed to send email to {doc_request.user.email}")
+            t = threading.Thread(target=_send_status_email_async, args=(doc_request.user.email, doc_request, status_log, remarks), daemon=True)
+            t.start()
+        except Exception:
+            logger.exception(f"Request {request_id}: Failed to start email thread for {doc_request.user.email}")
 
     # FINAL RESPONSE
     return JsonResponse({
