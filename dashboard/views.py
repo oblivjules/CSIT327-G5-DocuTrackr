@@ -195,6 +195,7 @@ def admin_dashboard(request):
         else:
             order_fields = ['document__name', '-created_at']
     recent_requests = list(requests_queryset.order_by(*order_fields)[:10])
+
     try:
         from notifications.models import Notification
         for r in recent_requests:
@@ -251,7 +252,7 @@ def admin_dashboard(request):
         'recent_activities': recent_activities,
     }
 
-    return render(request, 'admin-dashboard.html', context)   
+    return render(request, 'admin-dashboard.html', context)
 
 
 @login_required
@@ -303,6 +304,7 @@ def student_requests_list(request):
         else:
             order_fields = ['document__name', '-created_at']
     recent_requests = list(qs.order_by(*order_fields))
+
     try:
         for r in recent_requests:
             rt = ''
@@ -317,6 +319,7 @@ def student_requests_list(request):
             setattr(r, 'remarks_text', rt)
     except Exception:
         pass
+
     total_requests = Request.objects.filter(user=user).count()
 
     context = {
@@ -334,6 +337,12 @@ def student_requests_list(request):
     }
 
     return render(request, 'student-requests-list.html', context)
+
+
+
+# =====================================================================================
+#                            FIXED FUNCTION — EMAIL OUTSIDE TRANSACTION
+# =====================================================================================
 
 @login_required
 @csrf_exempt
@@ -357,7 +366,7 @@ def update_request_status(request, request_id):
         remarks = (data.get("remarks") or "").strip()
         date_ready_raw = data.get("date_ready")
         
-        # Debug logging - remove in production if needed
+        # Debug logging
         if date_ready_raw:
             logger.info(f"Request {request_id}: Received date_ready_raw='{date_ready_raw}' (type: {type(date_ready_raw)})")
     else:
@@ -379,6 +388,9 @@ def update_request_status(request, request_id):
             'error': f"Request is already {new_status}"
         }, status=400)
 
+    # ------------------------
+    # TRANSACTION BLOCK
+    # ------------------------
     with transaction.atomic():
         # Lock row for update
         doc_request = Request.objects.select_for_update().get(pk=request_id)
@@ -396,41 +408,30 @@ def update_request_status(request, request_id):
 
         # --------------------------------------------------------
         #   APPROVED LOGIC: Set date_ready ONCE when first approved
-        #   No edits allowed after that!
         # --------------------------------------------------------
         claim_slip_info = None
         if new_status == "approved":
-            # Only set date_ready if:
-            # 1. Status is changing TO approved (wasn't approved before)
-            # 2. date_ready is not already set
             is_first_time_approved = (old_status != "approved")
             
             if is_first_time_approved and doc_request.date_ready is None:
-                # ONLY use date_ready from frontend form
                 parsed_date_ready = None
                 
-                # Check if date_ready was provided from frontend
                 if date_ready_raw is not None and str(date_ready_raw).strip():
                     date_ready_str = str(date_ready_raw).strip()
                     try:
-                        # Try parse_date first
                         parsed_date_ready = parse_date(date_ready_str)
                         if parsed_date_ready is None:
-                            # If parse_date fails, try strptime
                             parsed_date_ready = datetime.strptime(date_ready_str, "%Y-%m-%d").date()
                     except (ValueError, TypeError) as e:
                         logger.error(f"Request {request_id}: Failed to parse date_ready '{date_ready_raw}': {e}")
                         parsed_date_ready = None
                 
-                # Set date_ready - use parsed value if available, otherwise today
                 if parsed_date_ready:
                     doc_request.date_ready = parsed_date_ready
                 else:
-                    # If form didn't provide a valid date, use today
                     doc_request.date_ready = timezone.now().date()
                     logger.warning(f"Request {request_id}: No valid date_ready from form, using today")
 
-            # Save Request (with date_ready if it was just set)
             if is_first_time_approved and doc_request.date_ready:
                 doc_request.save(update_fields=['status', 'date_ready', 'updated_at'])
             else:
@@ -439,8 +440,6 @@ def update_request_status(request, request_id):
             # Create Claim Slip ONLY if it doesn't exist yet
             existing_claim = Claim_Slips.objects.filter(request=doc_request).first()
             if not existing_claim:
-                # Use the date_ready from request (should be set by form)
-                # If somehow None, use today as fallback for claim slip only
                 claim_date = doc_request.date_ready if doc_request.date_ready else timezone.now().date()
                 claim_slip = Claim_Slips.objects.create(
                     request=doc_request,
@@ -453,7 +452,6 @@ def update_request_status(request, request_id):
                 claim_slip_info = existing_claim.claim_number
 
         else:
-            # Not approved - just save status, don't touch date_ready
             doc_request.save(update_fields=['status', 'updated_at'])
 
         # ---- STATUS LOG ----
@@ -478,21 +476,21 @@ def update_request_status(request, request_id):
             created_at=timezone.now()
         )
 
-        # ---- EMAIL (safe, non-blocking) ----
-        from notifications.email_utils import send_status_email
+    # ---------------------------------------------------------------------
+    # EMAIL IS NOW SAFELY OUTSIDE THE TRANSACTION BLOCK  ← FIX APPLIED HERE
+    # ---------------------------------------------------------------------
+    from notifications.email_utils import send_status_email
+    email_address = doc_request.user.email
+    
+    def send_email_after_commit():
+        try:
+            send_status_email(email_address, doc_request, status_log=status_log, remarks=remarks)
+        except Exception:
+            logger.exception(f"Request {request_id}: Failed to send email to {email_address}")
 
-        email_address = doc_request.user.email
+    if email_address:
+        transaction.on_commit(send_email_after_commit)
 
-        def send_email_after_commit():
-            try:
-                send_status_email(email_address, doc_request, status_log=status_log, remarks=remarks)
-            except Exception:
-                logger.exception(f"Request {request_id}: Failed to send email to {email_address}")
-
-        # Schedule email AFTER transaction commits (does NOT block the request)
-        if email_address:
-            transaction.on_commit(send_email_after_commit)
-        
     # FINAL RESPONSE
     return JsonResponse({
         'success': True,
@@ -501,6 +499,8 @@ def update_request_status(request, request_id):
         'claim_slip': claim_slip_info,
         'date_ready': str(doc_request.date_ready) if doc_request.date_ready else None,
     })
+
+
 
 def claim_slip_view(request, slip_id):
     claim_slip = get_object_or_404(Claim_Slips, pk=slip_id)
@@ -555,6 +555,7 @@ def requests_list(request):
         else:
             order_fields = ['document__name', '-created_at']
     all_requests = list(qs.order_by(*order_fields))
+
     try:
         from notifications.models import Notification
         for r in all_requests:
