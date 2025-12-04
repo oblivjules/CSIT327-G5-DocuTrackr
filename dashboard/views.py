@@ -410,37 +410,44 @@ def update_request_status(request, request_id):
         #   APPROVED LOGIC: Set date_ready ONCE when first approved
         # --------------------------------------------------------
         claim_slip_info = None
+
         if new_status == "approved":
             is_first_time_approved = (old_status != "approved")
-            
+
+            # Only attempt to parse date_ready if status is APPROVED
+            parsed_date_ready = None
+            if date_ready_raw and str(date_ready_raw).strip():
+                try:
+                    parsed_date_ready = parse_date(str(date_ready_raw))
+                    if not parsed_date_ready:
+                        parsed_date_ready = datetime.strptime(str(date_ready_raw), "%Y-%m-%d").date()
+                except Exception as e:
+                    logger.error(
+                        f"Request {request_id}: Failed to parse date_ready '{date_ready_raw}': {e}"
+                    )
+                    parsed_date_ready = None
+
+            # Set date_ready only the FIRST TIME the request becomes approved
             if is_first_time_approved and doc_request.date_ready is None:
-                parsed_date_ready = None
-                
-                if date_ready_raw is not None and str(date_ready_raw).strip():
-                    date_ready_str = str(date_ready_raw).strip()
-                    try:
-                        parsed_date_ready = parse_date(date_ready_str)
-                        if parsed_date_ready is None:
-                            parsed_date_ready = datetime.strptime(date_ready_str, "%Y-%m-%d").date()
-                    except (ValueError, TypeError) as e:
-                        logger.error(f"Request {request_id}: Failed to parse date_ready '{date_ready_raw}': {e}")
-                        parsed_date_ready = None
-                
                 if parsed_date_ready:
                     doc_request.date_ready = parsed_date_ready
                 else:
+                    # fallback to today
                     doc_request.date_ready = timezone.now().date()
-                    logger.warning(f"Request {request_id}: No valid date_ready from form, using today")
+                    logger.warning(
+                        f"Request {request_id}: No valid date_ready from form, using today"
+                    )
 
+            # Save the request with date_ready only once
             if is_first_time_approved and doc_request.date_ready:
                 doc_request.save(update_fields=['status', 'date_ready', 'updated_at'])
             else:
                 doc_request.save(update_fields=['status', 'updated_at'])
 
-            # Create Claim Slip ONLY if it doesn't exist yet
+            # Claim slip creation (only once)
             existing_claim = Claim_Slips.objects.filter(request=doc_request).first()
             if not existing_claim:
-                claim_date = doc_request.date_ready if doc_request.date_ready else timezone.now().date()
+                claim_date = doc_request.date_ready or timezone.now().date()
                 claim_slip = Claim_Slips.objects.create(
                     request=doc_request,
                     claim_number=f"CLAIM-{doc_request.request_id}-{int(timezone.now().timestamp())}",
@@ -452,6 +459,7 @@ def update_request_status(request, request_id):
                 claim_slip_info = existing_claim.claim_number
 
         else:
+            # Not approved - just save status, don't touch date_ready
             doc_request.save(update_fields=['status', 'updated_at'])
 
         # ---- STATUS LOG ----
@@ -477,19 +485,15 @@ def update_request_status(request, request_id):
         )
 
     # ---------------------------------------------------------------------
-    # EMAIL IS NOW SAFELY OUTSIDE THE TRANSACTION BLOCK  ← FIX APPLIED HERE
+    # EMAIL IS NOW SAFELY OUTSIDE THE TRANSACTION BLOCK
     # ---------------------------------------------------------------------
     from notifications.email_utils import send_status_email
-    email_address = doc_request.user.email
-    
-    def send_email_after_commit():
+    doc_request.refresh_from_db()
+    if doc_request.user.email:
         try:
-            send_status_email(email_address, doc_request, status_log=status_log, remarks=remarks)
-        except Exception:
-            logger.exception(f"Request {request_id}: Failed to send email to {email_address}")
-
-    if email_address:
-        transaction.on_commit(send_email_after_commit)
+            send_status_email(doc_request.user.email, doc_request, status_log=status_log, remarks=remarks)
+        except Exception as e:
+            logger.exception(f"Request {request_id}: Failed to send email to {doc_request.user.email}")
 
     # FINAL RESPONSE
     return JsonResponse({
@@ -499,7 +503,6 @@ def update_request_status(request, request_id):
         'claim_slip': claim_slip_info,
         'date_ready': str(doc_request.date_ready) if doc_request.date_ready else None,
     })
-
 
 
 def claim_slip_view(request, slip_id):
@@ -517,6 +520,7 @@ def claim_slip_view(request, slip_id):
         "claim_slip": claim_slip,
         "home_url": home_url,
     })
+
 
 @login_required
 @no_cache
