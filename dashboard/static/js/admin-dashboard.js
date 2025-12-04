@@ -769,4 +769,47 @@ statusDropdown.addEventListener("change", updateDateReadyState);
     });
   }
 
+  const deleteActivityBtn = document.getElementById('deleteActivityBtn');
+  const deleteActivityModal = document.getElementById('deleteActivityModal');
+  const confirmDeleteActivity = document.getElementById('confirmDeleteActivity');
+  const cancelDeleteActivity = document.getElementById('cancelDeleteActivity');
+  const closeDeleteActivity = document.getElementById('closeDeleteActivity');
+  const activityList = document.querySelector('.activity-section .activity-list');
+  const activitySection = document.querySelector('.activity-section');
+  const activityUserId = activitySection?.dataset.userId || 'global';
+  const clearedKey = `adminActivityClearedAt:${activityUserId}`;
+
+  function openDeleteModal() {
+    if (deleteActivityModal) deleteActivityModal.style.display = 'flex';
+  }
+
+  function closeDeleteModal() {
+    if (deleteActivityModal) deleteActivityModal.style.display = 'none';
+  }
+
+  deleteActivityBtn?.addEventListener('click', openDeleteModal);
+  cancelDeleteActivity?.addEventListener('click', closeDeleteModal);
+  closeDeleteActivity?.addEventListener('click', closeDeleteModal);
+
+  function filterActivitiesByClearedAt() {
+    const clearedAt = localStorage.getItem(clearedKey);
+    if (!clearedAt || !activityList) return;
+    const threshold = Date.parse(clearedAt);
+    const items = Array.from(activityList.querySelectorAll('.activity-item'));
+    items.forEach(item => {
+      const t = item.getAttribute('data-changed-at');
+      const ts = t ? Date.parse(t) : 0;
+      if (!Number.isNaN(ts) && ts <= threshold) item.remove();
+      else if (Number.isNaN(ts)) item.remove();
+    });
+  }
+
+  filterActivitiesByClearedAt();
+
+  confirmDeleteActivity?.addEventListener('click', function() {
+    try { localStorage.setItem(clearedKey, new Date().toISOString()); } catch (e) {}
+    if (activityList) activityList.innerHTML = '';
+    closeDeleteModal();
+  });
+
 });

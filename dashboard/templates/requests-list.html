@@ -144,10 +144,6 @@
               <td>
                 {% if req.status != 'completed' and req.status != 'rejected' %}
                   <button type="button" class="action-btn process-btn" data-request-id="{{ req.request_id }}">Update</button>
-                {% elif req.status == 'completed' %}
-                  <span class="done">Completed</span>
-                  {% else %}
-                  <span class="rejected">Rejected</span>
                 {% endif %}
               </td>
               <td>
